@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  @font-face {
+    font-family: 'Geist';
+    src: local('GeistVF'), url('/fonts/GeistVF.ttf');
+		font-weight: normal;
+		font-display: swap;
+  }
+
+  @keyframes wiggle {
+    0% {transform: rotate(10deg);}
+    25% {transform: rotate(-10deg);}
+    50% {transform: rotate(20deg);}
+    75% {transform: rotate(-5deg);}
+    100% {transform: rotate(0deg);}
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+ 
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+ 
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+ 
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+ 
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+ 
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+ 
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --ring: 0 0% 3.9%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+ 
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+ 
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+ 
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+ 
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+ 
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+ 
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+ 
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --ring: 0 0% 83.1%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .light {
+	  /* background: #EBFDFF; */
+		/* border: .5px solid #34FFAA; */
+		text-shadow: 0px -22px 26px rgba(0, 255, 163, 0.83), 0px 22px 26px rgba(75, 218, 166, 0.4), 0px -22px 20px rgba(89, 255, 195, 0.1), 0px 0px 16px #59FFC3;
+	}
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gallery {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tactile-dark {
+    background: linear-gradient(to bottom, #232324, #19191a, #050505);
+  }
+
+  .tactile {
+		background: linear-gradient(to bottom, #353539, #34333B, #1a1a1e);
+		/* border-top: 1em linear-gradient(180deg, #3E3F48 0%, #2D2C33 100%)!important; */
+		/* border-top: solid linear-gradient(180deg, #3E3F48 0%, #2D2C33 100%)!important; */
+		box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.16), 0px 8px 8px rgba(0, 0, 0, 0.42), 0px 0px 0px 2px rgba(23, 25, 31, 0.45), inset 0px 0px 10px rgba(0,0,0,0.1);
+	}
+
+  .tactile-text {
+    background: linear-gradient(180deg, #F3F3F3 0%, #A5A5A5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+	}
+
+  .page-backdrop {
+    background:linear-gradient(to bottom, #101010 0%, rgb(10, 10, 10) 80%);
+  }
+
+  .header-background {
+    background:linear-gradient(to right, #101010 0%, rgb(10, 10, 10) 80%);
+  }
+
+  .animate-floating {
+    animation-name: floating;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    margin-left: 30px;
+    margin-top: 5px;
+  }
+
+  @keyframes floating {
+    0% { transform: translate(0,  0px); }
+    50%  { transform: translate(0, 15px); }
+    100%   { transform: translate(0, -0px); }    
+  }
+}
