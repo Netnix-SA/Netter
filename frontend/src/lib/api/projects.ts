@@ -1,9 +1,9 @@
 import { db } from "@/server/db";
-import type { Application, Label, Project, Status, Task, UserId } from "@/server/db/types";
+import type { Application, Label, Project, ProjectId, Status, Task, TaskId, UserId } from "@/server/db/types";
 import { Elysia, t } from "elysia";
-import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask, tTaskMulti } from "./schemas";
+import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
-import { mapMulti as mapTask } from "./tasks";
+import { map as mapTask, query as queryTasks } from "./tasks";
 import { map as mapApplication } from "./applications";
 
 export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
@@ -25,13 +25,9 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 }, { response: tProject, detail: { description: "Gets the project by id" } })
 
 .get('/:id/tasks', async ({ params: { id } }) => {
-	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE belongs_to == ${new StringRecordId(id)};`);
-
-	const tasks = results[0];
-
-	return tasks.map(mapTask);
+	return await queryTasks({ belongs_to: new StringRecordId(id) as unknown as ProjectId, assignee: undefined, state: undefined });
 }, {
-	response: t.Array(tTaskMulti),
+	response: t.Array(tTask),
 })
 
 .get("/:id/labels", async ({ params: { id } }) => {

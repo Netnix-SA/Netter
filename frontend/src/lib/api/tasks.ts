@@ -1,21 +1,25 @@
 import { db } from "@/server/db";
-import type { Status, StatusId, Task, TaskId, Team } from "@/server/db/types";
+import type { ChannelId, ProjectId, State, Status, StatusId, Task, TaskId, Team } from "@/server/db/types";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tBug, tMember, tTask, tTaskPost, tTeam, tTeamPost } from "./schemas";
+import { tBug, tMember, tTask, tTaskPost, tTeam, tTeamPost, tUserId } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
 
 export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
-.get("", async () => {
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[] })[]]>(surql`SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking FROM Task;`);
-	
-	const tasks = results[0];
-	
-	return tasks.map(map);
-}, { response: t.Array(tTask), detail: { description: "Gets the tasks for the querying user" } })
+.get("", async ({ query: { assignee } }) => {
+	return await query({ assignee, state: undefined, belongs_to: undefined });
+}, {
+	response: t.Array(tTask),
+	query: t.Object({
+		assignee: t.Optional(tUserId),
+	}),
+	detail: {
+		description: "Gets the tasks for the querying user"
+	}
+})
 
 .get("/:id", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[] })[]]>(surql`SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking FROM Task WHERE id == ${new StringRecordId(id)};`);
+	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId })[]]>(surql`SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel FROM Task WHERE id == ${new StringRecordId(id)};`);
 
 	const tasks = results[0];
 	const task = tasks[0];
@@ -45,7 +49,37 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	}
 });
 
-export const map = ({ id, title, body, priority, status, labels, assignee, effort, children, related, blocking }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[] }) => {
+export const query = async ({ assignee, state, belongs_to }: { assignee: string | undefined, state: State | undefined, belongs_to: ProjectId | undefined }) => {
+	let query = `SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel FROM Task`;
+
+	let pieces = [];
+
+	if (assignee) {
+		pieces.push(`assignee == ${new StringRecordId(assignee)}`);
+	}
+
+	if (state) {
+		pieces.push(`status == ${new StringRecordId(state)}`);
+	}
+
+	if (belongs_to) {
+		pieces.push(`belongs_to == ${belongs_to}`);
+	}
+
+	if (pieces.length > 0) {
+		query += ' WHERE ' + pieces.join(' AND ');
+	}
+
+	query += ';';
+
+	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId })[]]>(query);
+
+	const tasks = results[0];
+
+	return tasks.map(map);
+};
+
+export const map = ({ id, title, body, priority, status, labels, assignee, effort, children, related, blocking, channel }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId }) => {
 	return {
 		id: id.toString(),
 		title, body,
@@ -63,21 +97,8 @@ export const map = ({ id, title, body, priority, status, labels, assignee, effor
 			blockers: blocking.map(b => ({ id: b.toString() })),
 		},
 		effort,
-	};
-};
-
-export const mapMulti = ({ id, title, body, priority, status, labels, assignee, effort }: Task) => {
-	return {
-		id: id.toString(),
-		title, body,
-		status: status.toString(),
-		priority,
-		labels: labels.map(id => ({
-			id: id.toString(),
-		})),
-		effort,
-		assignee: assignee && {
-			id: assignee.toString()
+		channel: {
+			id: channel.toString(),
 		},
 	};
 };

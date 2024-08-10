@@ -25,6 +25,10 @@
 						Applications
 					</a>
 					<Separator orientation="vertical" class="mx-4"/>
+					<a href={`${$page.url}/bugs`} class="underline">
+						Bugs
+					</a>
+					<Separator orientation="vertical" class="mx-4"/>
 					<a href={`${$page.url}/tasks`} class="underline">
 						Tasks
 					</a>

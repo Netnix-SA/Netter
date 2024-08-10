@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
 	import "../../app.css";
 
-	import { GitPullRequestArrow, Group, Inbox, MessagesSquare, Notebook, Settings, View } from "lucide-svelte";
+	import { Settings } from "lucide-svelte";
 	import * as Command from "$lib/components/ui/command";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { goto, onNavigate } from "$app/navigation";

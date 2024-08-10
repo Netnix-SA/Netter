@@ -5,6 +5,7 @@ import { type Application, type Bug, type Feature, type Product } from "@/server
 import { StringRecordId, surql } from "surrealdb";
 import { applications } from "./applications";
 import { map as mapFeature } from "./features";
+import { map as mapApplication } from "./applications";
 
 export const products = new Elysia({ prefix: "/products", tags: ["Products"] })
 
@@ -44,6 +45,16 @@ export const products = new Elysia({ prefix: "/products", tags: ["Products"] })
 	return features.map(mapFeature);
 }, {
 	response: t.Array(tFeature),
+})
+
+.get("/:id/applications", async ({ params: { id } }) => {
+	const results = await db.query<[Application[]]>(surql`SELECT * FROM Application where product.id == ${new StringRecordId(id)};`);
+
+	const applications = results[0];
+
+	return applications.map(mapApplication);
+}, {
+	response: t.Array(tApplication),
 })
 
 export const map = ({ id, name, description }: Product) => {

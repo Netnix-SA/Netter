@@ -30,5 +30,6 @@ export const load: PageLoad = async ({ params: { id }, fetch }) => {
 		tasks,
 		labels,
 		statuses,
+		messages: client.api.channels({ id: task.channel.id }).messages.get().then(({ data }) => data ?? []),
 	};
 };

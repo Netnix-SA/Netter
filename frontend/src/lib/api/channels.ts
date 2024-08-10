@@ -70,14 +70,19 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 
 	const messages = results[0];
 
-	return messages.map(({ id, body, author, date}) => ({
-		id: id.toString(),
-		body, author: author.toString(),
-		date,
-	}));
+	return messages.map(map);
 }, {
 	response: t.Array(tMessage),
 	detail: {
 		description: "Returns all messages for the channel.",
 	},
+});
+
+export const map = ({ id, body, author, date }: Message) => ({
+	id: id.toString(),
+	body,
+	author: {
+		id: author.toString(),
+	},
+	date,
 });

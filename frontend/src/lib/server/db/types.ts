@@ -211,7 +211,11 @@ export type Feature = {
 	description: string,
 };
 
+export type RepositoryId = RecordId<"Repository">;
+
 export type Repository = {
+	id: RepositoryId,
+	name: string,
 	url: string,
 };
 
@@ -242,8 +246,16 @@ export type Team = {
 	teams: Team[],
 };
 
+export type ToDoId = RecordId<"ToDo">;
+
 // A todo is a reminder of some task created by users for themselves
 export type ToDo = {
+	id: ToDoId,
+	title: string,
+	url: string,
+	due: Date,
+	owner: UserId,
+	done: boolean,
 };
 
 // A milestone represent a point in a project where some target are expected to be achived.
@@ -272,6 +284,7 @@ export type Integration = GitHubIntegration | KimaiIntegration | SharePointInteg
 
 export type GitHubIntegration = {
 	type: "GitHub",
+	installation_id: number,
 };
 
 export type KimaiIntegration = {

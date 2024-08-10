@@ -6,19 +6,9 @@ services:
       - ./frontend:/app
     ports:
       - 80:80
+    env_file:
+      - .env
     command: bun run dev -- --host --port 80
-  # backend:
-  #   image: oven/bun:1.1.21
-  #   working_dir: /app
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - ./backend:/app
-  #   environment:
-  #     - PORT=80
-  #   ports:
-  #     - 3000:80
-  #   command: bun --hot src/index.ts
   db:
     image: surrealdb/surrealdb:v2.0.0-alpha.8
     user: root

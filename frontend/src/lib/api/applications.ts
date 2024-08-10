@@ -4,9 +4,9 @@ import { db } from "@/server/db";
 import { type Application, type Bug } from "@/server/db/types";
 import { StringRecordId, surql } from "surrealdb";
 
-export const applications = new Elysia({ prefix: "/applications", tags: ["Applications"] });
+export const applications = new Elysia({ prefix: "/applications", tags: ["Applications"] })
 
-applications.post("", async ({ body: { name } }) => {
+.post("", async ({ body: { name } }) => {
     await db.create<Omit<Application, "id">>("Application", {
         name,
     });
@@ -16,9 +16,9 @@ applications.post("", async ({ body: { name } }) => {
     {
         description: "Creates an application under the connected user's organization"
     }
-});
+})
 
-applications.get("", async () => {
+.get("", async () => {
     const applications = await db.select<Application>("Application");
 
     return applications.map(({ id, name }) => ({
@@ -27,9 +27,20 @@ applications.get("", async () => {
     }));
 }, {
     response: t.Array(tApplication)
-});
+})
 
-applications.get("/:id/bugs", async ({ params: { id } }) => {
+.get("/:id", async ({ params: { id } }) => {
+    const application = await db.select<Application>(new StringRecordId(id));
+
+    return map(application);
+}, {
+    response: tApplication,
+    detail: {
+        description: "Returns the application with the given id."
+    }
+})
+
+.get("/:id/bugs", async ({ params: { id } }) => {
 	const application_id = new StringRecordId(id);
 
 	const results = await db.query<[Bug[]]>(surql`SELECT * FROM Bug WHERE applications CONTAINS ${application_id};`);
@@ -49,7 +60,7 @@ applications.get("/:id/bugs", async ({ params: { id } }) => {
 	detail: {
 		description: "Returns the bugs the application currently has.",
 	}
-});
+})
 
 export const map = ({ id, name }: Application) => {
 	return {

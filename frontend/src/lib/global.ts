@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Gift, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, Sunset, Timer, View } from "lucide-svelte";
+import { CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, Sunset, Timer, Users, View } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State } from "./server/db/types";
 
@@ -83,5 +83,7 @@ export const LINKS = [
     { href: "/projects", icon: Notebook, label: "Projects" },
     { href: "/products", icon: Gift, label: "Products" },
     { href: "/views", icon: View, label: "Views" },
+    { href: "/teams", icon: Users, label: "Teams" },
+    { href: "/repositories", icon: GitBranch, label: "Repositories" },
     { href: "/merge-requests", icon: GitPullRequestArrow, label: "Merge Requests" },
 ];

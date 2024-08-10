@@ -10,6 +10,8 @@ export const tLabelId = t.String();
 export const tMessageId = t.String();
 export const tTaskId = t.String();
 export const tStatusId = t.String();
+export const tRepositoryId = t.String();
+export const tToDoId = t.String();
 
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
 export const tColors = t.Union([t.Literal("Orange/Light")], { default: "White" });
@@ -74,7 +76,9 @@ export const tMessagePost = t.Object({
 export const tMessage = t.Object({
 	id: tMessageId,
 	body: t.String({ minLength: 1, maxLength: 8192, }),
-	author: tUserId,
+	author: t.Object({
+		id: tUserId,
+	}),
 	date: t.Date(),
 });
 
@@ -101,20 +105,9 @@ export const tTask = t.Object({
 		related: t.Array(t.Object({ id: tTaskId })),
 		blockers: t.Array(t.Object({ id: tTaskId })),
 	}),
-}, { title: "Task" });
-
-export const tTaskMulti = t.Object({
-	id: tTaskId,
-	title: t.String({ minLength: 3, maxLength: 64 }),
-	body: t.String({ maxLength: 8192 }),
-	status: tStatusId,
-	priority: tPriorities,
-	labels: t.Array(t.Object({
-		id: tLabelId,
-	})),
-	assignee: t.Nullable(t.Object({
-		id: tUserId,
-	})),
+	channel: t.Object({
+		id: tChannelId,
+	}),
 }, { title: "Task" });
 
 export const tMergeRequest = t.Object({
@@ -158,8 +151,16 @@ export const tBug = t.Object({
 	description: t.String({ maxLength: 8192 }),
 });
 
-export const tRepository = t.Object({
+export const tRepositoryPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
+});
+
+export const tRepository = t.Object({
+	id: tRepositoryId,
+	name: t.String({ minLength: 3, maxLength: 64 }),
+	url: t.String({ minLength: 3, maxLength: 64 }),
+	provider: t.Union([t.Literal("GitHub")]),
+	branches: t.Array(t.String({ minLength: 3, maxLength: 64 })),
 });
 
 export const tFeaturePost = t.Object({
@@ -280,6 +281,15 @@ export const tProduct = t.Object({
 	id: tApplicationId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+});
+
+export const tToDo = t.Object({
+	id: tToDoId,
+	title: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+	url: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+	owner: tUserId,
+	done: t.Boolean(),
+	due: t.Date(),
 });
 
 export const tApplicationPost = t.Object({

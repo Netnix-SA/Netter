@@ -28,6 +28,7 @@
   "dependencies": {
     "@elysiajs/eden": "^1.1.2",
     "@elysiajs/swagger": "^1.1.0",
+    "@xyflow/svelte": "^0.1.14",
     "bits-ui": "^0.21.13",
     "carta-md": "^4.4.1",
     "clsx": "^2.1.1",
@@ -35,6 +36,7 @@
     "elysia": "^1.1.4",
     "isomorphic-dompurify": "^2.14.0",
     "lucide-svelte": "^0.424.0",
+    "octokit": "^4.0.2",
     "surrealdb": "v1.0.0-beta.19",
     "svelte-radix": "^1.1.0",
     "tailwind-merge": "^2.4.0",

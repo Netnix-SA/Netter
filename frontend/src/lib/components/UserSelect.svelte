@@ -35,7 +35,7 @@
 			variant="outline"
 			role="combobox"
 			aria-expanded={open}
-			class="w-full font-normal justify-between"
+			class="w-full font-normal justify-between item-background border-none"
 		>
 			{#if selectedValue !== undefined}
 				{selectedValue}

@@ -1,15 +1,13 @@
 <script lang="ts">
 	import UserAvatar from "@/components/UserAvatar.svelte";
 	import type { PageData } from "./$types";
-    import Label from "@/components/ui/label/label.svelte";
-	  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
 	const { data }: { data: PageData } = $props();
 	const projects = $derived(data.projects);
 </script>
 
 <div class="flex-1 flex flex-col w-full divide-y">
-	<header class="flex w-full px-6 h-10 items-center text-sm">
+	<header class="flex w-full px-6 h-10 items-center text-sm header-background">
 		My projects
 	</header>
 	<main>
@@ -23,7 +21,7 @@
 					</a>
 					<div class="gallery gap-2">
 						<span class="text-xs text-muted-foreground">Lead</span>
-						<UserAvatar full_name={data.users.find(u => u.id === project.lead?.id)?.full_name}/>
+						<UserAvatar user={data.users.find(u => u.id === project.lead?.id)}/>
 					</div>
 				</li>
 			{/each}

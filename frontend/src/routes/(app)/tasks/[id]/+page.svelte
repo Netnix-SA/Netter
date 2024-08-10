@@ -19,10 +19,27 @@
     import Button from "@/components/ui/button/button.svelte";
 	import * as Dialog from "$lib/components/ui/dialog";
     import { buttonVariants } from "@/components/ui/button";
+    import { onMount } from "svelte";
+    import { commands } from "@/state";
+    import MyButton from "@/components/MyButton.svelte";
+    import ChannelView from "@/components/ChannelView.svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		rendererDebounce: 10,
+	});
+
+	onMount(() => {
+		const entry = { name: "Task", commands: [{ name: "Add to ToDo's", do: () => {} }] };
+
+		commands.update(c => {
+			c.push(entry);
+			return c;
+		});
+
+		return () => {
+			commands.update(c => { return c.filter(e => e != entry); });
+		};
 	});
 
 	const { data }: { data: PageData } = $props();
@@ -35,16 +52,15 @@
 	let assignee = $state(
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
 	);
-
-	$inspect(status);
 </script>
 
 <div class="flex">
 	<div class="flex flex-col w-[64em]">
 		<div class="gallery">
-			<h1 class="text-2xl tactile-text flex-1">
-				{data.task.title}
-			</h1>
+			<div id="left" class="flex-1">
+				<input class="text-2xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
+				<!-- TODO: link to merge request -->
+			</div>
 			<Dialog.Root>
 				<Dialog.Trigger class={buttonVariants({ variant: "default" })}>Close</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-[425px]">
@@ -68,7 +84,7 @@
 			{/each}
 		</div>
 		<Separator class="my-8" />
-		<div class="h-64">
+		<div class="h-56">
 			<MarkdownEditor
 				bind:value={body}
 				mode="tabs"
@@ -78,7 +94,9 @@
 		</div>
 		<div id="comments">
 			Comments
-			<div class="h-32"></div>
+			<div class="h-32">
+				<ChannelView messages={data.messages} users={data.users}/>
+			</div>
 		</div>
 	</div>
 	<Separator orientation="vertical" class="mx-8" />

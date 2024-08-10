@@ -1,8 +1,8 @@
 import { RecordId, StringRecordId, Surreal } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
 
-import { type Task, type Project, type ProjectId, type Team, type TeamId, type User, type UserId, type LabelId, type View, type Label } from "@/server/db/types";
-import { tUserPost, tUser } from "./schemas";
+import { type Task, type Project, type ProjectId, type Team, type TeamId, type User, type UserId, type LabelId, type View, type Label, type ToDo } from "@/server/db/types";
+import { tUserPost, tUser, tToDo } from "./schemas";
 import { db } from "@/server/db";
 
 export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
@@ -29,7 +29,13 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 	if (body.handle !== undefined) {
 		handle = body.handle;
 	} else {
-		handle = body.email.split('@')[0];
+		let h = body.email.split('@')[0];
+
+		if (!h) {
+			throw new NotFoundError("Invalid email address.");
+		}
+
+		handle = h;
 	}
 
 	// TODO: check email address against organization's whitelist
@@ -49,4 +55,21 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		This method will fail if the handle or email already exists.
 		This method will fail if the email's domain is not allowed in the organization.`,
 	}
-});
+})
+
+.get("/me/todos", async ({}) => {
+	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner;", { owner: new StringRecordId("User:⟨fvilla@netnix.net⟩") });
+
+	const todos = results[0];
+
+	return todos.map(todo => ({
+		id: todo.id.toString(),
+		title: todo.title,
+		url: todo.url,
+		owner: todo.owner.toString(),
+		due: todo.due,
+		done: todo.done,
+	}))
+}, {
+	response: t.Array(tToDo),
+})

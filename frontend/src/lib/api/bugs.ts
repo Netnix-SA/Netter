@@ -4,9 +4,9 @@ import { Elysia, t } from "elysia";
 import { tBug, tBugPost, tFeature } from "./schemas";
 import { StringRecordId, surql } from "surrealdb";
 
-export const bugs = new Elysia({ prefix: "/bugs", tags: ["Bugs"] });
+export const bugs = new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 
-bugs.post("", async ({ body: { title, description, } }) => {
+.post("", async ({ body: { title, description, } }) => {
 	await db.create<Omit<Bug, "id">>("Bug", {
 		title, description,
 		features: [],
@@ -16,20 +16,28 @@ bugs.post("", async ({ body: { title, description, } }) => {
 	detail: {
 		description: "Creates a bug under the connected user's organization"
 	}
-});
+})
 
-bugs.get("", async () => {
+.get("", async () => {
 	const bugs = await db.select<Bug>("Bug");
 
-	return bugs.map(({ id, title, description }) => ({
-		id: id.toString(),
-		title, description,
-	}));
+	return bugs.map(map);
 }, {
 	response: t.Array(tBug),
-});
+})
 
-bugs.get("/:id/impact", async ({ params: { id } }) => {
+.get("/:id", async ({ params: { id } }) => {
+	const bug = await db.select<Bug>(new StringRecordId(id));
+
+	return map(bug);
+}, {
+	response: tBug,
+	detail: {
+		description: "Returns the bug with the given id."
+	}
+})
+
+.get("/:id/impact", async ({ params: { id } }) => {
 	const bug_id = new StringRecordId(id);
 
 	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature WHERE id IN (SELECT features FROM Bug WHERE id = ${bug_id})[0].features;`);
@@ -49,4 +57,9 @@ bugs.get("/:id/impact", async ({ params: { id } }) => {
 	detail: {
 		description: "Returns the items impacted/affected by this bug.",
 	}
+})
+
+export const map = ({ id, title, description }: Bug) => ({
+	id: id.toString(),
+	title, description,
 });
