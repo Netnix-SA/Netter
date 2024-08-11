@@ -1,16 +1,16 @@
-import { db } from '@/server/db';
 import type { Channel, Project, Task } from '@/server/db/types';
+import { client } from '@/state.js';
+import { error } from '@sveltejs/kit';
 import { StringRecordId } from 'surrealdb';
 
 export const load = async ({ fetch }) => {
-	const channels = await db.select<Channel>("Channel");
+	const { data: channels } = await client.api.channels.get();
 
-	const c = channels.map(({ id, name }) => ({
-		id: id.toString(),
-		name,
-	}));
+	if (!channels) {
+		throw error(404, 'Could not load channels');
+	}
 
 	return {
-		channels: c,
+		channels,
 	};
 };

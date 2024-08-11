@@ -41,7 +41,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		throw new Error("Did not find a status");
 	}
 
-	await db.create<Omit<Task, "id">>("Task", { title: body.title, body: "", priority: "Medium", effort: 'Days', created: new Date(), labels: [], assignee: null, status: body.status ? new StringRecordId(body.status) as unknown as StatusId : first_status.id });
+	await db.create<Omit<Task, "id">>("Task", { title: body.title, body: "", priority: "Medium", effort: 'Days', value: 'Medium', created: new Date(), labels: [], assignee: null, status: body.status ? new StringRecordId(body.status) as unknown as StatusId : first_status.id });
 }, {
 	body: tTaskPost,
 	detail: {
@@ -79,12 +79,11 @@ export const query = async ({ assignee, state, belongs_to }: { assignee: string 
 	return tasks.map(map);
 };
 
-export const map = ({ id, title, body, priority, status, labels, assignee, effort, children, related, blocking, channel }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId }) => {
+export const map = ({ id, title, body, priority, status, labels, assignee, effort, value, children, related, blocking, channel }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId }) => {
 	return {
 		id: id.toString(),
 		title, body,
 		status: status.toString(),
-		priority,
 		labels: labels.map(id => ({
 			id: id.toString(),
 		})),
@@ -96,7 +95,7 @@ export const map = ({ id, title, body, priority, status, labels, assignee, effor
 			related: related.map(r => ({ id: r.toString() })),
 			blockers: blocking.map(b => ({ id: b.toString() })),
 		},
-		effort,
+		priority, effort, value,
 		channel: {
 			id: channel.toString(),
 		},

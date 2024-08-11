@@ -12,7 +12,9 @@ export const tTaskId = t.String();
 export const tStatusId = t.String();
 export const tRepositoryId = t.String();
 export const tToDoId = t.String();
+export const tReleaseId = t.String();
 
+export const tValues = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High")], { default: "Medium" });
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
 export const tColors = t.Union([t.Literal("Orange/Light")], { default: "White" });
 export const tEfforts = t.Union([t.Literal("Hour"), t.Literal("Hours"), t.Literal("Day"), t.Literal("Days"), t.Literal("Week")], { default: "White" });
@@ -94,6 +96,7 @@ export const tTask = t.Object({
 	status: tStatusId,
 	priority: tPriorities,
 	effort: tEfforts,
+	value: tValues,
 	labels: t.Array(t.Object({
 		id: tLabelId,
 	})),
@@ -148,6 +151,25 @@ export const tBugPost = t.Object({
 export const tBug = t.Object({
 	id: tBugId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
+	resolved: t.Boolean(),
+	created: t.Date(),
+	impact: t.Object({
+		features: t.Array(t.Object({
+			id: tFeatureId
+		})),
+		applications: t.Array(t.Object({
+			id: tApplicationId
+		})),
+	}),
+	release: t.Nullable(t.Object({
+		id: t.String(),
+	})),
+});
+
+export const tRelease = t.Object({
+	id: tReleaseId,
+	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
 });
 
@@ -294,11 +316,13 @@ export const tToDo = t.Object({
 
 export const tApplicationPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
 });
 
 export const tApplication = t.Object({
 	id: tApplicationId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
 });
 
 export const tGithubOrganizationIntegration = t.Object({

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { client } from "@/state";
 	import type { PageData } from "./$types";
     import ChannelView from "@/components/ChannelView.svelte";
 
@@ -6,5 +7,5 @@
 </script>
 
 <div id="chat" class="flex-1 h-full flex flex-col">
-	<ChannelView messages={data.messages} users={data.users}/>
+	<ChannelView channel={data.channel} messages={data.messages} users={data.users}/>
 </div>

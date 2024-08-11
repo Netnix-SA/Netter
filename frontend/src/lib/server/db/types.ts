@@ -7,6 +7,19 @@ export type Role = {
 export type UserId = RecordId<"User">;
 export type BugId = RecordId<"Bug">;
 export type FeatureId = RecordId<"Feature">;
+export type ReleaseId = RecordId<"Release">;
+export type MessageId = RecordId<"Message">;
+export type LabelId = RecordId<"Label">;
+export type TaskId = RecordId<"Task">;
+export type StatusId = RecordId<"Status">;
+export type ViewId = RecordId<"View">;
+export type ChannelId = RecordId<"Channel">;
+export type ProjectId = RecordId<"Project">;
+export type ApplicationId = RecordId<"Application">;
+export type ProductId = RecordId<"Product">;
+export type RepositoryId = RecordId<"Repository">;
+export type TeamId = RecordId<"Team">;
+export type ToDoId = RecordId<"ToDo">;
 
 export type User = {
 	id?: UserId,
@@ -36,11 +49,6 @@ export type Status = {
 	icon: string,
 };
 
-export type LabelId = RecordId<"Label">;
-
-export type TaskId = RecordId<"Task">;
-export type StatusId = RecordId<"Status">;
-
 export type Task = {
 	id: TaskId,
 	title: string,
@@ -57,12 +65,7 @@ export type Task = {
 	priority: Priorities,
 	effort: Efforts,
 	
-	// value: Value,
-
-	// related_to: Task[],
-	// blocked_by: Task[],
-
-	// comments: Comment[],
+	value: Value,
 };
 
 export type Cycle = {
@@ -72,6 +75,10 @@ export type Cycle = {
 export type Operation = "=" | "<" | "<=" | ">" | ">=" | "!=";
 
 export type Filter = {
+	type: "Project",
+	operation: Operation,
+	value: ProjectId,
+} | {
 	type: "State",
 	operation: Operation,
 	value: State,
@@ -108,8 +115,6 @@ export type Filter = {
 	value: string,
 };
 
-export type ViewId = RecordId<"View">;
-
 export type View = {
 	id?: ViewId,
 	name: string,
@@ -119,8 +124,6 @@ export type View = {
 	// order_by: never,
 };
 
-export type ChannelId = RecordId<"Channel">;
-
 export type Channel = {
 	id: ChannelId,
 	name: string,
@@ -128,8 +131,6 @@ export type Channel = {
 	// Subscribers are users who wish to be notified about activity under this channel
 	subscribers: { user: UserId }[],
 };
-
-export type MessageId = RecordId<"Message">;
 
 export type Message = {
 	id: MessageId,
@@ -149,18 +150,24 @@ export type Bug = {
 	features: FeatureId[],
 
 	// The application this bug is in
-	// application: Application,
+	applications: ApplicationId[],
+
+	resolved: boolean,
+
+	created: Date,
+
+	release: ReleaseId | null,
 };
 
 export type Value = "Low" | "Medium" | "High";
 export type Efforts = "Hour" | "Hours" | "Day" | "Days" | "Week";
 export type Priorities = "Low" | "Medium" | "High" | "Urgent";
 
+export type Views = "List" | "Kanban" | "Graph" | "Gantt";
+
 export type Company = {
 	name: string,
 };
-
-export type ProjectId = RecordId<"Project">;
 
 export type Project = {
 	id: ProjectId,
@@ -185,15 +192,12 @@ export type Update = {
 	completion?: number,
 };
 
-export type ApplicationId = RecordId<"Application">;
-
 // An application exists under a project represent a single executable process
 export type Application = {
 	id: ApplicationId,
 	name: string,
+	description: string,
 };
-
-export type ProductId = RecordId<"Product">;
 
 export type Product = {
 	id: ProductId,
@@ -210,8 +214,6 @@ export type Feature = {
 	name: string,
 	description: string,
 };
-
-export type RepositoryId = RecordId<"Repository">;
 
 export type Repository = {
 	id: RepositoryId,
@@ -230,8 +232,6 @@ export type Comment = {
 	body: string,
 };
 
-export type TeamId = RecordId<"Team">;
-
 export type Team = {
 	id?: TeamId,
 	name: string,
@@ -245,8 +245,6 @@ export type Team = {
 	members: UserId[],
 	teams: Team[],
 };
-
-export type ToDoId = RecordId<"ToDo">;
 
 // A todo is a reminder of some task created by users for themselves
 export type ToDo = {

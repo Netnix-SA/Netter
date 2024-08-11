@@ -7,14 +7,14 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import "carta-md/default.css";
 	import Label from "@/components/ui/label/label.svelte";
-	import { EFFORTS, PRIORITIES, STATES, type SelectEntry } from "@/global";
+	import { EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
 	import UserSelect from "@/components/UserSelect.svelte";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
-    import { Check, Star } from "lucide-svelte";
+    import { Check, SquareCheckBig, Star } from "lucide-svelte";
     import TaskChip from "@/components/TaskChip.svelte";
-    import type { Efforts, Priorities, State } from "@/server/db/types";
+    import type { Efforts, Priorities, State, Value } from "@/server/db/types";
     import LabelChip from "@/components/LabelChip.svelte";
     import Button from "@/components/ui/button/button.svelte";
 	import * as Dialog from "$lib/components/ui/dialog";
@@ -23,14 +23,42 @@
     import { commands } from "@/state";
     import MyButton from "@/components/MyButton.svelte";
     import ChannelView from "@/components/ChannelView.svelte";
+    import { Copy } from "svelte-radix";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		rendererDebounce: 10,
 	});
 
+	let add_child: boolean | undefined = $state(undefined);
+	let add_relative: boolean | undefined = $state(undefined);
+	let add_blocker: boolean | undefined = $state(undefined);
+
 	onMount(() => {
-		const entry = { name: "Task", commands: [{ name: "Add to ToDo's", do: () => {} }] };
+		const entry = {
+			name: "Task",
+			commands: [
+				{ name: "Add to ToDo's", do: () => {} },
+				{
+					name: "Add blocker",
+					do: () => {
+						add_blocker = true;
+					}
+				},
+				{
+					name: "Add child",
+					do: () => {
+						add_child = true;
+					}
+				},
+				{
+					name: "Add relative",
+					do: () => {
+						add_relative = true;
+					}
+				},
+			]
+		};
 
 		commands.update(c => {
 			c.push(entry);
@@ -48,6 +76,9 @@
 	let status: { id: string, state: State } | null = $state(data.statuses.find(s => s.id === data.task.status) || null);
 	let priority: Priorities | null = $state(data.task.priority);
 	let effort: Efforts | null = $state(data.task.effort);
+	let value: Value | null = $state(data.task.value);
+
+	let close_as: string | undefined = $state(undefined);
 
 	let assignee = $state(
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
@@ -64,16 +95,30 @@
 			<Dialog.Root>
 				<Dialog.Trigger class={buttonVariants({ variant: "default" })}>Close</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-[425px]">
-				  <Dialog.Header>
-					<Dialog.Title>Edit profile</Dialog.Title>
-					<Dialog.Description>
-					  Make changes to your profile here. Click save when you're done.
-					  <Select label="Close as" comparator={(a, b) => a === b} values={[{ label: "Resolved", value: "Resolved", icon: Check }]} bind:value={effort} />
-					</Dialog.Description>
-				  </Dialog.Header>
-				  <Dialog.Footer>
-					<Button type="submit">Save changes</Button>
-				  </Dialog.Footer>
+					<Dialog.Header>
+						<Dialog.Title>Close {data.task.title}</Dialog.Title>
+						<Dialog.Description>
+							<Select label="Close as" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+						</Dialog.Description>
+					</Dialog.Header>
+					{#if close_as === "Duplicate"}
+						<div class="flex gap-2">
+							<Copy text={data.task.id} />
+							<span class="text-muted-foreground text-sm">Copy task ID</span>
+						</div>
+						
+					{:else if close_as === "Resolved"}
+						<div class="flex gap-2">
+							<input class="h-[8lh] w-full" placeholder="Resolution"/>
+						</div>
+					{:else if close_as === "Canceled"}
+						<div class="flex gap-2">
+							<textarea class="h-[8lh] w-full" placeholder="Reason for canceling"/>
+						</div>
+					{/if}
+					<Dialog.Footer>
+						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
 		</div>
@@ -92,10 +137,10 @@
 				{carta}
 			/>
 		</div>
-		<div id="comments">
-			Comments
-			<div class="h-32">
-				<ChannelView messages={data.messages} users={data.users}/>
+		<div id="comments" class="column gap-1">
+			<span class="text-muted-foreground text-sm">Comments</span>
+			<div class="h-64 rounded-lg border column overflow-hidden">
+				<ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/>
 			</div>
 		</div>
 	</div>
@@ -106,21 +151,67 @@
 			values={data.users}
 			bind:value={assignee}
 		/>
-		<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
+		<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
 		<Select label="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={priority} />
 		<Select label="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={effort} />
+		<Select label="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={value} />
 		<Separator orientation="horizontal" class="my-8" />
 		<Label>Children</Label>
 		{#each data.task.relatives.children as child(child.id)}
 			<TaskChip id={child.id} tasks={data.tasks}/>
+		{:else}
+			<Dialog.Root bind:open={add_child}>
+				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+					+ Add child
+				</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Add child to {data.task.title}</Dialog.Title>
+					</Dialog.Header>
+					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<Dialog.Footer>
+						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
 		{/each}
 		<Label>Related</Label>
 		{#each data.task.relatives.related as relative}
 			<TaskChip id={relative.id} tasks={data.tasks}/>
+		{:else}
+			<Dialog.Root bind:open={add_relative}>
+				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+					+ Add relative
+				</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Add relative to {data.task.title}</Dialog.Title>
+					</Dialog.Header>
+					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<Dialog.Footer>
+						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
 		{/each}
 		<Label>Blocked by</Label>
 		{#each data.task.relatives.blockers as blocker}
 			<TaskChip id={blocker.id} tasks={data.tasks}/>
+		{:else}
+			<Dialog.Root bind:open={add_blocker}>
+				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+					+ Add blocker
+				</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Add blocker to {data.task.title}</Dialog.Title>
+					</Dialog.Header>
+					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<Dialog.Footer>
+						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
 		{/each}
 	</div>
 </div>

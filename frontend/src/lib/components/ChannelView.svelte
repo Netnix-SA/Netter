@@ -8,19 +8,22 @@
 	import { Label } from "$lib/components/ui/label";
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import UserAvatar from "./UserAvatar.svelte";
+    import { client } from "@/state";
 
-	let { messages, users }: { messages: Promise<{ author: { id: string }; body: string }[]>, users: { id: string, full_name: string }[] } = $props();
+	let { channel, messages, users, onSend = async (body) => { await client.api.channels({ id: channel.id }).messages.post({ body }); } }: { channel: { id: string, }, messages: Promise<{ author: { id: string }; body: string }[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
+
+	let message = $state("");
 </script>
 
-<ul class="divide-y h-full flex flex-col place-content-end">
+<ul class="flex-1 flex flex-col-reverse overflow-scroll">
 	{#await messages}
-		<div class="h-12 w-full bg-card animate-pulse">
+		<div class="h-12 w-full bg-card-foreground animate-pulse">
 
 		</div>
 	{:then messages}
-		{#each messages as message}
+		{#each messages.toReversed() as message}
 		{@const user = users.find(u => u.id === message.author.id)}
-			<li class="flex gap-3">
+			<li class="flex gap-3 border-t last:border-dashed">
 				<ContextMenu.Root>
 					<ContextMenu.Trigger class="flex-1 gallery px-4 py-2 gap-2">
 						<div id="left-col" class="flex flex-col h-full pt-2">
@@ -43,14 +46,8 @@
 		{/each}
 	{/await}
 </ul>
-<form id="inputs" class="overflow-hidden rounded-lg item-background px-3 py-2">
-	<Label for="message" class="sr-only">Message</Label>
-	<Textarea
-		id="message"
-		placeholder="Type your message here..."
-		class="resize-none border-0 shadow-none focus-visible:ring-0"
-	/>
-	<div class="flex items-center">
+<div id="input-box" class="overflow-hidden rounded-t-lg bg-neutral-900 border-t px-3 py-2 gap-2 flex">
+	<div id="left" class="flex flex-1 gap-2">
 		<Tooltip.Root>
 			<Tooltip.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="ghost" size="icon">
@@ -60,9 +57,17 @@
 			</Tooltip.Trigger>
 			<Tooltip.Content side="top">Attach File</Tooltip.Content>
 		</Tooltip.Root>
-		<Button type="submit" size="sm" class="ml-auto gap-1.5">
+		<textarea
+			id="message"
+			placeholder="Type your message here..."
+			class="text-sm px-2 py-1 outline-none bg-transparent focus:outline-none border resize-y text-foreground w-full focus-visible:ring-0 rounded-lg"
+			bind:value={message}
+		/>
+	</div>
+	<div class="column justify-end">
+		<Button type="submit" size="sm" onclick={async () => { await onSend(message); message = ""; }}>
 			Send Message
 			<CornerDownLeft class="size-3.5" />
 		</Button>
 	</div>
-</form>
+</div>

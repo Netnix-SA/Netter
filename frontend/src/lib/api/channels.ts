@@ -3,18 +3,18 @@ import type { Channel, Message } from "@/server/db/types";
 import Elysia, { t } from "elysia";
 import { tChannel, tChannelPost, tMessage, tMessagePost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
+import { map as mapMessage } from "./messages";
 
 export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
 
 .get("", async () => {
-	const channels = await db.select<Channel>("Channel");
+	const results = await db.query<[Channel[]]>("SELECT * FROM Channel WHERE type::is::array(target);");
 
-	return channels.map(({ id, name }) => ({
-		id: id.toString(),
-		name,
-	}));
+	const channels = results[0];
+
+	return channels.map(map);
 }, {
-	response: t.Array(t.Any()),
+	response: t.Array(tChannel),
 	detail: {
 		description: "Returns all channels under the querying user's organization.",
 	},
@@ -33,13 +33,9 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 })
 
 .get("/:id", async ({ params: { id: channel_id } }) => {
-	const { id, name, subscribers } = await db.select<Channel>(new StringRecordId(channel_id));
+	const channel = await db.select<Channel>(new StringRecordId(channel_id));
 
-	return {
-		id: id.toString(),
-		name,
-		subscribers: subscribers.map(({ user }) => user.toString()),
-	};
+	return map(channel);
 }, {
 	response: tChannel,
 	detail: {
@@ -53,7 +49,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 	await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
-		author: new RecordId("User", "63fuy0gytwazm2079qeh"),
+		author: new RecordId("User", "fvilla@netnix.net"),
 		date: new Date(),
 	});
 }, {
@@ -70,7 +66,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 
 	const messages = results[0];
 
-	return messages.map(map);
+	return messages.map(mapMessage);
 }, {
 	response: t.Array(tMessage),
 	detail: {
@@ -78,11 +74,8 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 	},
 });
 
-export const map = ({ id, body, author, date }: Message) => ({
+export const map = ({ id, name, subscribers }: Channel) => ({
 	id: id.toString(),
-	body,
-	author: {
-		id: author.toString(),
-	},
-	date,
+	name,
+	subscribers: subscribers.map(({ user }) => user.toString()),
 });

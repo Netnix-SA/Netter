@@ -6,9 +6,9 @@ import { StringRecordId, surql } from "surrealdb";
 
 export const applications = new Elysia({ prefix: "/applications", tags: ["Applications"] })
 
-.post("", async ({ body: { name } }) => {
+.post("", async ({ body: { name, description } }) => {
     await db.create<Omit<Application, "id">>("Application", {
-        name,
+        name, description,
     });
 }, {
     body: tApplicationPost,
@@ -21,10 +21,7 @@ export const applications = new Elysia({ prefix: "/applications", tags: ["Applic
 .get("", async () => {
     const applications = await db.select<Application>("Application");
 
-    return applications.map(({ id, name }) => ({
-        id: id.toString(),
-        name,
-    }));
+    return applications.map(map);
 }, {
     response: t.Array(tApplication)
 })
@@ -62,9 +59,9 @@ export const applications = new Elysia({ prefix: "/applications", tags: ["Applic
 	}
 })
 
-export const map = ({ id, name }: Application) => {
+export const map = ({ id, name, description }: Application) => {
 	return {
         id: id.toString(),
-        name,
+        name, description,
     };
 }

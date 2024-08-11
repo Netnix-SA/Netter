@@ -1,6 +1,6 @@
-import { CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, Sunset, Timer, Users, View } from "lucide-svelte";
+import { CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Copy, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, Users, View } from "lucide-svelte";
 import type { Component } from "svelte";
-import type { Efforts, Priorities, State } from "./server/db/types";
+import type { Efforts, Priorities, State, Value } from "./server/db/types";
 
 export type SelectEntry<T> = {
     label: string;
@@ -49,6 +49,24 @@ export const PRIORITIES: SelectEntry<Priorities>[] = [
     },
 ];
 
+export const VALUES: SelectEntry<Value>[] = [
+    {
+        value: "Low",
+        label: "Low",
+        icon: SignalLow,
+    },
+    {
+        value: "Medium",
+        label: "Medium",
+        icon: SignalMedium,
+    },
+    {
+        value: "High",
+        label: "High",
+        icon: SignalHigh,
+    },
+];
+
 export const EFFORTS: SelectEntry<Efforts>[] = [
     {
         value: "Hour",
@@ -75,6 +93,12 @@ export const EFFORTS: SelectEntry<Efforts>[] = [
         label: "Week",
         icon: CalendarFold,
     },
+];
+
+export const RESOLUTION_METHODS = [
+    { label: "Resolved", value: "Resolved", icon: SquareCheckBig },
+    { label: "Duplicate", value: "Duplicate", icon: Copy },
+    { label: "Canceled", value: "Canceled", icon: SquareX },
 ];
 
 export const LINKS = [
