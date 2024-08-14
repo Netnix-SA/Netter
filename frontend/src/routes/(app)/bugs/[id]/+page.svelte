@@ -33,20 +33,20 @@ import type { PageData } from "./$types";
 		</div>
 		<Separator/>
 		<div class="flex gap-4">
-			<div class="column flex-1">
+			<div class="column flex-1 gap-1">
 				<span class="text-muted-foreground text-sm">Affected applications</span>
-				<ul class="h-64">
+				<ul class="h-64 rounded-lg">
 					{#each data.bug.impact.applications as application}
-						<li>{application.id}</li>
+						<li class="gallery tactile-text border-b h-10 px-2">{application.id}</li>
 					{/each}
 				</ul>
 			</div>
 			<Separator orientation="vertical"/>
-			<div class="column flex-1">
+			<div class="column flex-1 gap-1">
 				<span class="text-muted-foreground text-sm">Affected features</span>
-				<ul class="h-64">
+				<ul class="h-64 rounded-lg">
 					{#each data.bug.impact.features as feature}
-						<li>{feature.id}</li>
+						<li class="gallery tactile-text border-b h-10 px-2">{feature.id}</li>
 					{/each}
 				</ul>
 			</div>

@@ -25,7 +25,7 @@
 	}
 </script>
 
-<Command.Root>
+<Command.Root class="w-full">
 	<Command.Input placeholder={searchText}/>
 	<Command.Empty class="text-muted-foreground select-none">No results.</Command.Empty>
 	<Command.Group>

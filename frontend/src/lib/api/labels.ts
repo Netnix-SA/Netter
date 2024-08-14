@@ -22,10 +22,13 @@ export const labels = new Elysia({ prefix: "/labels", tags: ["Labels"] })
 .get("", async () => {
 	const labels = await db.select<Label>("Label");
 
-	return labels.map(({ id, title, description, color, icon }) => ({
-		id: id.toString(),
-		title, description, color, icon,
-	}));
+	return labels.map(map);
 }, {
 	response: t.Array(tLabel),
+});
+
+export const map = ({ id, title, description, color, icon }: Label) => ({
+	id: id.toString(),
+	title, description,
+	color, icon,
 });

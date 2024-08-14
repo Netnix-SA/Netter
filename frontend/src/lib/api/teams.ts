@@ -3,11 +3,12 @@ import type { Label, Team } from "@/server/db/types";
 import { Elysia, t } from "elysia";
 import { tLabel, tMember, tTeam, tTeamPost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
+import { map as mapLabel } from './labels';
 
 export const teams = new Elysia({ prefix: "/teams", tags: ["Teams"] });
 
 teams.post("", async ({ body }) => {
-	await db.create<Team>("Team", { name: body.name, description: body.description, color: body.color, icon: body.icon, lead: body.lead ? new RecordId("User", body.lead) : undefined, members: [], teams: [] } as Team);
+	await db.create<Omit<Team, "id">>("Team", { name: body.name, description: body.description, color: body.color, icon: body.icon, lead: body.lead ? new RecordId("User", body.lead) : undefined, members: [], teams: [] } as Team);
 }, {
 	body: tTeamPost,
 	detail: {
@@ -18,14 +19,7 @@ teams.post("", async ({ body }) => {
 teams.get("", async () => {
 	const teams = await db.select<Team>("Team");
 
-	return teams.map(team => ({
-		id: team.id.toString(),
-		name: team.name,
-		icon: team.icon,
-		members: team.members.map(member => ({
-			id: member.toString(),
-		}))
-	}));
+	return teams.map(map);
 }, {
 	response: t.Array(tTeam),
 	detail: {
@@ -74,10 +68,15 @@ teams.get("/:id/labels", async ({ params: { id } }) => {
 
 	const labels = results[0];
 
-	return labels.map(({ id, title, description, color, icon }) => ({
-		id: id.toString(),
-		title, description, color, icon,
-	}));
+	return labels.map(mapLabel);
 }, {
 	response: t.Array(tLabel),
 });
+
+export const map = ({ id, name, members }: Team) => ({
+	id: id.toString(),
+	name,
+	members: members.map(member => ({
+		id: member.toString(),
+	})),
+})

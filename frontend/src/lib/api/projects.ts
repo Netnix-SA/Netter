@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import type { Application, Label, Project, ProjectId, Status, Task, TaskId, UserId } from "@/server/db/types";
+import type { Application, Label, Objective, Project, ProjectId, Status, Task, TaskId, UserId } from "@/server/db/types";
 import { Elysia, t } from "elysia";
 import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
@@ -13,15 +13,21 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 }, { body: tProjectPost, detail: { description: "Creates a project under the connected user's organization" } })
 
 .get("", async () => {
-	const projects = await db.select<Project>("Project");
+	const projects = await query({});
 
-	return projects.map(map);
+	return projects;
 }, { response: t.Array(tProject), detail: { description: "Gets the projects for the querying user" } })
 
 .get("/:id", async ({ params: { id } }) => {
-	const project = await db.select<Project>(new StringRecordId(id));
+	const projects = await query({ id });
 
-	return map(project);
+	const project = projects[0];
+
+	if (!project) {
+		throw new Error("No project under that id found!");
+	}
+
+	return project;
 }, { response: tProject, detail: { description: "Gets the project by id" } })
 
 .get('/:id/tasks', async ({ params: { id } }) => {
@@ -66,7 +72,29 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 	response: t.Array(tApplication),
 })
 
-export const map = ({ id, name, description, lead, client, end, milestones }: Project) => {
+export const query = async ({ id }: { id?: ProjectId }) => {
+	let query = `SELECT *, (SELECT * FROM Objective WHERE id in $parent.objectives.id) as objectives FROM Project`;
+
+	let pieces = [];
+
+	if (id) {
+		pieces.push(`id == ${new StringRecordId(id)}`);
+	}
+
+	if (pieces.length > 0) {
+		query += ` WHERE ${pieces.join(" AND ")}`;
+	}
+
+	query += ";";
+
+	const results = await db.query<[(Project & { objectives: Objective[] })[]]>(query);
+
+	const projects = results[0];
+
+	return projects.map(map);
+};
+
+export const map = ({ id, name, description, lead, client, end, milestones, objectives }: Omit<Project, "objectives"> & { objectives: Objective[] }) => {
 	return {
 		id: id.toString(),
 		name,
@@ -78,5 +106,10 @@ export const map = ({ id, name, description, lead, client, end, milestones }: Pr
 		members: [],
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
+		objectives: objectives.map(({ id, title, description }) => ({
+			id: id.toString(),
+			title,
+			description,
+		})),
 	};
 }

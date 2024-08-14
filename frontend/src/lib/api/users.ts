@@ -1,7 +1,7 @@
-import { RecordId, StringRecordId, Surreal } from "surrealdb";
+import { StringRecordId } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
 
-import { type Task, type Project, type ProjectId, type Team, type TeamId, type User, type UserId, type LabelId, type View, type Label, type ToDo } from "@/server/db/types";
+import { type User, type ToDo } from "@/server/db/types";
 import { tUserPost, tUser, tToDo } from "./schemas";
 import { db } from "@/server/db";
 
@@ -10,12 +10,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 .get("", async () => {
 	const users = await db.select<User>("User");
 
-	return users.map(user => ({
-		id: user.id.toString(),
-		email: user.email,
-		handle: user.handle,
-		full_name: user.full_name,
-	}))
+	return users.map(map)
 }, {
 	response: t.Array(tUser),
 	detail: {
@@ -46,7 +41,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		throw new NotFoundError("A user with this handle or email already exists.");
 	}
 
-	await db.create<User>("User", { email: body.email, full_name: body.full_name, handle });
+	await db.create<Omit<User, "id">>("User", { email: body.email, full_name: body.full_name, handle, pinned: [] });
 }, {
 	body: tUserPost,
 	detail: {
@@ -54,6 +49,23 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		If no handle is provided the user's handle will be set as the username of the email.
 		This method will fail if the handle or email already exists.
 		This method will fail if the email's domain is not allowed in the organization.`,
+	}
+})
+
+.get("/me", async ({}) => {
+	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId("User:⟨fvilla@netnix.net⟩") });
+
+	const user = results[0][0];
+
+	if (!user) {
+		throw new NotFoundError("User not found.");
+	}
+
+	return map(user);
+}, {
+	response: tUser,
+	detail: {
+		description: "Returns the user that is currently logged in.",
 	}
 })
 
@@ -73,3 +85,9 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 }, {
 	response: t.Array(tToDo),
 })
+
+const map = ({ id, handle, full_name, email, pinned }: User) => ({
+	id: id.toString(),
+	handle, full_name, email,
+	pinned: pinned.map(id => id.toString()),
+});

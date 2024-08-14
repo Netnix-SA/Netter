@@ -7,7 +7,7 @@ import { StringRecordId } from "surrealdb";
 export const views = new Elysia({ prefix: "/views", tags: ["Views"] });
 
 views.post("", async ({ body }) => {
-	await db.create<View>("View", {
+	await db.create<Omit<View, "id">>("View", {
 		name: body.name,
 		filters: body.filters.map(filter => ({
 			type: filter.type,

@@ -3,6 +3,7 @@ import { tApplication, tApplicationPost, tBug, tFeature } from "./schemas";
 import { db } from "@/server/db";
 import { type Application, type Bug } from "@/server/db/types";
 import { StringRecordId, surql } from "surrealdb";
+import { map as mapBug } from "./bugs";
 
 export const applications = new Elysia({ prefix: "/applications", tags: ["Applications"] })
 
@@ -45,10 +46,7 @@ export const applications = new Elysia({ prefix: "/applications", tags: ["Applic
 	const bugs = results[0];
 
 	return {
-		bugs: bugs.map(({ id, title, description }) => ({
-			id: id?.toString(),
-			title, description,
-		})),
+		bugs: bugs.map(mapBug),
 	};
 }, {
 	response: t.Object({
@@ -59,9 +57,10 @@ export const applications = new Elysia({ prefix: "/applications", tags: ["Applic
 	}
 })
 
-export const map = ({ id, name, description }: Application) => {
+export const map = ({ id, name, description, repository }: Application) => {
 	return {
         id: id.toString(),
         name, description,
+        repository: repository ? { id: repository.toString() } : null,
     };
 }

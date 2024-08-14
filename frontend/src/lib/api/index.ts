@@ -1,7 +1,7 @@
 import { swagger } from "@elysiajs/swagger";
 import { Elysia, t } from "elysia";
 import { db } from "@/server/db";
-import type { BugId, ChannelId, LabelId, ProductId, ProjectId, TeamId, UserId } from "@/server/db/types";
+import type { BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, UserId } from "@/server/db/types";
 
 import { users } from "$lib/api/users";
 import { teams } from "$lib/api/teams";
@@ -18,6 +18,7 @@ import { merge_requests } from "$lib/api/merge_requests";
 import { extensions } from "$lib/api/extensions";
 import { products } from "./products";
 import { statuses } from "./statuses";
+import { messages } from "./messages";
 
 export const server = new Elysia({ prefix: "/api" })
 
@@ -35,7 +36,7 @@ export const server = new Elysia({ prefix: "/api" })
 // })
 
 .get("", async ({ query: { text } }) => {
-	const results = await db.query<[{ id: UserId }[], { id: ProjectId }[], { id: TeamId }[], { id: LabelId }[], { id: BugId }[], { id: ChannelId }[], { id: ProductId }[]]>("SELECT id FROM User WHERE full_name @@ $text; SELECT id FROM Project WHERE name @@ $text; SELECT id FROM Team WHERE name @@ $text; SELECT id FROM Task WHERE title @@ $text; SELECT id FROM Bug WHERE title @@ $text || description @@ $text; SELECT id FROM Channel WHERE name @@ $text; SELECT id FROM Product WHERE name @@ $text;", { text });
+	const results = await db.query<[{ id: UserId }[], { id: ProjectId }[], { id: TeamId }[], { id: LabelId }[], { id: BugId }[], { id: ChannelId }[], { id: ProductId }[], { id: FeatureId }[]]>("SELECT id FROM User WHERE full_name @@ $text; SELECT id FROM Project WHERE name @@ $text; SELECT id FROM Team WHERE name @@ $text; SELECT id FROM Task WHERE title @@ $text; SELECT id FROM Bug WHERE title @@ $text || description @@ $text; SELECT id FROM Channel WHERE name @@ $text; SELECT id FROM Product WHERE name @@ $text; SELECT id FROM Feature WHERE name @@ $text;", { text });
 
 	const ids = results.flat();
 
@@ -53,6 +54,7 @@ export const server = new Elysia({ prefix: "/api" })
 .use(users)
 .use(teams)
 .use(channels)
+.use(messages)
 .use(projects)
 .use(bugs)
 .use(features)

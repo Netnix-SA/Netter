@@ -54,6 +54,17 @@
 			Pending
 		</div>
 		<div>
+			{#await data.messages}
+				Loading pending...
+			{:then messages}
+				{#each messages as message}
+					<li class="border-b h-10">
+						<div class="flex items-center">
+							<div class="ml-2">{message.body}</div>
+						</div>
+					</li>
+				{/each}
+			{/await}
 		</div>
 	</div>
 </div>

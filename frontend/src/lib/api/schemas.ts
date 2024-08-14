@@ -9,6 +9,7 @@ export const tChannelId = t.String({ title: "ChannelId" });
 export const tLabelId = t.String();
 export const tMessageId = t.String();
 export const tTaskId = t.String();
+export const tObjectiveId = t.String();
 export const tStatusId = t.String();
 export const tRepositoryId = t.String();
 export const tToDoId = t.String();
@@ -32,6 +33,7 @@ export const tUser = t.Object({
 	full_name: t.String(),
 	handle: t.String(),
 	email: t.String({ format: "email" }),
+	pinned: t.Array(t.String()),
 });
 
 export const tTeamPost = t.Object({
@@ -82,6 +84,8 @@ export const tMessage = t.Object({
 		id: tUserId,
 	}),
 	date: t.Date(),
+	resolved: t.Optional(t.Boolean()),
+	question: t.Optional(tMessageId),
 });
 
 export const tTaskPost = t.Object({
@@ -97,6 +101,10 @@ export const tTask = t.Object({
 	priority: tPriorities,
 	effort: tEfforts,
 	value: tValues,
+	objective: t.Nullable(t.Object({
+		id: tObjectiveId,
+	})),
+	progress: t.Number({ minimum: 0, maximum: 100 }),
 	labels: t.Array(t.Object({
 		id: tLabelId,
 	})),
@@ -108,6 +116,11 @@ export const tTask = t.Object({
 		related: t.Array(t.Object({ id: tTaskId })),
 		blockers: t.Array(t.Object({ id: tTaskId })),
 	}),
+	updates: t.Array(t.Object({
+		date: t.Date(),
+		value: t.Number({ minimum: 0, maximum: 100 }),
+		note: t.String({ maxLength: 8192 }),
+	})),
 	channel: t.Object({
 		id: tChannelId,
 	}),
@@ -141,6 +154,9 @@ export const tProject = t.Object({
 	client: t.Optional(tCompany),
 	end: t.Nullable(t.Date()),
 	milestones: t.Array(tMilestone),
+	objectives: t.Array(t.Object({
+		id: tObjectiveId,
+	})),
 });
 
 export const tBugPost = t.Object({
@@ -323,6 +339,7 @@ export const tApplication = t.Object({
 	id: tApplicationId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	repository: t.Nullable(t.Object({ id: tRepositoryId })),
 });
 
 export const tGithubOrganizationIntegration = t.Object({

@@ -1,8 +1,4 @@
-import type { RecordId } from "surrealdb";
-
-export type Role = {
-	name: string,
-};
+import type { RecordId, StringRecordId } from "surrealdb";
 
 export type UserId = RecordId<"User">;
 export type BugId = RecordId<"Bug">;
@@ -10,6 +6,7 @@ export type FeatureId = RecordId<"Feature">;
 export type ReleaseId = RecordId<"Release">;
 export type MessageId = RecordId<"Message">;
 export type LabelId = RecordId<"Label">;
+export type ObjectiveId = RecordId<"Objective">;
 export type TaskId = RecordId<"Task">;
 export type StatusId = RecordId<"Status">;
 export type ViewId = RecordId<"View">;
@@ -22,13 +19,24 @@ export type TeamId = RecordId<"Team">;
 export type ToDoId = RecordId<"ToDo">;
 
 export type User = {
-	id?: UserId,
+	id: UserId,
 	full_name: string,
 	email: string,
 	handle: string,
+	pinned: StringRecordId[],
 };
 
-export type Colors = "Orange/Light";
+export type Role = {
+	name: string,
+};
+
+export type Colors =
+	| "Orange/Light" | "Orange/Dark"
+	| "Green/Light"  | "Green/Dark" 
+	| "Red/Light"    | "Red/Dark"
+	| "Blue/Light"   | "Blue/Dark"
+	| "Gray/Light"   | "Gray/Dark"
+;
 
 // A label is an arbitrary tag that can be put on objects
 export type Label = {
@@ -47,13 +55,15 @@ export type Status = {
 	state: State,
 	color: string,
 	icon: string,
+	position: {
+		i: number,
+	},
 };
 
 export type Task = {
 	id: TaskId,
 	title: string,
 	body: string,
-
 	created: Date,
 
 	labels: LabelId[],
@@ -62,66 +72,123 @@ export type Task = {
 
 	status: StatusId,
 
+	updates: {
+		date: Date,
+		note: string,
+		value: number,
+	}[],
+
 	priority: Priorities,
 	effort: Efforts,
-	
 	value: Value,
+	objective: ObjectiveId | null,
 };
 
-export type Cycle = {
-
+export type Objective = {
+	id: ObjectiveId,
+	title: string,
+	description: string,
+	end: Date | null,
 };
 
-export type Operation = "=" | "<" | "<=" | ">" | ">=" | "!=";
+export type Views = "List" | "Kanban" | "Graph" | "Gantt";
+export type OperationEq = "=" | "!=";
+export type OperationCmp = "<" | "<=" | ">" | ">=";
+export type OperationSet = "IN" | "NOT IN";
+export type Operation = OperationEq | OperationCmp | OperationSet;
 
-export type Filter = {
+export type ProjectFilter = {
 	type: "Project",
-	operation: Operation,
+	operation: OperationEq,
 	value: ProjectId,
-} | {
+};
+
+export type TeamFilter = {
+	type: "Team",
+	operation: OperationEq,
+	value: TeamId,
+};
+
+export type ObjectiveFilter = {
+	type: "Objective",
+	operation: OperationEq,
+	value: ObjectiveId | null,
+};
+
+export type ApplicationFilter = {
+	type: "Application",
+	operation: OperationEq,
+	value: ApplicationId,
+};
+
+export type StateFilter = {
 	type: "State",
-	operation: Operation,
+	operation: OperationEq,
 	value: State,
-} | {
+};
+
+export type StatusFilter = {
 	type: "Status",
-	operation: Operation,
+	operation: OperationEq,
 	value: Status,
-} | {
+};
+
+export type AssigneeFilter = {
 	type: "Assignee",
-	operation: Operation,
-	value: UserId,
-} | {
+	operation: OperationEq,
+	value: UserId | null,
+};
+
+export type OwnerFilter = {
 	type: "Creator",
-	operation: Operation,
+	operation: OperationEq,
 	value: UserId,
-} | {
+};
+
+export type PriorityFilter = {
 	type: "Priority",
-	operation: Operation,
+	operation: OperationEq | OperationCmp,
 	value: Priorities,
-} | {
+};
+
+export type EffortFilter = {
 	type: "Effort",
-	operation: Operation,
+	operation: OperationEq | OperationCmp,
 	value: Efforts,
-} | {
+};
+
+export type ValueFilter = {
 	type: "Value",
-	operation: Operation,
+	operation: OperationEq | OperationCmp,
 	value: Value,
-} | {
+};
+
+export type LabelFilter = {
 	type: "Label",
-	operation: "=" | "!=",
+	operation: OperationEq,
 	value: LabelId,
-} | {
+};
+
+export type TextFilter = {
 	type: "Text",
+	operation: OperationSet,
 	value: string,
 };
 
+export type Filter = ProjectFilter | TeamFilter | ApplicationFilter | StateFilter | StatusFilter | AssigneeFilter | OwnerFilter | PriorityFilter | EffortFilter | ValueFilter | LabelFilter | TextFilter;
+
 export type View = {
-	id?: ViewId,
+	id: ViewId,
 	name: string,
-	// creator: UserId,
 	filters: Filter[],
-	// group_by: never,
-	// order_by: never,
+	type: {
+		type: "Task",
+		default: Views,
+	} | {
+		type: "Bug",
+		default: "List" | "Graph",
+	},
+	belongs_to: UserId | TeamId | ProjectId,
 };
 
 export type Channel = {
@@ -138,6 +205,8 @@ export type Message = {
 	body: string,
 	author: UserId,
 	date: Date,
+	question: MessageId | undefined,
+	resolved: boolean | undefined,
 };
 
 // A known issue in an application
@@ -163,8 +232,6 @@ export type Value = "Low" | "Medium" | "High";
 export type Efforts = "Hour" | "Hours" | "Day" | "Days" | "Week";
 export type Priorities = "Low" | "Medium" | "High" | "Urgent";
 
-export type Views = "List" | "Kanban" | "Graph" | "Gantt";
-
 export type Company = {
 	name: string,
 };
@@ -178,6 +245,7 @@ export type Project = {
 	members: User[],
 
 	milestones: Milestone[],
+	objectives: { id: ObjectiveId }[],
 
 	client: Company | null,
 
@@ -197,6 +265,7 @@ export type Application = {
 	id: ApplicationId,
 	name: string,
 	description: string,
+	repository: RepositoryId | null,
 };
 
 export type Product = {
@@ -233,7 +302,7 @@ export type Comment = {
 };
 
 export type Team = {
-	id?: TeamId,
+	id: TeamId,
 	name: string,
 	description: string,
 

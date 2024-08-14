@@ -28,14 +28,14 @@
 
 <div class="w-full">
 	<Label>{label}</Label>
-	<Popover.Root bind:open let:ids>
+	<Popover.Root class="w-full" bind:open let:ids>
 		<Popover.Trigger asChild let:builder>
 		<Button
 			builders={[builder]}
 			variant="outline"
 			role="combobox"
 			aria-expanded={open}
-			class="w-full font-normal justify-between item-background border-none"
+			class="w-full font-normal justify-between border"
 		>
 			{#if selectedValue !== undefined}
 				{selectedValue}
@@ -47,8 +47,8 @@
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 		</Popover.Trigger>
-		<Popover.Content class="w-[200px] p-0">
-		<UserSearch bind:value {values}/>
+		<Popover.Content class="p-0">
+			<UserSearch bind:value {values}/>
 		</Popover.Content>
 	</Popover.Root>
 </div>

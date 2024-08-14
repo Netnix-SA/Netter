@@ -2,6 +2,9 @@
     import { onMount } from 'svelte';
 	import type { PageData } from './$types';
     import { error } from '@sveltejs/kit';
+    import { goto } from '$app/navigation';
+    import Button from '@/components/ui/button/button.svelte';
+    import { Github, GithubIcon } from 'lucide-svelte';
 
 	const websocket = new WebSocket("ws://localhost:3000");
 
@@ -50,6 +53,10 @@
 		});
 
 	}
+
+	async function handleGitHubLogin() {
+		await goto(`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`);
+	}
 </script>
 
 <main class="h-screen w-screen flex items-center justify-center">
@@ -68,4 +75,9 @@
 			Create
 		</button>
 	</form>
+
+	<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`}>
+		<GithubIcon class="size-6"/>
+		Login with GitHub
+	</Button>
 </main>

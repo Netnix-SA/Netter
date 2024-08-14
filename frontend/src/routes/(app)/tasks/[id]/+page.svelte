@@ -12,7 +12,6 @@
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
-    import { Check, SquareCheckBig, Star } from "lucide-svelte";
     import TaskChip from "@/components/TaskChip.svelte";
     import type { Efforts, Priorities, State, Value } from "@/server/db/types";
     import LabelChip from "@/components/LabelChip.svelte";
@@ -21,9 +20,10 @@
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
     import { commands } from "@/state";
-    import MyButton from "@/components/MyButton.svelte";
     import ChannelView from "@/components/ChannelView.svelte";
-    import { Copy } from "svelte-radix";
+    import ComboBox from "@/components/ComboBox.svelte";
+    import Input from "@/components/ui/input/input.svelte";
+    import Circle from "@/components/Circle.svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -79,6 +79,12 @@
 	let value: Value | null = $state(data.task.value);
 
 	let close_as: string | undefined = $state(undefined);
+	let close_payload: string | undefined = $state(undefined);
+
+	$effect(() => {
+		close_as; // Keep to trigger effect
+		close_payload = undefined;
+	});
 
 	let assignee = $state(
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
@@ -88,7 +94,44 @@
 <div class="flex">
 	<div class="flex flex-col w-[64em]">
 		<div class="gallery">
-			<div id="left" class="flex-1">
+			<div id="left" class="flex-1 gallery">
+				<Dialog.Root>
+					<Dialog.Trigger><Circle value={data.task.progress} /></Dialog.Trigger>
+					<Dialog.Content class="sm:max-w-[425px]">
+						<Dialog.Header>
+							<Dialog.Title>Updates to {data.task.title}</Dialog.Title>
+							<Dialog.Description>
+							</Dialog.Description>
+						</Dialog.Header>
+						<ul>
+							{#each data.task.updates as update}
+								<li class="gallery gap-2 h-8 border-b">
+									<span class="tactile-text text-sm border-r pr-2">{update.value}%</span>
+									<span class="text-sm">{update.note}</span>
+								</li>
+							{/each}
+						</ul>
+						<Dialog.Footer>
+							<Dialog.Root>
+								<Dialog.Trigger class={buttonVariants({ variant: "default" })}>Add update</Dialog.Trigger>
+								<Dialog.Content class="sm:max-w-[425px]">
+									<Dialog.Header>
+										<Dialog.Title>Add update to {data.task.title}</Dialog.Title>
+										<Dialog.Description>
+										</Dialog.Description>
+									</Dialog.Header>
+									<span class="text-muted-foreground text-sm">Progress</span>
+									<Input type="number" max="100" min="0" class="w-16"/>
+									<span class="text-muted-foreground text-sm">Note</span>
+									<Input type="text"/>
+									<Dialog.Footer>
+										<Button title="Hey hey hey" type="submit">Add update</Button>
+									</Dialog.Footer>
+								</Dialog.Content>
+							</Dialog.Root>
+						</Dialog.Footer>
+					</Dialog.Content>
+				</Dialog.Root>
 				<input class="text-2xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
 				<!-- TODO: link to merge request -->
 			</div>
@@ -102,22 +145,18 @@
 						</Dialog.Description>
 					</Dialog.Header>
 					{#if close_as === "Duplicate"}
-						<div class="flex gap-2">
-							<Copy text={data.task.id} />
-							<span class="text-muted-foreground text-sm">Copy task ID</span>
-						</div>
-						
+						<ComboBox placeholder="Select the original task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))} onSelect={(e) => close_payload = e}/>
 					{:else if close_as === "Resolved"}
 						<div class="flex gap-2">
-							<input class="h-[8lh] w-full" placeholder="Resolution"/>
+							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Resolution" bind:value={close_payload}/>
 						</div>
 					{:else if close_as === "Canceled"}
 						<div class="flex gap-2">
-							<textarea class="h-[8lh] w-full" placeholder="Reason for canceling"/>
+							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Reason for canceling" bind:value={close_payload}/>
 						</div>
 					{/if}
 					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+						<Button title="Hey hey hey" type="submit" disabled={close_as === undefined || close_payload === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -128,7 +167,7 @@
 				<LabelChip {label} />
 			{/each}
 		</div>
-		<Separator class="my-8" />
+		<Separator class="my-8"/>
 		<div class="h-56">
 			<MarkdownEditor
 				bind:value={body}
@@ -137,10 +176,11 @@
 				{carta}
 			/>
 		</div>
+		<Separator class="my-8"/>
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
 			<div class="h-64 rounded-lg border column overflow-hidden">
-				<ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/>
+				<!-- <ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/> -->
 			</div>
 		</div>
 	</div>
@@ -168,9 +208,9 @@
 					<Dialog.Header>
 						<Dialog.Title>Add child to {data.task.title}</Dialog.Title>
 					</Dialog.Header>
-					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<ComboBox placeholder="Select the child task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
 					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+						<Button type="submit" disabled={close_as === undefined}>Add child task</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -187,9 +227,9 @@
 					<Dialog.Header>
 						<Dialog.Title>Add relative to {data.task.title}</Dialog.Title>
 					</Dialog.Header>
-					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<ComboBox placeholder="Select the related task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
 					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+						<Button type="submit" disabled={close_as === undefined}>Add related task</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -206,9 +246,9 @@
 					<Dialog.Header>
 						<Dialog.Title>Add blocker to {data.task.title}</Dialog.Title>
 					</Dialog.Header>
-					<Select label="Tasks" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+					<ComboBox placeholder="Select the blocker task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
 					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+						<Button type="submit" disabled={close_as === undefined}>Add blocker task</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>

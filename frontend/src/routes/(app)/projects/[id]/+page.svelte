@@ -19,14 +19,10 @@
 	</header>
 	<main class="flex-1 flex items-center justify-center page-backdrop">
 		<div class="flex">
-			<div>
+			<div class="w-1/3">
 				<h1 class="text-5xl font-semibold bg-gradient-to-b from-popover-foreground to-muted-foreground bg-clip-text text-transparent" in:blur>{project.name}</h1>
 				<Separator class="my-4"/>
 				<div class="w-full flex justify-evenly">
-					<a href={`${$page.url}/features`} class="underline">
-						Features
-					</a>
-					<Separator orientation="vertical" class="mx-4"/>
 					<a href={`${$page.url}/applications`} class="underline">
 						Applications
 					</a>
@@ -41,7 +37,7 @@
 				</p>
 				<Separator class="my-4"/>
 				<span class="text-sm text-muted-foreground font-regular">Milestones</span>
-				{#snippet milestone({ i, name, description, status }: { i: number, name: string, description: string, status: "done" | "current" | "upcoming" })}
+				{#snippet milestone_snippet({ i, name, description, status }: { i: number, name: string, description: string, status: "done" | "current" | "upcoming" })}
 					<div class="flex flex-col h-24 w-56 p-2 gap-2" in:blur={{ delay: i * 100 }}>
 						<div class="flex items-center justify-between w-full">
 							<span class="tactile-text">
@@ -61,24 +57,25 @@
 					</div>
 				{/snippet}
 				<Sheet.Root>
-					<Sheet.Trigger><span class="text-[0.6rem] text-muted-foreground font-regular">{"(2 more)"}</span></Sheet.Trigger>
+					<Sheet.Trigger><span class="text-[0.6rem] text-muted-foreground font-regular">{"See all"}</span></Sheet.Trigger>
 					<Sheet.Content>
 					  <Sheet.Header>
 						<Sheet.Title>Milestones</Sheet.Title>
 						<Sheet.Description>
 							{#each project.milestones as { title, description }, i}
-								{@render milestone({ i, name: title, description, status: "done" })}
+								{@render milestone_snippet({ i, name: title, description, status: "done" })}
 							{/each}
 						</Sheet.Description>
 					  </Sheet.Header>
 					</Sheet.Content>
 				</Sheet.Root>
 				<div class="flex">
-					{@render milestone({ i: 0, name: "MVP", description: "This milestone marks our first working product iteration. It will allow us to secure funding.", status: "done" })}
-					<Separator orientation="vertical" class="mx-4"/>
-					{@render milestone({ i: 1, name: "Beta", description: "This milestone...", status: "current" })}
-					<Separator orientation="vertical" class="mx-4"/>
-					{@render milestone({ i: 2, name: "v1.0", description: "This milestone...", status: "upcoming" })}
+					{#each project.milestones.slice(0, 3) as milestone, i}
+						{#if i > 0}
+							<Separator orientation="vertical" class="mx-4"/>
+						{/if}
+						{@render milestone_snippet({ i, name: milestone.title, description: milestone.description, status: "done" })}
+					{/each}
 				</div>
 			</div>
 			<Separator orientation="vertical" class="mx-4"/>
@@ -86,6 +83,17 @@
 				<UserSelect label="Lead" values={data.users} bind:value={lead}/>
 				<Separator class="my-4"/>
 				<span class="text-sm text-muted-foreground font-regular">Status</span>
+				<Separator class="my-4"/>
+				<span class="text-sm text-muted-foreground font-regular">Objectives</span>
+				{#each project.objectives as objective}
+					<div class="flex flex-col gap-1 mt-2">
+						<div class="gallery gap-2">
+							<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">🎯</span>
+							<span class="tactile-text">{objective.id}</span>
+						</div>
+						<p class="text-muted-foreground text-xs whitespace-pre-wrap">{objective.id}</p>
+					</div>
+				{/each}
 				<Separator class="my-4"/>
 				<span class="text-sm text-muted-foreground font-regular">Updates</span>
 				{#each [{ title: "All is well", body: "Project is going great and on time. Thank you everyone!" }] as update}

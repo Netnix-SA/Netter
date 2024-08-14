@@ -15,8 +15,15 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		throw error(404, "Could not load todos!");
 	}
 
+	const { data: messages } = await client.api.messages.get({ query: { resolved: false } });
+
+	if (!messages) {
+		throw error(404, "Could not load messages!");
+	}
+
 	return {
 		tasks,
 		todos,
+		messages,
 	};
 };

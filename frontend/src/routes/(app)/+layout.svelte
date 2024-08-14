@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, type Snippet } from "svelte";
 	import "../../app.css";
 
 	import { Settings } from "lucide-svelte";
@@ -9,8 +9,10 @@
 	import { Separator } from "$lib/components/ui/separator";
     import { commands } from "@/state";
     import { LINKS } from "@/global";
+    import type { LayoutData } from "./$types";
+    import AnyChip from "@/components/AnyChip.svelte";
 
-	const { children } = $props();
+	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
 	let open = $state(false);
 
@@ -128,8 +130,13 @@
 					{/each}
 					<Separator class="my-2"/>
 					<span class="pr-2 text-muted-foreground temt-sm font-normal">
-						Active
+						Pinned
 					</span>
+					<div class="column gap-2">
+						{#each data.user.pinned as pinned}
+							<AnyChip id={pinned}/>
+						{/each}
+					</div>
 				</div>
 				<Separator class="my-2"/>
 				<a href="/settings" class="w-full px-4 py-2 rounded hover:bg-primary-background transition-colors">

@@ -19,17 +19,23 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 })
 
 .get("/:id", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId })[]]>(surql`SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel FROM Task WHERE id == ${new StringRecordId(id)};`);
+	const tasks = await query({ id, assignee: undefined, state: undefined, belongs_to: undefined });
 
-	const tasks = results[0];
 	const task = tasks[0];
 
-	if(!task) {
+	if(task === undefined) {
 		throw new NotFoundError("No task under that id found!");
 	}
 
-	return map(task);
-}, { response: tTask, detail: { description: "Gets the tasks for the querying user" } })
+
+
+	return task;
+}, {
+	response: tTask,
+	detail: {
+		description: "Gets the tasks for the querying user"
+	}
+})
 
 .post("", async ({ body }) => {
 	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status;`);
@@ -41,7 +47,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		throw new Error("Did not find a status");
 	}
 
-	await db.create<Omit<Task, "id">>("Task", { title: body.title, body: "", priority: "Medium", effort: 'Days', value: 'Medium', created: new Date(), labels: [], assignee: null, status: body.status ? new StringRecordId(body.status) as unknown as StatusId : first_status.id });
+	await db.create<Omit<Task, "id">>("Task", { title: body.title, body: "", priority: "Medium", effort: 'Days', value: 'Medium', objective: null, created: new Date(), labels: [], updates: [], assignee: null, status: body.status ? new StringRecordId(body.status) as unknown as StatusId : first_status.id });
 }, {
 	body: tTaskPost,
 	detail: {
@@ -49,10 +55,14 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	}
 });
 
-export const query = async ({ assignee, state, belongs_to }: { assignee: string | undefined, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	let query = `SELECT *, ->is_parent_of->Task as children, ->is_related_to->Task as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel FROM Task`;
+export const query = async ({ id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
+	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date)[0].value as progress FROM Task`;
 
 	let pieces = [];
+
+	if (id) {
+		pieces.push(`id == ${new StringRecordId(id)}`);
+	}
 
 	if (assignee) {
 		pieces.push(`assignee == ${new StringRecordId(assignee)}`);
@@ -70,16 +80,18 @@ export const query = async ({ assignee, state, belongs_to }: { assignee: string 
 		query += ' WHERE ' + pieces.join(' AND ');
 	}
 
+	query += ' ORDER BY status.position.i';
+
 	query += ';';
 
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId })[]]>(query);
+	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId, progress: number | undefined })[]]>(query);
 
 	const tasks = results[0];
 
 	return tasks.map(map);
 };
 
-export const map = ({ id, title, body, priority, status, labels, assignee, effort, value, children, related, blocking, channel }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId }) => {
+export const map = ({ id, title, body, priority, status, updates, labels, assignee, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId, progress: number | undefined }) => {
 	return {
 		id: id.toString(),
 		title, body,
@@ -98,6 +110,11 @@ export const map = ({ id, title, body, priority, status, labels, assignee, effor
 		priority, effort, value,
 		channel: {
 			id: channel.toString(),
+		},
+		updates,
+		progress: progress ?? 0,
+		objective: objective && {
+			id: objective.toString(),
 		},
 	};
 };

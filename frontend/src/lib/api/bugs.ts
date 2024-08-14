@@ -71,7 +71,7 @@ export const map = ({ id, title, description, resolved, release, applications, c
 	release: release ? { id: release.toString() } : null,
 	created,
 	impact: {
-		applications: applications.map(({ id }) => ({ id: id.toString() })),
-		features: features.map(({ id }) => ({ id: id.toString() })),
+		applications: applications.map((id) => ({ id: id.toString() })),
+		features: features.map((id) => ({ id: id.toString() })),
 	},
 });
