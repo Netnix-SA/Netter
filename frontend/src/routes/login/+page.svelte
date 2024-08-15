@@ -4,7 +4,7 @@
     import { error } from '@sveltejs/kit';
     import { goto } from '$app/navigation';
     import Button from '@/components/ui/button/button.svelte';
-    import { Github, GithubIcon } from 'lucide-svelte';
+    import { Github, GithubIcon, Key } from 'lucide-svelte';
 
 	const websocket = new WebSocket("ws://localhost:3000");
 
@@ -59,25 +59,28 @@
 	}
 </script>
 
-<main class="h-screen w-screen flex items-center justify-center">
-	<form action="/login" method="post" target="_blank" class="flex flex-col rounded-3xl border min-h-96 min-w-96 py-12 px-48">
-		<span class="font-medium text-2xl text-slate-200">
+<main class="h-screen w-screen bg-background frame">
+	<div class="px-64">
+		<h1 class="text-9xl tactile-text font-bold italic">
+			Netter
+		</h1>
+	</div>
+	<form action="/login" method="post" target="_blank" class="flex flex-col rounded-3xl border h-[42em] w-96 px-8 py-12 bg-primary-foreground">
+		<span class="font-medium font-800 text-2xl text-slate-200">
 			Login
 		</span>
-
-		<label for="full_name">Full Name</label>
-		<input name="full_name"/>
-	
-		<label for="email">Email</label>
-		<input type="email" name="email"/>
-	
-		<button type="submit">
-			Create
-		</button>
+		<div class="flex-1 column">
+			<input name="email" type="email" class="border rounded-lg bg-transparent h-10"/>
+		</div>
+		<div class="frame flex-col w-full gap-2">
+			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`} class="gap-2">
+				<Key class="size-4"/>
+				Login with PassKey
+			</Button>
+			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`} class="gap-2">
+				<GithubIcon class="size-4"/>
+				Login with GitHub
+			</Button>
+		</div>
 	</form>
-
-	<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`}>
-		<GithubIcon class="size-6"/>
-		Login with GitHub
-	</Button>
 </main>

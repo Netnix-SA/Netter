@@ -7,11 +7,11 @@ import type { Organization, Repository } from "@/server/db/types";
 
 export const repositories = new Elysia({ prefix: "/repositories", tags: ["Repositories"] })
 
-repositories.post("", async () => {
+.post("", async () => {
 
 }, { body: tRepository, detail: { description: "Creates a Git repository" } })
 
-repositories.get("", async () => {
+.get("", async () => {
     const app = new App({
         appId: parseInt(process.env.GITHUB_APP_ID || "UNDEFINED"),
         privateKey: process.env.GITHUB_APP_PRIVATE_KEY || "UNDEFINED",

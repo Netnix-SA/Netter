@@ -1,6 +1,6 @@
 <script lang="ts">
     import Separator from "@/components/ui/separator/separator.svelte";
-import type { PageData } from "./$types";
+    import type { PageData } from "./$types";
 
     let { data }: { data: PageData } = $props();
 </script>

@@ -53,7 +53,7 @@
 		<div class="flex w-full px-6 h-10 items-center text-sm header-background">
 			Pending
 		</div>
-		<div>
+		<div class="flex-1">
 			{#await data.messages}
 				Loading pending...
 			{:then messages}
@@ -63,6 +63,12 @@
 							<div class="ml-2">{message.body}</div>
 						</div>
 					</li>
+				{:else}
+					<div class="frame size-full">
+						<span class="text-sm italic text-muted-foreground">
+							No pending inquiries! 🎉
+						</span>
+					</div>
 				{/each}
 			{/await}
 		</div>

@@ -33,6 +33,8 @@
 	let add_child: boolean | undefined = $state(undefined);
 	let add_relative: boolean | undefined = $state(undefined);
 	let add_blocker: boolean | undefined = $state(undefined);
+	let add_update: boolean | undefined = $state(undefined);
+	let show_resolve_menu: boolean | undefined = $state(undefined);
 
 	onMount(() => {
 		const entry = {
@@ -55,6 +57,20 @@
 					name: "Add relative",
 					do: () => {
 						add_relative = true;
+					}
+				},
+				{
+					name: "Add update",
+					key: 'u',
+					do: () => {
+						add_update = true;
+					}
+				},
+				{
+					name: "Resolve task",
+					key: 'r',
+					do: () => {
+						show_resolve_menu = true;
 					}
 				},
 			]
@@ -112,30 +128,14 @@
 							{/each}
 						</ul>
 						<Dialog.Footer>
-							<Dialog.Root>
-								<Dialog.Trigger class={buttonVariants({ variant: "default" })}>Add update</Dialog.Trigger>
-								<Dialog.Content class="sm:max-w-[425px]">
-									<Dialog.Header>
-										<Dialog.Title>Add update to {data.task.title}</Dialog.Title>
-										<Dialog.Description>
-										</Dialog.Description>
-									</Dialog.Header>
-									<span class="text-muted-foreground text-sm">Progress</span>
-									<Input type="number" max="100" min="0" class="w-16"/>
-									<span class="text-muted-foreground text-sm">Note</span>
-									<Input type="text"/>
-									<Dialog.Footer>
-										<Button title="Hey hey hey" type="submit">Add update</Button>
-									</Dialog.Footer>
-								</Dialog.Content>
-							</Dialog.Root>
+							<Button type="submit" onclick={() => add_update = true}>Add update</Button>
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
 				<input class="text-2xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
 				<!-- TODO: link to merge request -->
 			</div>
-			<Dialog.Root>
+			<Dialog.Root bind:open={show_resolve_menu}>
 				<Dialog.Trigger class={buttonVariants({ variant: "default" })}>Close</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-[425px]">
 					<Dialog.Header>
@@ -255,3 +255,22 @@
 		{/each}
 	</div>
 </div>
+
+<Dialog.Footer>
+	<Dialog.Root bind:open={add_update}>
+		<Dialog.Content class="sm:max-w-[425px]">
+			<Dialog.Header>
+				<Dialog.Title>Add update to {data.task.title}</Dialog.Title>
+				<Dialog.Description>
+				</Dialog.Description>
+			</Dialog.Header>
+			<span class="text-muted-foreground text-sm">Progress</span>
+			<Input type="number" max="100" min="0" class="w-16"/>
+			<span class="text-muted-foreground text-sm">Note</span>
+			<Input type="text"/>
+			<Dialog.Footer>
+				<Button title="Hey hey hey" type="submit">Add update</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
+</Dialog.Footer>

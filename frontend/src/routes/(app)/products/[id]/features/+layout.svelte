@@ -12,9 +12,9 @@
 	</header>
 	<main class="flex-1 flex">
 		<div id="features" class="w-72 flex flex-col gap-2 border-r">
-			<ul class="p-2">
+			<ul class="">
 				{#each data.features as feature(feature.id)}
-				<li class="gallery px-4 h-12 border rounded-lg shadow-xl header-background">
+				<li class="gallery px-4 h-10 border-b">
 					<a href={`${$page.url}/${feature.id}`} class="text-sm tactile-text">
 						{feature.name}
 					</a>

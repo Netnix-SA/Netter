@@ -115,6 +115,61 @@
 					<div class="gallery h-full px-1">{filter.value}</div>
 					<button class="gallery h-full px-1" onclick={() => { filters = filters.filter(f => f !== filter); }}><X class="w-4 h-4"/></button>
 				</div>
+			{:else}
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						<div class="gallery h-6 w-min rounded border border-dashed hover:bg-primary-foreground group transition-all gap-2 px-1">
+						<span class="text-xl tactile-text">
+							+
+						</span>
+						<span class="w-0 tactile-text group-hover:w-min text-sm text-clip text-nowrap">
+							Add filter
+						</span>
+						</div>
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content>
+						<DropdownMenu.Group>
+							<DropdownMenu.Label>Add filter</DropdownMenu.Label>
+							<DropdownMenu.Separator />
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger>State</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Backlog" })}>Backlog</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Alive" })}>Active</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Resolved" })}>Closed</DropdownMenu.Item>
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger>Assignee</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent class="w-fit">
+									<UserSearch values={data.users}/>
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger>Label</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent>
+									{#each data.labels as label}
+										<DropdownMenu.Item>{label.title}</DropdownMenu.Item>
+									{/each}
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger>Status</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent>
+									{#each data.statuses as status}
+										<DropdownMenu.Item onclick={() => filters.push({ type: "Status", operator: '=', value: status.id })}>{status.name}</DropdownMenu.Item>
+									{/each}
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger>Text</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent>
+									<Input onkeydown={(e) => { if (e.key === 'Enter') { filters.push({ type: "Text", operator: '=', value: e.currentTarget.value }); e.currentTarget.blur(); } }}/>
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+						</DropdownMenu.Group>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			{/each}
 		</div>
 		<div id="right" class="w-96 gallery gap-4">
@@ -125,51 +180,6 @@
 				  <Tabs.Trigger value="graph"><Share2 class="w-4 h-4"/></Tabs.Trigger>
 				</Tabs.List>
 			</Tabs.Root>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger><Filter class="w-4 h-4"/></DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					<DropdownMenu.Group>
-						<DropdownMenu.Label>Add filter</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Sub>
-							<DropdownMenu.SubTrigger>State</DropdownMenu.SubTrigger>
-							<DropdownMenu.SubContent>
-								<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Backlog" })}>Backlog</DropdownMenu.Item>
-								<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Alive" })}>Active</DropdownMenu.Item>
-								<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: "Resolved" })}>Closed</DropdownMenu.Item>
-							</DropdownMenu.SubContent>
-						</DropdownMenu.Sub>
-						<DropdownMenu.Sub>
-							<DropdownMenu.SubTrigger>Assignee</DropdownMenu.SubTrigger>
-							<DropdownMenu.SubContent class="w-fit">
-								<UserSearch values={data.users}/>
-							</DropdownMenu.SubContent>
-						</DropdownMenu.Sub>
-						<DropdownMenu.Sub>
-							<DropdownMenu.SubTrigger>Label</DropdownMenu.SubTrigger>
-							<DropdownMenu.SubContent>
-								{#each data.labels as label}
-									<DropdownMenu.Item>{label.title}</DropdownMenu.Item>
-								{/each}
-							</DropdownMenu.SubContent>
-						</DropdownMenu.Sub>
-						<DropdownMenu.Sub>
-							<DropdownMenu.SubTrigger>Status</DropdownMenu.SubTrigger>
-							<DropdownMenu.SubContent>
-								{#each data.statuses as status}
-									<DropdownMenu.Item onclick={() => filters.push({ type: "Status", operator: '=', value: status.id })}>{status.name}</DropdownMenu.Item>
-								{/each}
-							</DropdownMenu.SubContent>
-						</DropdownMenu.Sub>
-						<DropdownMenu.Sub>
-							<DropdownMenu.SubTrigger>Text</DropdownMenu.SubTrigger>
-							<DropdownMenu.SubContent>
-								<Input onkeydown={(e) => { if (e.key === 'Enter') { filters.push({ type: "Text", operator: '=', value: e.currentTarget.value }); e.currentTarget.blur(); } }}/>
-							</DropdownMenu.SubContent>
-						</DropdownMenu.Sub>
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
 		</div>
 	</div>
 	{#if view === "list"}

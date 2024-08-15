@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount, type Snippet } from "svelte";
-	import "../../app.css";
 
 	import { Settings } from "lucide-svelte";
 	import * as Command from "$lib/components/ui/command";
@@ -33,6 +32,19 @@
 
 	onNavigate(() => {
 		open = false;
+	});
+
+	commands.subscribe((v) => {
+		for (const g of v) {
+			for (const c of g.commands) {
+				window.addEventListener('keydown', async (e) => {
+					if (e.key === c.key) {
+						e.preventDefault();
+						await c.do();
+					}
+				});
+			}
+		}
 	});
 
 	let search = $state("");
@@ -144,7 +156,7 @@
 				</a>
 			</div>
 		</nav>
-		<div class="flex-1 border rounded-lg h-full flex flex-col gap-2 items-center justify-center overflow-hidden page-backdrop">
+		<div class="flex-1 border rounded-lg h-full flex flex-col items-center justify-center overflow-hidden page-backdrop">
 			{@render children()}
 		</div>
 	</div>
@@ -157,7 +169,12 @@
 		{#each $commands as cg}
 			<Command.Group heading={cg.name}>
 				{#each cg.commands as c}
-					<Command.Item class="h-8" onSelect={c.do}>{c.name}</Command.Item>
+					<Command.Item class="h-8" onSelect={c.do}>
+						{c.name}
+						{#if c.key}
+							<Command.Shortcut>{c.key}</Command.Shortcut>
+						{/if}
+					</Command.Item>
 				{/each}
 			</Command.Group>
 			<Command.Separator/>

@@ -26,72 +26,88 @@ export const STATES: SelectEntry<State>[] = [
     },
 ];
 
+export const PRIORITIES_ICONS = {
+    "Low": SignalLow,
+    "Medium": SignalMedium,
+    "High": SignalHigh,
+    "Urgent": OctagonAlert,
+};
+
 export const PRIORITIES: SelectEntry<Priorities>[] = [
     {
         value: "Low",
         label: "Low",
-        icon: SignalLow,
+        icon: PRIORITIES_ICONS["Low"],
     },
     {
         value: "Medium",
         label: "Medium",
-        icon: SignalMedium,
+        icon: PRIORITIES_ICONS["Medium"],
     },
     {
         value: "High",
         label: "High",
-        icon: SignalHigh,
+        icon: PRIORITIES_ICONS["High"],
     },
     {
         value: "Urgent",
         label: "Urgent",
-        icon: OctagonAlert,
+        icon: PRIORITIES_ICONS["Urgent"],
     },
 ];
+
+export const VALUES_ICONS = {
+    "Low": SignalLow,
+    "Medium": SignalMedium,
+    "High": SignalHigh,
+};
 
 export const VALUES: SelectEntry<Value>[] = [
     {
         value: "Low",
         label: "Low",
-        icon: SignalLow,
+        icon: VALUES_ICONS["Low"],
     },
     {
         value: "Medium",
         label: "Medium",
-        icon: SignalMedium,
+        icon: VALUES_ICONS["Medium"],
     },
     {
         value: "High",
         label: "High",
-        icon: SignalHigh,
+        icon: VALUES_ICONS["High"],
     },
 ];
 
+export const EFFORTS_ICONS = {
+    "Hour": Hourglass,
+    "Hours": Clock3,
+    "Day": Sunset,
+    "Days": CalendarDays,
+    "Week": CalendarFold,
+};
+
 export const EFFORTS: SelectEntry<Efforts>[] = [
     {
-        value: "Hour",
-        label: "Hour",
-        icon: Hourglass,
+        value: "Hour", label: "Hour",
+        icon: EFFORTS_ICONS["Hour"],
     },
     {
-        value: "Hours",
-        label: "Hours",
-        icon: Clock3,
+        value: "Hours", label: "Hours",
+        icon: EFFORTS_ICONS["Hours"],
     },
     {
-        value: "Day",
-        label: "Day",
-        icon: Sunset,
+        value: "Day", label: "Day",
+        icon: EFFORTS_ICONS["Day"],
     },
     {
-        value: "Days",
-        label: "Days",
-        icon: CalendarDays,
+        value: "Days", label: "Days",
+        icon: EFFORTS_ICONS["Days"],
     },
     {
-        value: "Week",
-        label: "Week",
-        icon: CalendarFold,
+        value: "Week", label: "Week",
+        icon: EFFORTS_ICONS["Week"],
     },
 ];
 

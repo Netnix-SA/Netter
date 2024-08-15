@@ -4,9 +4,9 @@ import { db } from "@/server/db";
 import type { Task, View } from "@/server/db/types";
 import { StringRecordId } from "surrealdb";
 
-export const views = new Elysia({ prefix: "/views", tags: ["Views"] });
+export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 
-views.post("", async ({ body }) => {
+.post("", async ({ body }) => {
 	await db.create<Omit<View, "id">>("View", {
 		name: body.name,
 		filters: body.filters.map(filter => ({
@@ -20,9 +20,9 @@ views.post("", async ({ body }) => {
 	detail: {
 		description: "Creates a view under the connected user's organization.",
 	},
-});
+})
 
-views.get("", async ({}) => {
+.get("", async ({}) => {
 	const views = await db.select<View>("View");
 
 	return views.map(view => ({
@@ -39,9 +39,9 @@ views.get("", async ({}) => {
 	detail: {
 		description: "Gets all the views under the connected user's organization.",
 	},
-});
+})
 
-views.get("/:id/query", async ({ params: { id } }) => {
+.get("/:id/query", async ({ params: { id } }) => {
 	const view = await db.select<View>(new StringRecordId(id));
 
 	let query_pieces: string[] = [];
@@ -107,4 +107,4 @@ views.get("/:id/query", async ({ params: { id } }) => {
 	detail: {
 		description: "Returns the content defined by the view.",
 	},
-});
+})

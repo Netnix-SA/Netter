@@ -1,8 +1,8 @@
 import { client } from "@/state";
-import type { LayoutServerLoad } from "./$types";
+import type { LayoutLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 
-export const load: LayoutServerLoad = async () => {
+export const load: LayoutLoad = async () => {
     const { data: user } = await client.api.users.me.get();
 
     if(!user) {

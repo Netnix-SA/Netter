@@ -4,4 +4,4 @@ import type { App } from "./api";
 
 export const client = treaty<App>('localhost');
 
-export const commands = writable<{ name: string, commands: { name: string, do: () => void }[] }[]>([]);
+export const commands = writable<{ name: string, commands: { name: string, key?: string, do: () => void }[] }[]>([]);
