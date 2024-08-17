@@ -17,7 +17,7 @@ export const tReleaseId = t.String();
 
 export const tValues = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High")], { default: "Medium" });
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
-export const tColors = t.Union([t.Literal("Orange/Light")], { default: "White" });
+export const tColors = t.Union([t.Literal("Orange/Light"), t.Literal("Green/Light")], { default: "Green/Light" });
 export const tEfforts = t.Union([t.Literal("Hour"), t.Literal("Hours"), t.Literal("Day"), t.Literal("Days"), t.Literal("Week")], { default: "White" });
 
 export const tCompany = t.Any();
@@ -34,6 +34,7 @@ export const tUser = t.Object({
 	handle: t.String(),
 	email: t.String({ format: "email" }),
 	pinned: t.Array(t.String()),
+	color: tColors,
 });
 
 export const tTeamPost = t.Object({
@@ -198,7 +199,9 @@ export const tRepository = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	url: t.String({ minLength: 3, maxLength: 64 }),
 	provider: t.Union([t.Literal("GitHub")]),
-	branches: t.Array(t.String({ minLength: 3, maxLength: 64 })),
+	branches: t.Array(t.Object({
+		name: t.String({ minLength: 3, maxLength: 64 }),
+	})),
 });
 
 export const tFeaturePost = t.Object({
@@ -321,13 +324,18 @@ export const tProduct = t.Object({
 	description: t.String({ maxLength: 8192 }),
 });
 
+export const tToDoPost = t.Object({
+	title: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+	url: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+});
+
 export const tToDo = t.Object({
 	id: tToDoId,
 	title: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
 	url: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
 	owner: tUserId,
 	done: t.Boolean(),
-	due: t.Date(),
+	due: t.Nullable(t.Date()),
 });
 
 export const tApplicationPost = t.Object({

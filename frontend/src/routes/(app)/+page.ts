@@ -21,6 +21,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		throw error(404, "Could not load messages!");
 	}
 
+
 	return {
 		tasks,
 		todos,

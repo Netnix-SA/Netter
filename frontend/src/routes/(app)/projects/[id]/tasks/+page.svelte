@@ -6,7 +6,7 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as ContextMenu from "$lib/components/ui/context-menu";
-    import { Filter, Kanban, List, Share2, X } from "lucide-svelte";
+    import { Filter, Kanban, List, Plus, Share2, X } from "lucide-svelte";
 
 	let { data }: { data: PageData } = $props();
 
@@ -34,8 +34,12 @@
     import Input from "@/components/ui/input/input.svelte";
     import TaskLine from "@/components/TaskLine.svelte";
 
+	let open_create_task = $state(false);
+
 	onMount(() => {
-		const entry = { name: "Project", commands: [{ name: "Create task", do: () => {} }] };
+		const entry = { name: "Project", commands: [{ name: "Create task", key: 'c', do: () => {
+			open_create_task = true;
+		} }] };
 
 		commands.update(c => {
 			c.push(entry);
@@ -68,6 +72,7 @@
 	
 	// 👇 this is important! You need to import the styles for Svelte Flow to work
 	import '@xyflow/svelte/dist/style.css';
+    import CreateTask from "@/components/CreateTask.svelte";
 	
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -118,13 +123,11 @@
 			{:else}
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
-						<div class="gallery h-6 w-min rounded border border-dashed hover:bg-primary-foreground group transition-all gap-2 px-1">
-						<span class="text-xl tactile-text">
-							+
-						</span>
-						<span class="w-0 tactile-text group-hover:w-min text-sm text-clip text-nowrap">
-							Add filter
-						</span>
+						<div class="frame rounded size-6 hover:w-fit border border-dashed hover:bg-primary-foreground group transition-all gap-1 hover:px-2">
+							<Plus class="size-4"/>
+							<span class="hidden group-hover:block w-0 tactile-text group-hover:w-min text-sm text-clip text-nowrap">
+								Add filter
+							</span>
 						</div>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content>
@@ -172,7 +175,7 @@
 				</DropdownMenu.Root>
 			{/each}
 		</div>
-		<div id="right" class="w-96 gallery gap-4">
+		<div id="right" class="gallery gap-4">
 			<Tabs.Root class="" bind:value={view}>
 				<Tabs.List class="p-1 h-8">
 				  <Tabs.Trigger value="list"><List class="w-4 h-4"/></Tabs.Trigger>
@@ -249,3 +252,5 @@
 	</SvelteFlow>
 	{/if}
 </div>
+
+<CreateTask bind:open={open_create_task}/>

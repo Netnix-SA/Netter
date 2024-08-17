@@ -125,6 +125,8 @@
 									<span class="tactile-text text-sm border-r pr-2">{update.value}%</span>
 									<span class="text-sm">{update.note}</span>
 								</li>
+							{:else}
+								<li class="text-muted-foreground text-sm text-center italic">No updates yet!</li>
 							{/each}
 						</ul>
 						<Dialog.Footer>
@@ -264,8 +266,16 @@
 				<Dialog.Description>
 				</Dialog.Description>
 			</Dialog.Header>
-			<span class="text-muted-foreground text-sm">Progress</span>
-			<Input type="number" max="100" min="0" class="w-16"/>
+			<div class="gallery gap-2 w-full">
+				<div class="column w-full">
+					<span class="text-muted-foreground text-sm">Progress</span>
+					<Input type="number" max="100" min="0" class="w-16"/>
+				</div>
+				<div class="column w-full">
+					<span class="text-muted-foreground text-sm">Time spent</span>
+					<Input type="number" min="0" max="100" class="w-16"/>
+				</div>
+			</div>
 			<span class="text-muted-foreground text-sm">Note</span>
 			<Input type="text"/>
 			<Dialog.Footer>

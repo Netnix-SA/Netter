@@ -22,11 +22,9 @@
 								{project.name}
 							</span>
 						</a>
-						<div class="gallery item-background h-6 px-2 rounded">
-							<a href={`/projects/${project.id}/tasks`} class="text-xs">
-								Tasks
-							</a>
-						</div>
+						<a href={`/projects/${project.id}/tasks`} class="text-xs gallery item-background h-6 px-2 rounded">
+							Tasks
+						</a>
 					</div>
 					<div class="gallery gap-2">
 						<div class="gallery gap-2">

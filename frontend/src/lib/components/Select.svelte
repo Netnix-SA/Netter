@@ -3,7 +3,7 @@
     import * as Select from "$lib/components/ui/select";
     import type { Selected } from "bits-ui";
 
-    let { label, values, comparator, value = $bindable() }: { label: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
+    let { label, values, placeholder = "Select", comparator, value = $bindable() }: { label?: string, placeholder: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
 
     let internal: Selected<T> | undefined = $state(value !== null ? values.find(v => comparator(v.value, value)) : undefined);
 
@@ -13,8 +13,8 @@
 </script>
 
 <Select.Root bind:selected={internal} loop>
-    <Select.Trigger name={label}>
-        <Select.Value placeholder="Select"/>
+    <Select.Trigger name={label} class="min-w-32">
+        <Select.Value {placeholder}/>
     </Select.Trigger>
     <Select.Content>
         {#each values as entry}

@@ -3,6 +3,7 @@
     import { EFFORTS_ICONS, PRIORITIES_ICONS } from "@/global";
     import Circle from "./Circle.svelte";
     import UserAvatar from "./UserAvatar.svelte";
+    import { addPinned, addToDo } from "@/actions";
 
     let { task, user }: { task: { id: string, title: string, progress: number, priority: "Low" | "Medium" | "High" | "Urgent", effort: string }, user: { id: string, full_name: string } | undefined/* | ((id: string) => Promise<{ id: string, full_name: string }>)*/ } = $props();
 </script>
@@ -32,6 +33,7 @@
         </div>
     </ContextMenu.Trigger>
     <ContextMenu.Content>
-        <ContextMenu.Item onclick={() => console.warn("Add to ToDo's")}>Add to ToDo's</ContextMenu.Item>
+        <ContextMenu.Item onclick={async () => await addPinned(task.id)}>Pin</ContextMenu.Item>
+        <ContextMenu.Item onclick={async () => await addToDo(task.title, "aahah")}>Add to ToDo's</ContextMenu.Item>
     </ContextMenu.Content>
 </ContextMenu.Root>

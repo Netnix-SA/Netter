@@ -23,6 +23,7 @@ export type User = {
 	full_name: string,
 	email: string,
 	handle: string,
+	color: Colors,
 	pinned: StringRecordId[],
 };
 
@@ -288,6 +289,10 @@ export type Repository = {
 	id: RepositoryId,
 	name: string,
 	url: string,
+
+	branches: {
+		name: string,
+	}[],
 };
 
 export type MergeRequest = {

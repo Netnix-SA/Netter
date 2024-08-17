@@ -1,8 +1,9 @@
 <script lang="ts">
     import { ExternalLink } from "lucide-svelte";
 	import type { LayoutData } from "./$types";
+    import type { Snippet } from "svelte";
 
-	let { data }: { data: LayoutData } = $props();
+	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 </script>
 
 <header class="h-10 border-b w-full gallery px-4 bg-primary-foreground">
@@ -10,7 +11,7 @@
 		Repositories
 	</span>
 </header>
-<main class="flex-1 column w-full">
+<main class="flex-1 flex w-full">
 	<ul class="flex-1 w-full">
 		{#each data.repositories as repository}
 		<li class="gallery px-4 h-10 border-b w-full gap-2">
@@ -35,4 +36,5 @@
 		</li>
 		{/each}
 	</ul>
+	{@render children()}
 </main>

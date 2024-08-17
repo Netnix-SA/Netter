@@ -33,7 +33,7 @@
     let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
-<div class="gallery gap-2 h-10 rounded-lg item-background px-2">
+<div class="gallery gap-2 h-10 rounded-lg border px-2">
     <svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
     <a href={link} class="tactile-text">{id}</a>
 </div>

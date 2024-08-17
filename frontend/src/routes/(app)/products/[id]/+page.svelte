@@ -5,6 +5,8 @@
     import { blur } from "svelte/transition";
 
     let { data }: { data: PageData } = $props();
+
+	$inspect(data);
 </script>
 
 <div class="flex-1 flex flex-col w-full divide-y">

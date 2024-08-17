@@ -1,10 +1,12 @@
 <script lang="ts">
-	let { user }: { user: { id: string, full_name: string } | undefined } = $props();
+    import type { Colors } from "@/server/db/types";
+
+	let { user }: { user: { id: string, full_name: string, color: Colors } | undefined } = $props();
 
 	let display = $derived(user ? user.full_name.split(" ").slice(0, 2).map((name) => name[0]).join("") : "?");
 </script>
 
-<a href={`/users/${user?.id ?? '404'}`} class="rounded border border-neutral-500 size-6 flex items-center justify-center text-sm font-medium tracking-wide select-none" class:bg-green-500={true}>
+<a href={`/users/${user?.id ?? '404'}`} class="rounded border border-neutral-500 size-6 flex items-center justify-center text-sm font-medium tracking-wide select-none" class:bg-green-500={user?.color === "Green/Light"} class:bg-orange-500={user?.color === "Orange/Light"}>
 	<span class="">
 		{display}
 	</span>
