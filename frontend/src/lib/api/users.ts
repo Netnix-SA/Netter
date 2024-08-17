@@ -54,7 +54,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 })
 
 .get("/me", async ({}) => {
-	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId("User:⟨fvilla@netnix.net⟩") });
+	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId("User:yt2hrlb0mynjar8q5la5") });
 
 	const user = results[0][0];
 
@@ -71,7 +71,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 })
 
 .get("/me/todos", async ({}) => {
-	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner;", { owner: new StringRecordId("User:⟨fvilla@netnix.net⟩") });
+	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner;", { owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5") });
 
 	const todos = results[0];
 
@@ -81,7 +81,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 })
 
 .post("/me/todos", async ({ body }) => {
-	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, url: body.url, owner: new StringRecordId("User:⟨fvilla@netnix.net⟩"), due: null, done: false });
+	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, url: body.url, owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), due: null, done: false });
 }, {
 	body: tToDoPost,
 	detail: {
@@ -90,11 +90,11 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 })
 
 .post("/me/pins", async ({ body }) => {
-	const user = await db.select<User>(new StringRecordId("User:⟨fvilla@netnix.net⟩"));
+	const user = await db.select<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"));
 
 	user.pinned.push(new StringRecordId(body.id));
 
-	await db.merge<User>(new StringRecordId("User:⟨fvilla@netnix.net⟩"), { pinned: user.pinned });
+	await db.merge<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"), { pinned: user.pinned });
 }, {
 	body: t.Object({
 		id: t.String(),

@@ -1,8 +1,8 @@
 import { db } from "@/server/db";
-import type { ChannelId, ProjectId, State, Status, StatusId, Task, TaskId, Team } from "@/server/db/types";
+import { Channel, type ChannelId, type Efforts, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "@/server/db/types";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tBug, tMember, tTask, tTaskPost, tTeam, tTeamPost, tUserId } from "./schemas";
-import { RecordId, StringRecordId, surql } from "surrealdb";
+import { tBug, tMember, tTask, tTaskPost, tTaskUpdatePost, tTeam, tTeamPost, tUserId } from "./schemas";
+import { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
@@ -27,8 +27,6 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		throw new NotFoundError("No task under that id found!");
 	}
 
-
-
 	return task;
 }, {
 	response: tTask,
@@ -47,16 +45,54 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		throw new Error("Did not find a status");
 	}
 
-	await db.create<Omit<Task, "id">>("Task", { title: body.title, body: "", priority: "Medium", effort: 'Days', value: 'Medium', objective: null, created: new Date(), labels: [], updates: [], assignee: null, status: body.status ? new StringRecordId(body.status) as unknown as StatusId : first_status.id });
+	await create(body.title, body.body, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
 }, {
 	body: tTaskPost,
 	detail: {
 		description: "Creates a task.",
 	}
+})
+
+.post("/:id/updates", async ({ params: { id }, body }) => {
+	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
+
+	const task = results[0][0];
+
+	if (!task) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	const updates = task.updates ?? [];
+
+	updates.push({
+		note: body.note,
+		value: body.value,
+		time_spent: body.time_spent,
+		date: new Date(),
+	});
+
+	await db.merge<Task>(new StringRecordId(id), { updates });
+}, {
+	body: tTaskUpdatePost,
+	detail: {
+		description: "Adds an update to a task. Updates can only be posted by the assignee.",
+	}
 });
 
+export const create = async (title: string, body: string, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
+	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status });
+
+	const task = tasks[0];
+
+	if (!task) {
+		throw new Error("Could not create task");
+	}
+
+	const channel = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
+};
+
 export const query = async ({ id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date)[0].value as progress FROM Task`;
+	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
 
 	let pieces = [];
 

@@ -19,7 +19,7 @@
 	import * as Dialog from "$lib/components/ui/dialog";
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
-    import { commands } from "@/state";
+    import { client, commands } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
     import ComboBox from "@/components/ComboBox.svelte";
     import Input from "@/components/ui/input/input.svelte";
@@ -86,6 +86,14 @@
 		};
 	});
 
+	async function addUpdate() {
+		await client.api.tasks({ id: data.task.id }).updates.post({
+			value: update.value,
+			note: update.note,
+			time_spent: update.time_spent,
+		});
+	}
+
 	const { data }: { data: PageData } = $props();
 
 	let body: string = $state(data.task.body);
@@ -93,6 +101,8 @@
 	let priority: Priorities | null = $state(data.task.priority);
 	let effort: Efforts | null = $state(data.task.effort);
 	let value: Value | null = $state(data.task.value);
+
+	let update = $state({ value: 0, note: "", time_spent: 0 });
 
 	let close_as: string | undefined = $state(undefined);
 	let close_payload: string | undefined = $state(undefined);
@@ -110,7 +120,7 @@
 <div class="flex">
 	<div class="flex flex-col w-[64em]">
 		<div class="gallery">
-			<div id="left" class="flex-1 gallery">
+			<div id="left" class="flex-1 gallery gap-2">
 				<Dialog.Root>
 					<Dialog.Trigger><Circle value={data.task.progress} /></Dialog.Trigger>
 					<Dialog.Content class="sm:max-w-[425px]">
@@ -119,11 +129,11 @@
 							<Dialog.Description>
 							</Dialog.Description>
 						</Dialog.Header>
-						<ul>
+						<ul class="max-h-96 overflow-scroll">
 							{#each data.task.updates as update}
-								<li class="gallery gap-2 h-8 border-b">
+								<li class="gallery gap-2 min-h-12 py-2 max-h-32 border-b">
 									<span class="tactile-text text-sm border-r pr-2">{update.value}%</span>
-									<span class="text-sm">{update.note}</span>
+									<span class="text-sm whitespace-pre-wrap truncate">{update.note}</span>
 								</li>
 							{:else}
 								<li class="text-muted-foreground text-sm text-center italic">No updates yet!</li>
@@ -269,17 +279,17 @@
 			<div class="gallery gap-2 w-full">
 				<div class="column w-full">
 					<span class="text-muted-foreground text-sm">Progress</span>
-					<Input type="number" max="100" min="0" class="w-16"/>
+					<Input type="number" max="100" min="0" class="w-16" bind:value={update.value}/>
 				</div>
 				<div class="column w-full">
 					<span class="text-muted-foreground text-sm">Time spent</span>
-					<Input type="number" min="0" max="100" class="w-16"/>
+					<Input type="number" min="0" max={60 * 24} class="w-16" bind:value={update.time_spent}/>
 				</div>
 			</div>
 			<span class="text-muted-foreground text-sm">Note</span>
-			<Input type="text"/>
+			<Input type="text" bind:value={update.note}/>
 			<Dialog.Footer>
-				<Button title="Hey hey hey" type="submit">Add update</Button>
+				<Button title="Hey hey hey" onclick={async () => { addUpdate(); add_update = false; }} type="submit">Add update</Button>
 			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>

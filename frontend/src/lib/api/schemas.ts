@@ -1,6 +1,6 @@
 import { t } from "elysia";
 
-export const tUserId = t.String({ title: "UserId" });
+export const tUserId = t.String({ title: "UserId", pattern: "^User:[a-z0-9]{20}$" });
 export const tCompanyId = t.String({ title: "UserId" });
 export const tApplicationId = t.String({ title: "ApplicationId" });
 export const tFeatureId = t.String({ title: "FeatureId" });
@@ -17,7 +17,7 @@ export const tReleaseId = t.String();
 
 export const tValues = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High")], { default: "Medium" });
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
-export const tColors = t.Union([t.Literal("Orange/Light"), t.Literal("Green/Light")], { default: "Green/Light" });
+export const tColors = t.Union([t.Literal("Orange/Light"), t.Literal("Green/Light"), t.Literal("Purple/Light"), t.Literal("Red/Light")], { default: "Green/Light" });
 export const tEfforts = t.Union([t.Literal("Hour"), t.Literal("Hours"), t.Literal("Day"), t.Literal("Days"), t.Literal("Week")], { default: "White" });
 
 export const tCompany = t.Any();
@@ -91,8 +91,20 @@ export const tMessage = t.Object({
 
 export const tTaskPost = t.Object({
 	title: t.String({ minLength: 3, maxLength: 64 }),
-	status: t.Optional(tStatusId),
+	body: t.String({ maxLength: 8192 }),
+	priority: t.Nullable(tPriorities),
+	effort: t.Nullable(tEfforts),
+	value: t.Nullable(tValues),
+	status: t.Nullable(tStatusId),
+	assignee: t.Nullable(tUserId),
 }, { title: "Task" });
+
+export const tTaskUpdatePost = t.Object({
+	value: t.Number({ minimum: 0, maximum: 100 }),
+	// The time spent in minutes
+	time_spent: t.Number({ minimum: 0 }),
+	note: t.String({ maxLength: 8192 }),
+});
 
 export const tTask = t.Object({
 	id: tTaskId,

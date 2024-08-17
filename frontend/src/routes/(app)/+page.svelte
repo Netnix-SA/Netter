@@ -20,7 +20,7 @@
 			{:then tasks}
 				{#each tasks as task}
 					<li class="border-b h-10">
-						<TaskLine {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
+						<TaskLine labels={data.labels} {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
 					</li>
 				{/each}
 			{/await}

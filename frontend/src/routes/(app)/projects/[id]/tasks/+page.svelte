@@ -197,7 +197,14 @@
 			</div>
 			{#each tasks as task}
 				<li class="flex items-center border-b h-10 w-full">
-					<TaskLine {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
+					<TaskLine labels={data.labels} {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
+					<!-- <DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content>
+							<DropdownMenu.Item onclick={() => filters.push({ type: "Label", operator: 'IN', value: "Alive" })} >Filter by this label</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root> -->
 				</li>
 			{/each}
 		{/each}
@@ -253,4 +260,4 @@
 	{/if}
 </div>
 
-<CreateTask bind:open={open_create_task}/>
+<CreateTask bind:open={open_create_task} statuses={data.statuses} users={data.users}/>

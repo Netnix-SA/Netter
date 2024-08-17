@@ -36,6 +36,7 @@ export type Colors =
 	| "Green/Light"  | "Green/Dark" 
 	| "Red/Light"    | "Red/Dark"
 	| "Blue/Light"   | "Blue/Dark"
+	| "Purple/Light" | "Purple/Dark"
 	| "Gray/Light"   | "Gray/Dark"
 ;
 
@@ -76,6 +77,8 @@ export type Task = {
 	updates: {
 		date: Date,
 		note: string,
+		// The time spent in minutes
+		time_spent: number,
 		value: number,
 	}[],
 
