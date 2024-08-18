@@ -10,7 +10,7 @@ services:
       - 80
     ports:
       - 80:80
-    command: bun run index.ts --hot
+    command: bun run --hot index.ts
     depends_on:
       - db
     restart: always

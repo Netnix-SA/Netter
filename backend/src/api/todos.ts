@@ -1,8 +1,8 @@
 import type { ToDo } from "../db/types";
 
-export const map = ({ id, title, url, owner, due, done }: ToDo) => ({
+export const map = ({ id, title, owner, due, done }: ToDo) => ({
     id: id.toString(),
-    title, url,
+    title,
     owner: owner.toString(),
     due, done,
 });

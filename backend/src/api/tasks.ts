@@ -1,5 +1,5 @@
 import { db } from "../db/index";
-import { Channel, type ChannelId, type Efforts, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "../db/types";
+import { Channel, type ApplicationId, type BugId, type ChannelId, type Efforts, type FeatureId, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "../db/types";
 import { Elysia, NotFoundError, t } from "elysia";
 import { tBug, tMember, tTask, tTaskPost, tTaskUpdatePost, tTeam, tTeamPost, tUserId } from "./schemas";
 import { RecordId, StringRecordId, surql, Table } from "surrealdb";
@@ -36,7 +36,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 })
 
 .post("", async ({ body }) => {
-	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status;`);
+	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
 	const statuses = results[0];
 
 	const first_status = statuses[0];
@@ -68,6 +68,9 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		note: body.note,
 		value: body.value,
 		time_spent: body.time_spent,
+		user: {
+			id: new RecordId("User", "yt2hrlb0mynjar8q5la5"),
+		},
 		date: new Date(),
 	});
 
@@ -79,8 +82,8 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	}
 });
 
-export const create = async (title: string, body: string, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status });
+export const create = async (title: string, body: string, belongs_to: ProjectId, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
+	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status });
 
 	const task = tasks[0];
 
@@ -92,7 +95,7 @@ export const create = async (title: string, body: string, priority: Priorities |
 };
 
 export const query = async ({ id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
+	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, ->tackles.out as tackles, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
 
 	let pieces = [];
 
@@ -120,14 +123,14 @@ export const query = async ({ id, assignee, state, belongs_to }: { id?: string, 
 
 	query += ';';
 
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId, progress: number | undefined })[]]>(query);
+	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined })[]]>(query);
 
 	const tasks = results[0];
 
 	return tasks.map(map);
 };
 
-export const map = ({ id, title, body, priority, status, updates, labels, assignee, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], channel: ChannelId, progress: number | undefined }) => {
+export const map = ({ id, title, body, priority, status, updates, labels, assignee, tackles, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined }) => {
 	return {
 		id: id.toString(),
 		title, body,
@@ -149,6 +152,9 @@ export const map = ({ id, title, body, priority, status, updates, labels, assign
 		},
 		updates,
 		progress: progress ?? 0,
+		tackles: tackles.map(id => ({
+			id: id.toString(),
+		})),
 		objective: objective && {
 			id: objective.toString(),
 		},

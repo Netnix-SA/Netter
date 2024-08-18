@@ -24,7 +24,7 @@ export type User = {
 	email: string,
 	handle: string,
 	color: Colors,
-	pinned: StringRecordId[],
+	pinned: RecordId[],
 };
 
 export type Role = {
@@ -80,7 +80,12 @@ export type Task = {
 		// The time spent in minutes
 		time_spent: number,
 		value: number,
+		user: {
+			id: UserId,
+		},
 	}[],
+
+	belongs_to: ProjectId,
 
 	priority: Priorities,
 	effort: Efforts,
@@ -327,7 +332,6 @@ export type Team = {
 export type ToDo = {
 	id: ToDoId,
 	title: string,
-	url: string,
 	due: Date,
 	owner: UserId,
 	done: boolean,

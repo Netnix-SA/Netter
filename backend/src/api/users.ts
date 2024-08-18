@@ -107,7 +107,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 .delete("/me/pins", async ({ body }) => {
 	const user = await db.select<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"));
 
-	user.pinned = user.pinned.filter(id => id.rid !== body.id);
+	user.pinned = user.pinned.filter(id => id.toString() !== body.id);
 
 	await db.merge<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"), { pinned: user.pinned });
 }, {

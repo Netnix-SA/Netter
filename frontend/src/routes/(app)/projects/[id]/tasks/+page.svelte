@@ -22,6 +22,9 @@
 				case "Text": {
 					return t.title.toLowerCase().includes(filter.value.toLowerCase());
 				}
+				case "Label": {
+					return t.labels.some(l => l.id === filter.value);
+				}
 			}
 		});
 	}), ({ status }) => status));
@@ -53,7 +56,7 @@
 
 	let view: "list" | "kanban" | "graph" = $state("list");
 
-	let filters: ({ type: "State" | "Status" | "Text", operator: '=', value: string })[] = $state([]);
+	let filters: ({ type: "State" | "Status" | "Label" | "Text", operator: '=', value: string })[] = $state([]);
 
 	import { writable, type Writable } from 'svelte/store';
 	import {
@@ -73,6 +76,7 @@
 	// 👇 this is important! You need to import the styles for Svelte Flow to work
 	import '@xyflow/svelte/dist/style.css';
     import CreateTask from "@/components/CreateTask.svelte";
+    import { page } from "$app/stores";
 	
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -116,7 +120,7 @@
 				{/if}
 				<div class="gallery border rounded text-xs divide-x h-6 tactile">
 					<div class="gallery h-full px-1">{filter.type}</div>
-					<div class="gallery h-full px-1 text-sm">{filter.operator}</div>
+					<div class="gallery h-full px-1 text-sm tactile-text">{filter.operator}</div>
 					<div class="gallery h-full px-1">{filter.value}</div>
 					<button class="gallery h-full px-1" onclick={() => { filters = filters.filter(f => f !== filter); }}><X class="w-4 h-4"/></button>
 				</div>
@@ -152,7 +156,7 @@
 								<DropdownMenu.SubTrigger>Label</DropdownMenu.SubTrigger>
 								<DropdownMenu.SubContent>
 									{#each data.labels as label}
-										<DropdownMenu.Item>{label.title}</DropdownMenu.Item>
+										<DropdownMenu.Item onclick={() => filters.push({ type: "Label", operator: 'IN', value: label.id })}>{label.title}</DropdownMenu.Item>
 									{/each}
 								</DropdownMenu.SubContent>
 							</DropdownMenu.Sub>
@@ -260,4 +264,4 @@
 	{/if}
 </div>
 
-<CreateTask bind:open={open_create_task} statuses={data.statuses} users={data.users}/>
+<CreateTask bind:open={open_create_task} statuses={data.statuses} users={data.users} project={$page.params.id}/>

@@ -15,8 +15,11 @@
     import TaskChip from "@/components/TaskChip.svelte";
     import type { Efforts, Priorities, State, Value } from "../db/types";
     import LabelChip from "@/components/LabelChip.svelte";
+
     import Button from "@/components/ui/button/button.svelte";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Dialog from "$lib/components/ui/dialog";
+
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
     import { client, commands } from "@/state";
@@ -24,6 +27,7 @@
     import ComboBox from "@/components/ComboBox.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
+    import AnyChip from "@/components/AnyChip.svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -144,7 +148,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
-				<input class="text-2xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
+				<input class="text-4xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
 				<!-- TODO: link to merge request -->
 			</div>
 			<Dialog.Root bind:open={show_resolve_menu}>
@@ -173,14 +177,26 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		</div>
-		<div class="mt-2">
+		<div class="mt-4 gallery w-full overflow-x-scroll gap-3">
 			{#each data.task.labels as { id }}
 				{@const label = data.labels.find((l) => l.id === id)}
 				<LabelChip {label} />
 			{/each}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
+					+
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content>
+					{#each data.labels as label}
+						<DropdownMenu.Item class="gallery gap-2">
+							{label.icon} {label.title}
+						</DropdownMenu.Item>
+					{/each}
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		</div>
-		<Separator class="my-8"/>
-		<div class="h-56">
+		<Separator class="my-6"/>
+		<div class="h-64">
 			<MarkdownEditor
 				bind:value={body}
 				mode="tabs"
@@ -191,7 +207,7 @@
 		<Separator class="my-8"/>
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
-			<div class="h-64 rounded-lg border column overflow-hidden">
+			<div class="h-72 rounded-lg border column overflow-hidden">
 				<ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/>
 			</div>
 		</div>
@@ -203,34 +219,27 @@
 			values={data.users}
 			bind:value={assignee}
 		/>
-		<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
-		<Select label="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={priority} />
-		<Select label="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={effort} />
-		<Select label="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={value} />
-		<Separator orientation="horizontal" class="my-8" />
-		<Label>Children</Label>
-		{#each data.task.relatives.children as child(child.id)}
-			<TaskChip id={child.id} tasks={data.tasks}/>
+		<div class="gallery gap-2 w-full">
+			<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
+			<Select label="Priority" comparator={(a, b) => a === b} values={PRIORITIES} bind:value={priority}/>
+		</div>
+		<div class="gallery gap-2 w-full">
+			<Select label="Effort" comparator={(a, b) => a === b} values={EFFORTS} bind:value={effort}/>
+			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={value}/>
+		</div>
+		<Separator orientation="horizontal" class="my-4"/>
+		<Label>Objective</Label>
+		No objective set
+		<Separator orientation="horizontal" class="my-4"/>
+		{#if data.task.relatives.related.length > 0}
+			<Label>Related</Label>
+			<div class="column h-32 overflow-scroll">
+				{#each data.task.relatives.related as relative}
+					<AnyChip id={relative.id}/>
+				{/each}
+			</div>
 		{:else}
-			<Dialog.Root bind:open={add_child}>
-				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-					+ Add child
-				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-[425px]">
-					<Dialog.Header>
-						<Dialog.Title>Add child to {data.task.title}</Dialog.Title>
-					</Dialog.Header>
-					<ComboBox placeholder="Select the child task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
-					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Add child task</Button>
-					</Dialog.Footer>
-				</Dialog.Content>
-			</Dialog.Root>
-		{/each}
-		<Label>Related</Label>
-		{#each data.task.relatives.related as relative}
-			<TaskChip id={relative.id} tasks={data.tasks}/>
-		{:else}
+			<Label>Related</Label>
 			<Dialog.Root bind:open={add_relative}>
 				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
 					+ Add relative
@@ -245,6 +254,35 @@
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
+		{/if}
+		<Separator orientation="horizontal" class="my-4"/>
+		{#if data.task.tackles.length > 0}
+			<Label>Tackles</Label>
+			<div class="column h-32 overflow-scroll">
+				{#each data.task.tackles as tackled}
+					<AnyChip id={tackled.id}/>
+				{/each}
+			</div>
+		{:else}
+			<Label>Tackles</Label>
+		{/if}
+		<Separator orientation="horizontal" class="my-4"/>
+		<div class="gallery">
+			<span class="text-muted-foreground text-xs flex-1">
+				Children
+			</span>
+			{#if data.task.relatives.children.length > 0}
+				<button onclick={() => add_child = true} class="tactile-text frame text-lg pr-1 font-bold">
+					+
+				</button>
+			{/if}
+		</div>
+		{#each data.task.relatives.children as child(child.id)}
+			<TaskChip id={child.id} tasks={data.tasks}/>
+		{:else}
+			<button onclick={() => add_child = true} class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+				+ Add child
+			</button>
 		{/each}
 		<Label>Blocked by</Label>
 		{#each data.task.relatives.blockers as blocker}
@@ -294,3 +332,15 @@
 		</Dialog.Content>
 	</Dialog.Root>
 </Dialog.Footer>
+
+<Dialog.Root bind:open={add_child}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Add child to {data.task.title}</Dialog.Title>
+		</Dialog.Header>
+		<ComboBox placeholder="Select the child task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
+		<Dialog.Footer>
+			<Button type="submit" disabled={close_as === undefined}>Add child task</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

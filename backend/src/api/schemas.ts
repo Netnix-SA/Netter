@@ -129,6 +129,9 @@ export const tTask = t.Object({
 		related: t.Array(t.Object({ id: tTaskId })),
 		blockers: t.Array(t.Object({ id: tTaskId })),
 	}),
+	tackles: t.Array(t.Object({
+		id: t.Union([tFeatureId, tApplicationId]),
+	})),
 	updates: t.Array(t.Object({
 		date: t.Date(),
 		value: t.Number({ minimum: 0, maximum: 100 }),
@@ -343,8 +346,7 @@ export const tToDoPost = t.Object({
 
 export const tToDo = t.Object({
 	id: tToDoId,
-	title: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
-	url: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+	title: t.String({ minLength: 3, maxLength: 64 }),
 	owner: tUserId,
 	done: t.Boolean(),
 	due: t.Nullable(t.Date()),

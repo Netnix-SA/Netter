@@ -5,6 +5,7 @@
 	import * as ContextMenu from "$lib/components/ui/context-menu";
     import { removePinned } from "@/actions";
     import { goto } from "$app/navigation";
+    import { client } from "@/state";
 
 	let { id }: { id: string } = $props();
 
@@ -41,19 +42,40 @@
 			return `/products/${id}`;
 		}
 
+		if (clss === "Feature") {
+			return `/features/${id}`;
+		}
+
+		if (clss === "Application") {
+			return `/applications/${id}`;
+		}
+
+		if (clss === "Bug") {
+			return `/bugs/${id}`;
+		}
+
 		return "/";
 	}
+
+	let metadata = $state(client.api.metadata({ id }).get());
 
 	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | undefined);
 	let name = $derived(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
+
+	$inspect(metadata);
 </script>
 
 <div class="gallery gap-2 h-10 rounded-lg border px-2">
 	<ContextMenu.Root>
-		<ContextMenu.Trigger class="flex-1 px-2 py-2 gallery">
+		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
 			<svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
-			<a href={link} class="tactile-text">{id}</a>
+			{#await metadata}
+				<div class="w-16 h-2 animate-pulse">
+				</div>
+			{:then mtdt}
+				<a href={link} class="tactile-text text-sm">{mtdt.data?.title}</a>
+			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
 			<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>

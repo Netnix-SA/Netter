@@ -1,9 +1,9 @@
 import { db } from "../db/index";
-import type { Application, Label, Objective, Project, ProjectId, Status, Task, TaskId, UserId } from "../db/types";
+import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
 import { Elysia, t } from "elysia";
-import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask } from "./schemas";
+import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask, tTaskPost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
-import { map as mapTask, query as queryTasks } from "./tasks";
+import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
 
 export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
@@ -34,6 +34,21 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 	return await queryTasks({ belongs_to: new StringRecordId(id) as unknown as ProjectId, assignee: undefined, state: undefined });
 }, {
 	response: t.Array(tTask),
+})
+
+.post("/:id/tasks", async ({ params: { id }, body }) => {
+	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
+	const statuses = results[0];
+
+	const first_status = statuses[0];
+
+	if (!first_status) {
+		throw new Error("Did not find a status");
+	}
+
+	await createTask(body.title, body.body, new StringRecordId(id) as unknown as ProjectId, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, body.status as unknown as StatusId || first_status.id);
+}, {
+	body: tTaskPost,
 })
 
 .get("/:id/labels", async ({ params: { id } }) => {

@@ -21,6 +21,7 @@ import { extensions } from "./extensions";
 import { products } from "./products";
 import { statuses } from "./statuses";
 import { messages } from "./messages";
+import { StringRecordId } from "surrealdb";
 
 export const server = new Elysia({ prefix: "/api" })
 
@@ -53,6 +54,23 @@ export const server = new Elysia({ prefix: "/api" })
 	detail: {
 		description: "Allows searching across the querying user's whole organization",
 	},
+})
+
+.get("/metadata/:id", async ({ params: { id } }) => {
+	const table = id.split(":")[0];
+	const oid = id.split(":")[1];
+
+	const results = await db.query<[any[]]>(`SELECT id, name, title FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
+
+	const metadata = results[0][0];
+
+	return {
+		id: metadata.id.toString(),
+		title: metadata.title || metadata.name,
+	};
+}, {
+	params: t.Object({ id: t.String() }),
+	response: t.Object({ id: t.String(), title: t.String() }),
 })
 
 .use(users)

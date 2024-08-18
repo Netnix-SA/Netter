@@ -5,4 +5,8 @@
     let { children }: { children: Snippet<[]> } = $props();
 </script>
 
+<svelte:head>
+    <title>Netter</title>
+</svelte:head>
+
 {@render children()}

@@ -11,6 +11,7 @@
     import { client } from "@/state";
     import { ChevronRight, X } from "lucide-svelte";
     import { addToDo } from "@/actions";
+    import type { Snippet } from "svelte";
 
 	type Message = { id: string, author: { id: string }; body: string, resolved?: boolean, question?: string, };
 
@@ -19,7 +20,44 @@
 	let message = $state("");
 
 	let question: Message | undefined = $state(undefined);
+
+	function tokenize(body: string): ({ prop: string, snip: Snippet<[{ title: string }]> } | { prop: string, snip: Snippet<[{ t: string }]> })[] {
+		const tokens = body.split(" ");
+		const snippets = [];
+
+		for (let i = 0; i < tokens.length; i++) {
+			const token = tokens[i];
+
+			if (token.startsWith("@")) {
+				const oid = token.slice(1, -1);
+
+				snippets.push({ prop: token, snip: mention });
+			} else {
+				snippets.push({ prop: token, snip: text });
+			}
+		}
+
+		return snippets;
+	}
 </script>
+
+{#snippet text(t: string)}
+	<span>
+		{t}
+	</span>
+{/snippet}
+
+{#snippet mention(title: string)}
+	<span class="text-sm font-semibold">
+		{title}
+	</span>
+{/snippet}
+
+{#snippet link(title: string, href: string)}
+	<a {href}>
+		{title}
+	</a>
+{/snippet}
 
 <ul class="flex-1 flex flex-col-reverse overflow-scroll">
 	{#await messages}
@@ -84,11 +122,17 @@
 					<button class="rounded size-5 border frame" onclick={() => { question = undefined; }}><X class="size-4"/></button>
 				</div>
 			{/if}
-			<textarea id="message" placeholder="Type your message here..."
+			<!-- <textarea id="message" placeholder="Type your message here..."
 				class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg"
 				bind:value={message}
 			>
-			</textarea>
+			</textarea> -->
+			<input type="text" bind:value={message} class=""/>
+			<div id="message" placeholder="Type your message here..." class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
+				{#each tokenize(message) as { snip, prop }}
+					{@render snip(prop)}
+				{/each}
+			</div>
 		</div>
 	</div>
 	<div class="column justify-end">

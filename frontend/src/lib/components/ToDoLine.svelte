@@ -1,7 +1,5 @@
 <script lang="ts">
-    import { t } from "elysia";
-
-	let { todo }: { todo: { id: string, title: string | null, url: string | null, done: boolean } } = $props();
+	let { todo }: { todo: { id: string, title: string, done: boolean } } = $props();
 </script>
 
 <div class="flex-1 px-4 py-2 gallery">
@@ -9,7 +7,7 @@
 		<input type="checkbox" class="" bind:checked={todo.done}/>
 		<a href={`/todos/${todo.id}`} class="flex items-center">
 			<span class="text-sm tactile-text">
-				{(todo.title || todo.url) || "BROKEN!"}
+				{todo.title}
 			</span>
 		</a>
 	</div>

@@ -57,33 +57,32 @@
 
 	let search = $state("");
 	
-	let entries: string[] = $state([]);
+	let entries: { id: string, title: string }[] = $state([]);
 
 	async function handleInput(e: Event) {
 		const { data } = await client.api.get({ query: { text: search } });
-		let results: string[] = data?.map(({ title }) => title) ?? [];
-		entries = results;
+		entries = data;
 	}
 
-	async function handleEntry(entry: string) {
+	function handleEntry(entry: string) {
 		if (entry.startsWith("Project")) {
-			await goto(`/projects/${entry}`);
+			return goto(`/projects/${entry}`);
 		}
 
 		if (entry.startsWith("Team")) {
-			await goto(`/teams/${entry}`);
+			return goto(`/teams/${entry}`);
 		}
 
 		if (entry.startsWith("Channel")) {
-			await goto(`/channels/${entry}`);
+			return goto(`/channels/${entry}`);
 		}
 
 		if (entry.startsWith("Task")) {
-			await goto(`/tasks/${entry}`);
+			return goto(`/tasks/${entry}`);
 		}
 
-		if (entry.startsWith("Task")) {
-			await goto(`/products/${entry}`);
+		if (entry.startsWith("Product")) {
+			return goto(`/products/${entry}`);
 		}
 	}
 </script>
@@ -189,17 +188,19 @@
 			<Command.Separator/>
 		{/each}
 		{#if entries.length > 0}
+		{#key search}
 			<Command.Group heading="Results">
-				{#each entries as entry}
-					<Command.Item class="h-8" onSelect={async () => await handleEntry(entry)}>{entry}</Command.Item>
+				{#each entries as { id, title }(id)}
+					<Command.Item class="h-8" onSelect={async () => await handleEntry(id)}>{title}</Command.Item>
 				{/each}
 			</Command.Group>
 			<Command.Separator/>
+		{/key}
 		{/if}
 		<Command.Separator />
 		<Command.Group heading="Sections">
 			{#each LINKS as link}
-				<Command.Item class="h-8" onSelect={async () => await goto(link.href)}><svelte:component this={link.icon} class="mr-2 h-4 w-4"/> {link.label}</Command.Item>
+				<Command.Item class="h-8" onSelect={async () => await goto(link.href)}><svelte:component this={link.icon} class="mr-2 size-4"/> {link.label}</Command.Item>
 			{/each}
 		</Command.Group>
 		<Command.Separator />
