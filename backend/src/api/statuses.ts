@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { tLabel, tLabelPost, tStatus } from "./schemas";
-import type { Label, Status } from "@/server/db/types";
-import { db } from "@/server/db";
+import type { Label, Status } from "../db/types";
+import { db } from "../db/index";
 import { surql } from "surrealdb";
 
 export const statuses = new Elysia({ prefix: "/statuses", tags: ["Statuses"] })

@@ -1,11 +1,26 @@
 services:
+  backend:
+    image: oven/bun:1.1.21
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    expose:
+      - 80
+    ports:
+      - 80:80
+    command: bun run index.ts --hot
+    depends_on:
+      - db
+    restart: always
   frontend:
     image: oven/bun:1.1.21
     working_dir: /app
     volumes:
       - ./frontend:/app
     ports:
-      - 80:80
+      - 5173:80
     env_file:
       - .env
     command: bun run dev -- --host --port 80

@@ -1,5 +1,5 @@
-import { db } from "@/server/db";
-import { Channel, type ChannelId, type Efforts, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "@/server/db/types";
+import { db } from "../db/index";
+import { Channel, type ChannelId, type Efforts, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "../db/types";
 import { Elysia, NotFoundError, t } from "elysia";
 import { tBug, tMember, tTask, tTaskPost, tTaskUpdatePost, tTeam, tTeamPost, tUserId } from "./schemas";
 import { RecordId, StringRecordId, surql, Table } from "surrealdb";

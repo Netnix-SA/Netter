@@ -1,39 +1,74 @@
 <script lang="ts">
-    import { CLASS_TO_ICON } from "@/global";
-    import { MessageCircleQuestion } from "lucide-svelte";
+	import { CLASS_TO_ICON } from "@/global";
+	import { MessageCircleQuestion } from "lucide-svelte";
 
-    let { id }: { id: string } = $props();
+	import * as ContextMenu from "$lib/components/ui/context-menu";
+    import { removePinned } from "@/actions";
+    import { goto } from "$app/navigation";
 
-    function buildUrl(clss: string, id: string) {
-        if (clss === "Project") {
-            return `/projects/${id}`;
-        }
+	let { id }: { id: string } = $props();
 
-        if (clss === "User") {
-            return `/users/${id}`;
-        }
+	function buildUrl(clss: string, id: string) {
+		if (clss === "Project") {
+			return `/projects/${id}`;
+		}
 
-        if (clss === "Team") {
-            return `/teams/${id}`;
-        }
+		if (clss === "User") {
+			return `/users/${id}`;
+		}
 
-        if (clss === "Task") {
-            return `/tasks/${id}`;
-        }
+		if (clss === "Team") {
+			return `/teams/${id}`;
+		}
 
-        if (clss === "Repository") {
-            return `/repositories/${id}`;
-        }
+		if (clss === "Task") {
+			return `/tasks/${id}`;
+		}
 
-        return "/";
-    }
+		if (clss === "Repository") {
+			return `/repositories/${id}`;
+		}
 
-    let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | undefined);
-    let name = $derived(id.split(':')[1]);
-    let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
+		if (clss === "Channel") {
+			return `/channels/${id}`;
+		}
+
+		if (clss === "View") {
+			return `/views/${id}`;
+		}
+
+		if (clss === "Product") {
+			return `/products/${id}`;
+		}
+
+		return "/";
+	}
+
+	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | undefined);
+	let name = $derived(id.split(':')[1]);
+	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
 <div class="gallery gap-2 h-10 rounded-lg border px-2">
-    <svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
-    <a href={link} class="tactile-text">{id}</a>
+	<ContextMenu.Root>
+		<ContextMenu.Trigger class="flex-1 px-2 py-2 gallery">
+			<svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
+			<a href={link} class="tactile-text">{id}</a>
+		</ContextMenu.Trigger>
+		<ContextMenu.Content>
+			<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>
+			{#if clss === "Project"}
+				<ContextMenu.Separator />
+				<ContextMenu.Label>Project</ContextMenu.Label>
+				<ContextMenu.Separator />
+				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/tasks`)}>Tasks</ContextMenu.Item>
+			{/if}
+			{#if clss === "Product"}
+				<ContextMenu.Separator />
+				<ContextMenu.Label>Product</ContextMenu.Label>
+				<ContextMenu.Separator />
+				<ContextMenu.Item onclick={async () => await goto(`/products/${id}/features`)}>Features</ContextMenu.Item>
+			{/if}
+		</ContextMenu.Content>
+	</ContextMenu.Root>    
 </div>

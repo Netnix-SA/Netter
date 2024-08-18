@@ -1,9 +1,9 @@
 import { StringRecordId } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
 
-import { type User, type ToDo } from "@/server/db/types";
+import { type User, type ToDo } from "../db/types";
 import { tUserPost, tUser, tToDo, tToDoPost } from "./schemas";
-import { db } from "@/server/db";
+import { db } from "../db/index";
 import { map as mapToDo } from "./todos";
 
 export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
@@ -103,6 +103,21 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		description: "Creates a todo for the currently logged in user.",
 	}
 })
+
+.delete("/me/pins", async ({ body }) => {
+	const user = await db.select<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"));
+
+	user.pinned = user.pinned.filter(id => id.rid !== body.id);
+
+	await db.merge<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"), { pinned: user.pinned });
+}, {
+	body: t.Object({
+		id: t.String(),
+	}),
+	detail: {
+		description: "Creates a todo for the currently logged in user.",
+	}
+});
 
 const map = ({ id, handle, full_name, email, pinned, color }: User) => ({
 	id: id.toString(),

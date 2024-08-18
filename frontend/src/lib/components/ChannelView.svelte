@@ -10,6 +10,7 @@
 	import UserAvatar from "./UserAvatar.svelte";
     import { client } from "@/state";
     import { ChevronRight, X } from "lucide-svelte";
+    import { addToDo } from "@/actions";
 
 	type Message = { id: string, author: { id: string }; body: string, resolved?: boolean, question?: string, };
 
@@ -25,8 +26,8 @@
 		<div class="h-12 w-full bg-muted-foreground animate-pulse">
 
 		</div>
-	{:then messages}
-		<!-- {#each messages as message}
+	{:then msgs}
+		{#each msgs as message}
 		{@const user = users.find(u => u.id === message.author.id)}
 			<li class="flex gap-3 border-t last:border-dashed">
 				<ContextMenu.Root>
@@ -55,11 +56,11 @@
 					</ContextMenu.Trigger>
 					<ContextMenu.Content>
 						<ContextMenu.Item onclick={() => { question = message; }}>Reply to</ContextMenu.Item>
-						<ContextMenu.Item onclick={() => console.warn("Add to ToDo's")}>Add to ToDo's</ContextMenu.Item>
+						<ContextMenu.Item onclick={async () => await addToDo(message.body, message.id)}>Add to ToDo's</ContextMenu.Item>
 					</ContextMenu.Content>
 				</ContextMenu.Root>
 			</li>
-		{/each} -->
+		{/each}
 	{/await}
 </ul>
 <div id="input-box" class="overflow-hidden rounded-t-lg bg-neutral-900 border-t px-3 py-2 gap-2 flex">

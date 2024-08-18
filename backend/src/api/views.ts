@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { tFeature, tTask, tView, tViewPost } from "./schemas";
-import { db } from "@/server/db";
-import type { Task, View } from "@/server/db/types";
+import { db } from "../db/index";
+import type { Task, View } from "../db/types";
 import { StringRecordId } from "surrealdb";
 
 export const views = new Elysia({ prefix: "/views", tags: ["Views"] })

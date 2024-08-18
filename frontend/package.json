@@ -27,7 +27,6 @@
   "type": "module",
   "dependencies": {
     "@elysiajs/eden": "^1.1.2",
-    "@elysiajs/swagger": "^1.1.1",
     "@xyflow/svelte": "^0.1.14",
     "bits-ui": "^0.21.13",
     "carta-md": "^4.4.2",
@@ -36,9 +35,9 @@
     "elysia": "^1.1.5",
     "isomorphic-dompurify": "^2.14.0",
     "lucide-svelte": "^0.424.0",
-    "octokit": "^4.0.2",
-    "surrealdb": "v1.0.0-beta.19",
+    "mode-watcher": "^0.4.1",
     "svelte-radix": "^1.1.0",
+    "svelte-sonner": "^0.3.27",
     "tailwind-merge": "^2.5.1",
     "tailwind-variants": "^0.2.1"
   }

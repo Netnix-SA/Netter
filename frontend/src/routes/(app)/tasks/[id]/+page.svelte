@@ -13,7 +13,7 @@
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
     import TaskChip from "@/components/TaskChip.svelte";
-    import type { Efforts, Priorities, State, Value } from "@/server/db/types";
+    import type { Efforts, Priorities, State, Value } from "../db/types";
     import LabelChip from "@/components/LabelChip.svelte";
     import Button from "@/components/ui/button/button.svelte";
 	import * as Dialog from "$lib/components/ui/dialog";
@@ -192,7 +192,7 @@
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
 			<div class="h-64 rounded-lg border column overflow-hidden">
-				<!-- <ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/> -->
+				<ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/>
 			</div>
 		</div>
 	</div>

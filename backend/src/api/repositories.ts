@@ -2,8 +2,8 @@ import { Elysia, t } from "elysia";
 import { tFeature, tRepositoryId } from "./schemas";
 import { App } from "octokit";
 import { tRepository } from "./schemas";
-import { db } from "@/server/db";
-import type { Organization, Repository } from "@/server/db/types";
+import { db } from "../db/index";
+import type { Organization, Repository } from "../db/types";
 import { StringRecordId } from "surrealdb";
 
 export const repositories = new Elysia({ prefix: "/repositories", tags: ["Repositories"] })

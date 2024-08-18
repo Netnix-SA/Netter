@@ -2,14 +2,16 @@
     import { onMount, type Snippet } from "svelte";
 
 	import { Settings } from "lucide-svelte";
+	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Command from "$lib/components/ui/command";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { goto, onNavigate } from "$app/navigation";
 	import { Separator } from "$lib/components/ui/separator";
-    import { commands } from "@/state";
+    import { client, commands } from "@/state";
     import { LINKS } from "@/global";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
+    import { toast } from "svelte-sonner";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -24,6 +26,12 @@
 		}
 
 		window.addEventListener('keydown', handleKeydown);
+
+		const ws = client.api.ws.subscribe();
+
+		ws.subscribe((message) => {
+			toast(JSON.stringify(message));
+		});
 
 		return () => {
       		document.removeEventListener("keydown", handleKeydown);
@@ -52,8 +60,8 @@
 	let entries: string[] = $state([]);
 
 	async function handleInput(e: Event) {
-		let res = await fetch(`/api?text=${search}`);
-		let results: string[] = await res.json();
+		const { data } = await client.api.get({ query: { text: search } });
+		let results: string[] = data?.map(({ title }) => title) ?? [];
 		entries = results;
 	}
 
@@ -80,6 +88,7 @@
 	}
 </script>
 
+<Toaster/>
 <main class="h-screen w-screen flex flex-col bg-background">
 	<div class="w-full h-full flex p-2 gap-4">
 		<nav class="border rounded-lg w-72 px-4 pb-4 pt-4 h-full flex flex-col gap-4 page-backdrop">

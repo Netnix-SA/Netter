@@ -1,8 +1,8 @@
 import { client } from "@/state";
 import { error } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
+import type { PageLoad } from "./$types";
 
-export const load: PageServerLoad = async () => {
+export const load: PageLoad = async () => {
     const { data: products } = await client.api.products.get();
 
     if(!products) {

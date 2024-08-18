@@ -1,9 +1,9 @@
-import type { Channel, Project, Task } from '@/server/db/types';
 import { client } from '@/state.js';
 import { error } from '@sveltejs/kit';
 import { StringRecordId } from 'surrealdb';
+import type { LayoutLoad } from './$types';
 
-export const load = async ({ fetch }) => {
+export const load: LayoutLoad = async ({ fetch }) => {
 	const { data: channels } = await client.api.channels.get();
 
 	if (!channels) {

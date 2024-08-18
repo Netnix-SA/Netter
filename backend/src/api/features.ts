@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { tFeature, tFeaturePost } from "./schemas";
-import { db } from "@/server/db";
-import { type Feature } from "@/server/db/types";
+import { db } from "../db/index";
+import { type Feature } from "../db/types";
 import { StringRecordId } from "surrealdb";
 
 export const features = new Elysia({ prefix: "/features", tags: ["Features"] })

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog";
-    import type { Efforts, Priorities, State, Value } from "@/server/db/types";
+    import type { Efforts, Priorities, State, Value } from "../db/types";
     import Input from "./ui/input/input.svelte";
     import Select from "./Select.svelte";
     import { EFFORTS, PRIORITIES, STATES, VALUES } from "@/global";

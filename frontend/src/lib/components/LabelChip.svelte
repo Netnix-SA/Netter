@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Colors } from "@/server/db/types";
+	import type { Colors } from "../db/types";
 
 	let { label }: { label: { icon: string, color: Colors, title: string } } = $props();
 </script>

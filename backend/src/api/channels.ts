@@ -1,5 +1,5 @@
-import { db } from "@/server/db";
-import type { Channel, Message } from "@/server/db/types";
+import { db } from "../db/index";
+import type { Channel, Message } from "../db/types";
 import Elysia, { t } from "elysia";
 import { tChannel, tChannelPost, tMessage, tMessagePost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
@@ -49,7 +49,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 	await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
-		author: new RecordId("User", "fvilla@netnix.net"),
+		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),
 		date: new Date(),
 	});
 }, {

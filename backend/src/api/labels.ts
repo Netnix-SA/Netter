@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { tLabel, tLabelPost } from "./schemas";
-import type { Label } from "@/server/db/types";
-import { db } from "@/server/db";
+import type { Label } from "../db/types";
+import { db } from "../db/index";
 
 export const labels = new Elysia({ prefix: "/labels", tags: ["Labels"] })
 

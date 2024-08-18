@@ -1,5 +1,5 @@
-import { db } from "@/server/db";
-import { type Bug, type Feature } from "@/server/db/types";
+import { db } from "../db/index";
+import { type Bug, type Feature } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tBug, tBugPost, tFeature } from "./schemas";
 import { StringRecordId, surql } from "surrealdb";

@@ -1,4 +1,4 @@
-import type { ToDo } from "@/server/db/types";
+import type { ToDo } from "../db/types";
 
 export const map = ({ id, title, url, owner, due, done }: ToDo) => ({
     id: id.toString(),

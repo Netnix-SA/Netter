@@ -1,5 +1,5 @@
-import { db } from "@/server/db";
-import type { Label, Team } from "@/server/db/types";
+import { db } from "../db/index";
+import type { Label, Team } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tLabel, tMember, tTeam, tTeamPost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";

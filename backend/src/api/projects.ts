@@ -1,5 +1,5 @@
-import { db } from "@/server/db";
-import type { Application, Label, Objective, Project, ProjectId, Status, Task, TaskId, UserId } from "@/server/db/types";
+import { db } from "../db/index";
+import type { Application, Label, Objective, Project, ProjectId, Status, Task, TaskId, UserId } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";

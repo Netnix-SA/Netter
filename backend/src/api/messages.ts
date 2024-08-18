@@ -1,7 +1,7 @@
-import type { Message } from "@/server/db/types";
+import type { Message } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tMessage, tMessagePost, tUserId } from "./schemas";
-import { db } from "@/server/db";
+import { db } from "../db/index";
 
 export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messages"], description: "Messages make up the content in channels." }})
 

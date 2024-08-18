@@ -7,3 +7,7 @@ export async function addToDo(title: string, url: string) {
 export async function addPinned(id: string) {
     await client.api.users.me.pins.post({ id });
 }
+
+export async function removePinned(id: string) {
+    await client.api.users.me.pins.delete({ id });
+}
