@@ -60,10 +60,8 @@
 	let metadata = $state(client.api.metadata({ id }).get());
 
 	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | undefined);
-	let name = $derived(id.split(':')[1]);
+	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
-
-	$inspect(metadata);
 </script>
 
 <div class="gallery gap-2 h-10 rounded-lg border px-2">

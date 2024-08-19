@@ -9,6 +9,10 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
+<svelte:head>
+	<title>Netter</title>
+</svelte:head>
+
 <div class="w-full h-full grid grid-cols-6 grid-rows-6">
 	<div id="tasks" class="flex flex-col col-span-4 row-span-3 divide-y border-r border-b">
 		<div class="flex w-full px-6 h-10 items-center text-sm header-background">

@@ -202,7 +202,7 @@ export type View = {
 
 export type Channel = {
 	id: ChannelId,
-	name: string,
+	name?: string,
 
 	// Subscribers are users who wish to be notified about activity under this channel
 	subscribers: { user: UserId }[],
@@ -291,6 +291,7 @@ export type Feature = {
 	id: FeatureId,
 	name: string,
 	description: string,
+	value: Value,
 };
 
 export type Repository = {

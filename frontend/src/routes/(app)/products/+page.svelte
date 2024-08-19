@@ -7,6 +7,10 @@
     let { data }: { data: PageData } = $props();
 </script>
 
+<svelte:head>
+	<title>Products</title>
+</svelte:head>
+
 <div class="flex-1 flex flex-col w-full divide-y">
 	<header class="flex w-full px-6 h-10 items-center text-sm">
 		My products

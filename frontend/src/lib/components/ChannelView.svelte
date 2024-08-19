@@ -1,11 +1,8 @@
 <script lang="ts">
 	import Paperclip from "lucide-svelte/icons/paperclip";
-	import Mic from "lucide-svelte/icons/mic";
 	import CornerDownLeft from "lucide-svelte/icons/corner-down-left";
 	import { Button } from "$lib/components/ui/button";
 	import * as Tooltip from "$lib/components/ui/tooltip";
-	import { Textarea } from "$lib/components/ui/textarea";
-	import { Label } from "$lib/components/ui/label";
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import UserAvatar from "./UserAvatar.svelte";
     import { client } from "@/state";
@@ -83,7 +80,7 @@
 								</span>
 								{#if message.resolved !== undefined}
 									<div class="frame rounded-full w-20 border text-xs h-5">
-										<span style={message.resolved ? "filter: drop-shadow(0px 0px 12px rgba(0, 255, 163, 1)) drop-shadow(0px 0px 6px rgba(0, 255, 163, 1));" : "filter: drop-shadow(0px 0px 12px rgba(255, 60, 25, 1)) drop-shadow(0px 0px 6px rgba(255, 60, 25, 1)) drop-shadow(0px 0px 2px rgba(255, 60, 25, 1));"}>{message.resolved ? "Resolved" : "Unresolved"}</span>
+										<span class="select-none" style={message.resolved ? "filter: drop-shadow(0px 0px 12px rgba(0, 255, 163, 1)) drop-shadow(0px 0px 6px rgba(0, 255, 163, 1));" : "filter: drop-shadow(0px 0px 12px rgba(255, 60, 25, 1)) drop-shadow(0px 0px 6px rgba(255, 60, 25, 1)) drop-shadow(0px 0px 2px rgba(255, 60, 25, 1));"}>{message.resolved ? "Resolved" : "Unresolved"}</span>
 									</div>
 								{/if}
 							</div>

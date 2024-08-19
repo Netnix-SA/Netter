@@ -16,3 +16,5 @@ DEFINE INDEX user_handle ON TABLE User COLUMNS handle;
 DEFINE INDEX message_author ON TABLE Message COLUMNS author;
 DEFINE INDEX message_channel ON TABLE Message COLUMNS channel;
 DEFINE INDEX message_user_inquiries ON TABLE Message COLUMNS author, resolved;
+DEFINE INDEX task_belongs_to ON TABLE Task COLUMNS belongs_to; -- Index for filtering tasks by project
+DEFINE INDEX feature_product ON TABLE Feature COLUMNS product; -- Index for filtering tasks by products

@@ -25,11 +25,22 @@ export const load: PageLoad = async ({ params: { id }, fetch }) => {
 		throw error(404, "Failed to get statuses!");
 	}
 
+	const { data: channel } = await client.api.tasks({ id }).channel.get();
+
+	if (!channel) {
+		throw error(404, "Failed to get channel!");
+	}
+
 	return {
 		task,
 		tasks,
 		labels,
 		statuses,
-		messages: client.api.channels({ id: task.channel.id }).messages.get().then(({ data }) => data ?? []),
+		channel,
+		messages: client.api.channels({ id: channel.id }).messages.get().then(({ data }) => data ?? []),
+		related: client.api.tasks({ id }).related.get().then(({ data }) => data ?? []),
+		blockers: client.api.tasks({ id }).blockers.get().then(({ data }) => data ?? []),
+		children: client.api.tasks({ id }).children.get().then(({ data }) => data ?? []),
+		tackled: client.api.tasks({ id }).tackled.get().then(({ data }) => data ?? []),
 	};
 };

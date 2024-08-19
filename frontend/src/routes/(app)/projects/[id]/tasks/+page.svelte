@@ -111,6 +111,10 @@
 	const snapGrid: [number, number] = [25, 25];
 </script>
 
+<svelte:head>
+	<title>{"Project > Tasks"}</title>
+</svelte:head>
+
 <div class="flex-1 w-full flex flex-col">
 	<div class="h-10 gallery px-4 border-b">
 		<div id="left" class="flex-1 gallery">

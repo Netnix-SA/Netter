@@ -12,7 +12,6 @@
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
-    import TaskChip from "@/components/TaskChip.svelte";
     import type { Efforts, Priorities, State, Value } from "../db/types";
     import LabelChip from "@/components/LabelChip.svelte";
 
@@ -28,6 +27,7 @@
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
+    import { Loading } from "@/components/ui/command";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -119,7 +119,13 @@
 	let assignee = $state(
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
 	);
+
+	$inspect(data.task);
 </script>
+
+<svelte:head>
+	<title>{data.task.title}</title>
+</svelte:head>
 
 <div class="flex">
 	<div class="flex flex-col w-[64em]">
@@ -188,7 +194,7 @@
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					{#each data.labels as label}
-						<DropdownMenu.Item class="gallery gap-2">
+						<DropdownMenu.Item class="gallery gap-2" onclick={() => { data.task.labels.push({ id: label.id }); data.task = data.task; }}>
 							{label.icon} {label.title}
 						</DropdownMenu.Item>
 					{/each}
@@ -208,7 +214,7 @@
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
 			<div class="h-72 rounded-lg border column overflow-hidden">
-				<ChannelView channel={data.task.channel} messages={data.messages} users={data.users}/>
+				<ChannelView channel={data.channel} messages={data.messages} users={data.users}/>
 			</div>
 		</div>
 	</div>
@@ -228,13 +234,13 @@
 			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={value}/>
 		</div>
 		<Separator orientation="horizontal" class="my-4"/>
-		<Label>Objective</Label>
-		No objective set
-		<Separator orientation="horizontal" class="my-4"/>
-		{#if data.task.relatives.related.length > 0}
+		{#await data.related}
+			Loading related tasks...
+		{:then related}
+		{#if related.length > 0}
 			<Label>Related</Label>
-			<div class="column h-32 overflow-scroll">
-				{#each data.task.relatives.related as relative}
+			<div class="column h-24 overflow-scroll">
+				{#each related as relative}
 					<AnyChip id={relative.id}/>
 				{/each}
 			</div>
@@ -255,54 +261,74 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		{/if}
+		{/await}
 		<Separator orientation="horizontal" class="my-4"/>
-		{#if data.task.tackles.length > 0}
-			<Label>Tackles</Label>
-			<div class="column h-32 overflow-scroll">
-				{#each data.task.tackles as tackled}
-					<AnyChip id={tackled.id}/>
-				{/each}
-			</div>
-		{:else}
-			<Label>Tackles</Label>
-		{/if}
-		<Separator orientation="horizontal" class="my-4"/>
-		<div class="gallery">
-			<span class="text-muted-foreground text-xs flex-1">
-				Children
-			</span>
-			{#if data.task.relatives.children.length > 0}
-				<button onclick={() => add_child = true} class="tactile-text frame text-lg pr-1 font-bold">
-					+
-				</button>
+		{#await data.tackled}
+			Loading tackled tasks...
+		{:then tackled}
+			{#if tackled.length > 0}
+				<Label>Tackles</Label>
+				<div class="column h-24 overflow-scroll">
+					{#each tackled as item}
+						<AnyChip id={item.id}/>
+					{/each}
+				</div>
+			{:else}
+				<Label>Tackles</Label>
 			{/if}
+		{/await}
+		<Separator orientation="horizontal" class="my-4"/>
+		<div class="column">
+			{#await data.children}
+				Loading children...
+			{:then children}
+				{#if children.length > 0}
+					<div class="gallery">
+						<span class="text-muted-foreground text-xs flex-1">
+							Children
+						</span>
+						<button onclick={() => add_child = true} class="tactile-text frame text-lg pr-1 font-bold">
+							+
+						</button>
+					</div>
+					{#each children as child(child.id)}
+						<AnyChip id={child.id}/>
+					{/each}
+				{:else}
+					<div class="column gap-2">
+						<span class="text-muted-foreground text-xs flex-1">
+							Children
+						</span>
+						<button onclick={() => add_child = true} class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+							+ Add child
+						</button>
+					</div>
+				{/if}
+			{/await}
 		</div>
-		{#each data.task.relatives.children as child(child.id)}
-			<TaskChip id={child.id} tasks={data.tasks}/>
-		{:else}
-			<button onclick={() => add_child = true} class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-				+ Add child
-			</button>
-		{/each}
 		<Label>Blocked by</Label>
-		{#each data.task.relatives.blockers as blocker}
-			<TaskChip id={blocker.id} tasks={data.tasks}/>
-		{:else}
-			<Dialog.Root bind:open={add_blocker}>
-				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-					+ Add blocker
-				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-[425px]">
-					<Dialog.Header>
-						<Dialog.Title>Add blocker to {data.task.title}</Dialog.Title>
-					</Dialog.Header>
-					<ComboBox placeholder="Select the blocker task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
-					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Add blocker task</Button>
-					</Dialog.Footer>
-				</Dialog.Content>
-			</Dialog.Root>
-		{/each}
+		{#await data.blockers}
+			Loading blocking tasks...
+		{:then blockers}
+			{#each blockers as blocker}
+				<AnyChip id={blocker.id}/>
+			{:else}
+				<Dialog.Root bind:open={add_blocker}>
+					<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
+						+ Add blocker
+					</Dialog.Trigger>
+					<Dialog.Content class="sm:max-w-[425px]">
+						<Dialog.Header>
+							<Dialog.Title>Add blocker to {data.task.title}</Dialog.Title>
+						</Dialog.Header>
+						<ComboBox placeholder="Select the blocker task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
+						<Dialog.Footer>
+							<Button type="submit" disabled={close_as === undefined}>Add blocker task</Button>
+						</Dialog.Footer>
+					</Dialog.Content>
+				</Dialog.Root>
+			{/each}
+		{/await}
 	</div>
 </div>
 

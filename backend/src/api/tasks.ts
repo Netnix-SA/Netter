@@ -1,7 +1,9 @@
 import { db } from "../db/index";
-import { Channel, type ApplicationId, type BugId, type ChannelId, type Efforts, type FeatureId, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type TaskId, type Team, type UserId, type Value } from "../db/types";
+import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, StatusId, Task, UserId, Value } from "../db/types";
+import { map as mapChannel } from "./channels";
+import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tBug, tMember, tTask, tTaskPost, tTaskUpdatePost, tTeam, tTeamPost, tUserId } from "./schemas";
+import { tChannel, tFeature, tTask, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
 import { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
@@ -32,6 +34,93 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	response: tTask,
 	detail: {
 		description: "Gets the tasks for the querying user"
+	}
+})
+
+.get("/:id/channel", async ({ params: { id } }) => {
+	const results = await db.query<[Channel[]]>(surql`SELECT * FROM Channel WHERE target == ${new StringRecordId(id)};`);
+
+	const channels = results[0];
+
+	const channel = channels[0];
+
+	if (!channel) {
+		throw new NotFoundError("No channel found for that task");
+	}
+
+	return mapChannel(channel);
+}, {
+	response: tChannel,
+	detail: {
+		description: "Gets the channel for the task"
+	}
+})
+
+.get("/:id/related", async ({ params: { id } }) => {
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}->is_related_to->Task, ${new StringRecordId(id)}<-is_related_to<-Task || []);`);
+
+	const tasks = results[0];
+
+	if (tasks === undefined) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	return tasks.map(map);
+}, {
+	response: t.Array(tTask),
+	detail: {
+		description: "Gets the relatives of the task"
+	}
+})
+
+.get("/:id/blockers", async ({ params: { id } }) => {
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}<-is_blocking<-Task;`);
+
+	const tasks = results[0];
+
+	if (tasks === undefined) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	return tasks.map(map);
+}, {
+	response: t.Array(tTask),
+	detail: {
+		description: "Gets the relatives of the task"
+	}
+})
+
+.get("/:id/children", async ({ params: { id } }) => {
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}->is_parent_of->Task;`);
+
+	const tasks = results[0];
+
+	if (tasks === undefined) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	return tasks.map(map);
+}, {
+	response: t.Array(tTask),
+	detail: {
+		description: "Gets the children of the task (the tasks this task is parent to)."
+	}
+})
+
+.get("/:id/tackled", async ({ params: { id } }) => {
+	const results = await db.query<[Feature[]]>(surql`SELECT * FROM ${new StringRecordId(id)}->tackles->Feature;`);
+
+	const features = results[0];
+
+	if (features === undefined) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	return features.map(mapFeature);
+}, {
+	response: t.Array(tFeature),
+	detail: {
+		description: "Gets the items tackled by the task. Tackled items can be features or bugs."
 	}
 })
 
@@ -95,7 +184,8 @@ export const create = async (title: string, body: string, belongs_to: ProjectId,
 };
 
 export const query = async ({ id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	let query = `SELECT *, ->is_parent_of->Task as children, array::union(->is_related_to->Task, <-is_related_to<-Task) as related, <-is_blocking<-Task as blocking, ->tackles.out as tackles, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
+	// let query = `SELECT *, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, FROM Task`;
+	let query = `SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
 
 	let pieces = [];
 
@@ -123,14 +213,14 @@ export const query = async ({ id, assignee, state, belongs_to }: { id?: string, 
 
 	query += ';';
 
-	const results = await db.query<[(Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined })[]]>(query);
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(query);
 
 	const tasks = results[0];
 
 	return tasks.map(map);
 };
 
-export const map = ({ id, title, body, priority, status, updates, labels, assignee, tackles, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined }) => {
+export const map = ({ id, title, body, priority, status, updates, labels, assignee, objective, effort, value, progress }: Task & { progress: number | undefined }) => {
 	return {
 		id: id.toString(),
 		title, body,
@@ -141,22 +231,42 @@ export const map = ({ id, title, body, priority, status, updates, labels, assign
 		assignee: assignee && {
 			id: assignee.toString()
 		},
-		relatives: {
-			children: children.map(c => ({ id: c.toString() })),
-			related: related.map(r => ({ id: r.toString() })),
-			blockers: blocking.map(b => ({ id: b.toString() })),
-		},
 		priority, effort, value,
-		channel: {
-			id: channel.toString(),
-		},
 		updates,
 		progress: progress ?? 0,
-		tackles: tackles.map(id => ({
-			id: id.toString(),
-		})),
 		objective: objective && {
 			id: objective.toString(),
 		},
 	};
 };
+
+// export const map = ({ id, title, body, priority, status, updates, labels, assignee, tackles, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined }) => {
+// 	return {
+// 		id: id.toString(),
+// 		title, body,
+// 		status: status.toString(),
+// 		labels: labels.map(id => ({
+// 			id: id.toString(),
+// 		})),
+// 		assignee: assignee && {
+// 			id: assignee.toString()
+// 		},
+// 		relatives: {
+// 			children: children.map(c => ({ id: c.toString() })),
+// 			related: related.map(r => ({ id: r.toString() })),
+// 			blockers: blocking.map(b => ({ id: b.toString() })),
+// 		},
+// 		priority, effort, value,
+// 		channel: {
+// 			id: channel.toString(),
+// 		},
+// 		updates,
+// 		progress: progress ?? 0,
+// 		tackles: tackles.map(id => ({
+// 			id: id.toString(),
+// 		})),
+// 		objective: objective && {
+// 			id: objective.toString(),
+// 		},
+// 	};
+// };

@@ -6,6 +6,10 @@
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 </script>
 
+<svelte:head>
+	<title>Repositories</title>
+</svelte:head>
+
 <header class="h-10 border-b w-full gallery px-4 bg-primary-foreground">
 	<span class="text-sm tactile-text">
 		Repositories

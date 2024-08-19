@@ -1,7 +1,9 @@
 import { Elysia, t } from "elysia";
-import { tFeature, tFeaturePost } from "./schemas";
+import { tBug, tFeature, tFeaturePost, tTask } from "./schemas";
 import { db } from "../db/index";
-import { type Feature } from "../db/types";
+import { type Bug, type Feature, type Task } from "../db/types";
+import { map as mapBug } from "./bugs";
+import { map as mapTask } from "./tasks";
 import { StringRecordId } from "surrealdb";
 
 export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
@@ -34,9 +36,30 @@ export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
 	response: tFeature,
 })
 
-export const map = ({ id, name, description }: Feature) => {
+.get("/:id/bugs", async ({ params: { id } }) => {
+	const results = await db.query<[Bug[]]>("SELECT * FROM Bug WHERE $id IN features;", { id: new StringRecordId(id) });
+
+	const bugs = results[0];
+
+	return bugs.map(mapBug);
+}, {
+	response: t.Array(tBug),
+})
+
+.get("/:id/tasks", async ({ params: { id } }) => {
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
+
+	const tasks = results[0];
+
+	return tasks.map(mapTask);
+}, {
+	response: t.Array(tTask),
+})
+
+export const map = ({ id, name, description, value }: Feature) => {
 	return {
 		id: id.toString(),
 		name, description,
+		value,
 	};
 };

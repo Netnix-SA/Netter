@@ -8,6 +8,10 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
+<svelte:head>
+	<title>Views</title>
+</svelte:head>
+
 <header class="h-10 border-b w-full gallery px-4 bg-primary-foreground">
 	<span class="text-sm tactile-text">
 		Views

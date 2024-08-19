@@ -1,19 +1,20 @@
 import { t } from "elysia";
 
 export const tUserId = t.String({ title: "UserId", pattern: "^User:[a-z0-9]{20}$" });
-export const tCompanyId = t.String({ title: "UserId" });
-export const tApplicationId = t.String({ title: "ApplicationId" });
-export const tFeatureId = t.String({ title: "FeatureId" });
-export const tBugId = t.String({ title: "BugId" });
-export const tChannelId = t.String({ title: "ChannelId" });
-export const tLabelId = t.String();
-export const tMessageId = t.String();
-export const tTaskId = t.String();
-export const tObjectiveId = t.String();
-export const tStatusId = t.String();
-export const tRepositoryId = t.String();
-export const tToDoId = t.String();
-export const tReleaseId = t.String();
+export const tCompanyId = t.String({ title: "CompanyId", pattern: "^Company:[a-z0-9]{20}$" });
+export const tProductId = t.String({ title: "ProductId", pattern: "^Product:[a-z0-9]{20}$" });
+export const tApplicationId = t.String({ title: "ApplicationId", pattern: "^Application:[a-z0-9]{20}$" });
+export const tFeatureId = t.String({ title: "FeatureId", pattern: "^Feature:[a-z0-9]{20}$" });
+export const tBugId = t.String({ title: "BugId", pattern: "^Bug:[a-z0-9]{20}$" });
+export const tChannelId = t.String({ title: "ChannelId", pattern: "^Channel:[a-z0-9]{20}$" });
+export const tLabelId = t.String({ title: "LabelId", pattern: "^Label:[a-z0-9]{20}$" });
+export const tMessageId = t.String({ title: "MessageId", pattern: "^Message:[a-z0-9]{20}$" });
+export const tTaskId = t.String({ title: "TaskId", pattern: "^Task:[a-z0-9]{20}$" });
+export const tObjectiveId = t.String({ title: "ObjectiveId", pattern: "^Objective:[a-z0-9]{20}$" });
+export const tStatusId = t.String({ title: "StatusId", pattern: "^Status:[a-z0-9]{20}$" });
+export const tRepositoryId = t.String({ title: "RepositoryId", pattern: "^Repository:[a-z0-9]{20}$" });
+export const tToDoId = t.String({ title: "ToDoId", pattern: "^ToDo:[a-z0-9]{20}$" });
+export const tReleaseId = t.String({ title: "ReleaseId", pattern: "^Release:[a-z0-9]{20}$" });
 
 export const tValues = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High")], { default: "Medium" });
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
@@ -70,7 +71,7 @@ export const tChannelPost = t.Object({
 
 export const tChannel = t.Object({
 	id: tChannelId,
-	name: t.String({ minLength: 3, maxLength: 64}),
+	name: t.Optional(t.String({ minLength: 3, maxLength: 64})),
 	subscribers: t.Array(tUserId),
 });
 
@@ -124,23 +125,18 @@ export const tTask = t.Object({
 	assignee: t.Nullable(t.Object({
 		id: tUserId,
 	})),
-	relatives: t.Object({
-		children: t.Array(t.Object({ id: tTaskId })),
-		related: t.Array(t.Object({ id: tTaskId })),
-		blockers: t.Array(t.Object({ id: tTaskId })),
-	}),
-	tackles: t.Array(t.Object({
-		id: t.Union([tFeatureId, tApplicationId]),
-	})),
 	updates: t.Array(t.Object({
 		date: t.Date(),
 		value: t.Number({ minimum: 0, maximum: 100 }),
 		note: t.String({ maxLength: 8192 }),
 	})),
-	channel: t.Object({
-		id: tChannelId,
-	}),
 }, { title: "Task" });
+
+// relatives: t.Object({
+// 	children: t.Array(t.Object({ id: tTaskId })),
+// 	related: t.Array(t.Object({ id: tTaskId })),
+// 	blockers: t.Array(t.Object({ id: tTaskId })),
+// }),
 
 export const tMergeRequest = t.Object({
 	title: t.String({ minLength: 3, maxLength: 64 }),
@@ -222,12 +218,14 @@ export const tRepository = t.Object({
 export const tFeaturePost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	value: tValues,
 });
 
 export const tFeature = t.Object({
 	id: tFeatureId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	value: tValues,
 });
 
 export const tState = t.Object({
@@ -334,7 +332,7 @@ export const tProductPost = t.Object({
 });
 
 export const tProduct = t.Object({
-	id: tApplicationId,
+	id: tProductId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
 });

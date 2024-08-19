@@ -1,10 +1,28 @@
 <script lang="ts">
-    import feature_img from '$lib/assets/incut-settings-and-features-on-mobile-phone.png';
+    import type { PageData } from "./$types";
+    import type { Snippet } from "svelte";
+
+	let { data, children }: { data: PageData, children: Snippet<[]> } = $props();
 </script>
 
-<div class="column">
-    <img src={feature_img} class="h-64 w-64 animate-floating"/>
-    <h2 class="tactile-text text-xl mt-8">
-        Select or create a feature!
-    </h2>
+<div class="flex-1 flex flex-col w-full divide-y">
+	<header class="flex w-full px-6 h-10 items-center text-sm">
+		My features
+	</header>
+	<main class="flex-1 flex">
+		<div id="features" class="w-72 flex flex-col gap-2 border-r">
+			<ul class="">
+				{#each data.features as feature(feature.id)}
+				<li class="gallery px-4 h-10 border-b">
+					<a href={`/features/${feature.id}`} class="text-sm tactile-text">
+						{feature.name}
+					</a>
+				</li>
+				{/each}
+			</ul>
+		</div>
+		<div id="chat" class="flex items-center justify-center flex-1">
+			{@render children()}
+		</div>
+	</main>
 </div>

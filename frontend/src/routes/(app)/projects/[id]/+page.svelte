@@ -13,6 +13,10 @@
 	let lead = $state(data.users.find(u => u.id === data.project.lead?.id) || null);
 </script>
 
+<svelte:head>
+	<title>{project.name}</title>
+</svelte:head>
+
 <div class="flex-1 flex flex-col w-full divide-y">
 	<header class="flex w-full px-6 h-10 items-center text-sm" style="background:linear-gradient(to right, #101010 0%, rgb(10, 10, 10) 80%);">
 		{project.name}

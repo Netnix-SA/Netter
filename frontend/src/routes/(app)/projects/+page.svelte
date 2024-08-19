@@ -8,6 +8,10 @@
 	const projects = $derived(data.projects);
 </script>
 
+<svelte:head>
+	<title>Projects</title>
+</svelte:head>
+
 <div class="flex-1 flex flex-col w-full divide-y">
 	<header class="flex w-full px-6 h-10 items-center text-sm header-background">
 		My projects

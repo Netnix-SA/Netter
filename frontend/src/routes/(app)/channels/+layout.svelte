@@ -10,6 +10,10 @@
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 </script>
 
+<svelte:head>
+	<title>Channels</title>
+</svelte:head>
+
 <div class="flex-1 flex flex-col w-full divide-y">
 	<header class="flex w-full px-6 h-10 items-center text-sm">
 		My channels

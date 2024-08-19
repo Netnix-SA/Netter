@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Separator from "@/components/ui/separator/separator.svelte";
 import type { PageData } from "./$types";
+    import AnyChip from "@/components/AnyChip.svelte";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -37,7 +38,7 @@ import type { PageData } from "./$types";
 				<span class="text-muted-foreground text-sm">Affected applications</span>
 				<ul class="h-64 rounded-lg">
 					{#each data.bug.impact.applications as application}
-						<li class="gallery tactile-text border-b h-10 px-2">{application.id}</li>
+						<AnyChip id={application.id}/>
 					{/each}
 				</ul>
 			</div>
@@ -46,7 +47,7 @@ import type { PageData } from "./$types";
 				<span class="text-muted-foreground text-sm">Affected features</span>
 				<ul class="h-64 rounded-lg">
 					{#each data.bug.impact.features as feature}
-						<li class="gallery tactile-text border-b h-10 px-2">{feature.id}</li>
+						<AnyChip id={feature.id}/>
 					{/each}
 				</ul>
 			</div>

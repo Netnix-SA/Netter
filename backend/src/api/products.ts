@@ -1,9 +1,8 @@
 import { Elysia, t } from "elysia";
-import { tApplication, tApplicationPost, tBug, tFeature, tProduct, tProductPost } from "./schemas";
+import { tApplication, tFeature, tProduct, tProductPost } from "./schemas";
 import { db } from "../db/index";
-import { type Application, type Bug, type Feature, type Product } from "../db/types";
+import { type Application, type Feature, type Product } from "../db/types";
 import { StringRecordId, surql } from "surrealdb";
-import { applications } from "./applications";
 import { map as mapFeature } from "./features";
 import { map as mapApplication } from "./applications";
 
