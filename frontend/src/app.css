@@ -91,11 +91,10 @@
   body {
     @apply bg-background text-foreground;
   }
+
   .light {
-	  /* background: #EBFDFF; */
-		/* border: .5px solid #34FFAA; */
-		text-shadow: 0px -22px 26px rgba(0, 255, 163, 0.83), 0px 22px 26px rgba(75, 218, 166, 0.4), 0px -22px 20px rgba(89, 255, 195, 0.1), 0px 0px 16px #59FFC3;
-	}
+    filter: drop-shadow(0px 0px 12px rgba(0, 255, 163, 1)) drop-shadow(0px 0px 6px rgba(0, 255, 163, 1)) drop-shadow(0px 0px 2px rgba(0, 255, 163, 1));
+  }
 
   .column {
     display: flex;
@@ -121,8 +120,6 @@
 
   .tactile {
 		background: linear-gradient(to bottom, #353539, #34333B, #1a1a1e);
-		/* border-top: 1em linear-gradient(180deg, #3E3F48 0%, #2D2C33 100%)!important; */
-		/* border-top: solid linear-gradient(180deg, #3E3F48 0%, #2D2C33 100%)!important; */
 		box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.16), 0px 8px 8px rgba(0, 0, 0, 0.42), 0px 0px 0px 2px rgba(23, 25, 31, 0.45), inset 0px 0px 10px rgba(0,0,0,0.1);
 	}
 

@@ -149,3 +149,12 @@ export const LINKS = [
     { href: "/repositories", icon: CLASS_TO_ICON["Repository"], label: "Repositories" },
     { href: "/merge-requests", icon: CLASS_TO_ICON["MergeRequest"], label: "Merge Requests" },
 ];
+
+export const COLORS = [
+    {
+        name: "Green/Light",
+    },
+    {
+        name: "Orange/Light",
+    },
+];

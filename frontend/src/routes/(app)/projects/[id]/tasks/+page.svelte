@@ -37,11 +37,11 @@
     import Input from "@/components/ui/input/input.svelte";
     import TaskLine from "@/components/TaskLine.svelte";
 
-	let open_create_task = $state(false);
+	let draft_task: { title: string, body: string, status: { id: string, }, priority: Priorities, effort: Efforts, value: Value, assignee: { id: string } | null, labels: { id: string }[], } | undefined = $state(undefined);
 
 	onMount(() => {
 		const entry = { name: "Project", commands: [{ name: "Create task", key: 'c', do: () => {
-			open_create_task = true;
+			// open_create_task = true;
 		} }] };
 
 		commands.update(c => {
@@ -77,6 +77,7 @@
 	import '@xyflow/svelte/dist/style.css';
     import CreateTask from "@/components/CreateTask.svelte";
     import { page } from "$app/stores";
+    import type { Efforts, Priorities, Value } from "@/server/db/types";
 	
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -186,9 +187,9 @@
 		<div id="right" class="gallery gap-4">
 			<Tabs.Root class="" bind:value={view}>
 				<Tabs.List class="p-1 h-8">
-				  <Tabs.Trigger value="list"><List class="w-4 h-4"/></Tabs.Trigger>
-				  <Tabs.Trigger value="kanban"><Kanban class="w-4 h-4"/></Tabs.Trigger>
-				  <Tabs.Trigger value="graph"><Share2 class="w-4 h-4"/></Tabs.Trigger>
+				  <Tabs.Trigger value="list"><List class="size-4"/></Tabs.Trigger>
+				  <Tabs.Trigger value="kanban"><Kanban class="size-4"/></Tabs.Trigger>
+				  <Tabs.Trigger value="graph"><Share2 class="size-4"/></Tabs.Trigger>
 				</Tabs.List>
 			</Tabs.Root>
 		</div>
@@ -197,10 +198,15 @@
 		{#each groups as [grouper, tasks]}
 		{@const status = data.statuses.find(s => s.id === grouper)}
 		{@const state_entry = STATES.find(s => s.value === status?.state)}
-			<div class="bg-primary-foreground flex items-center px-4 py-2 border-y mt-2" in:blur out:fly>
-				<div class="flex items-center gap-4 tactile-text">
+			<div class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2" in:blur out:fly>
+				<div class="flex items-center gap-4 tactile-text flex-1">
 					<svelte:component this={state_entry?.icon} class="h-4 w-4"/>
 					{status?.name}
+				</div>
+				<div class="w-12 frame">
+					<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { title: "My task", body: "", assignee: null, labels: [], effort: null, priority: null, status, value: null }}>
+						<Plus class="size-4"/>
+					</button>
 				</div>
 			</div>
 			{#each tasks as task}
@@ -268,4 +274,8 @@
 	{/if}
 </div>
 
-<CreateTask bind:open={open_create_task} statuses={data.statuses} users={data.users} project={$page.params.id}/>
+{#if draft_task}
+{#key draft_task}
+	<CreateTask labels={data.labels} task={draft_task} statuses={data.statuses} users={data.users} project={$page.params.id}/>
+{/key}
+{/if}

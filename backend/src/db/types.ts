@@ -90,7 +90,6 @@ export type Task = {
 	priority: Priorities,
 	effort: Efforts,
 	value: Value,
-	objective: ObjectiveId | null,
 };
 
 export type Objective = {

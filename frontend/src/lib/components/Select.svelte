@@ -6,7 +6,7 @@
 
 	import type { Selected } from "bits-ui";
 
-	let { variant = "regular", label, values, placeholder = "Select", comparator, value = $bindable() }: { variant: "regular" | "icon", label?: string, placeholder: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
+	let { variant = "regular", label, values, placeholder = "Select", comparator, value = $bindable() }: { variant: "regular" | "small" | "icon", label?: string, placeholder: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
 
 	let internal: Selected<T> | undefined = $state(value !== null ? values.find(v => comparator(v.value, value)) : undefined);
 
@@ -34,12 +34,17 @@
 </Select.Root>
 {/if}
 
-{#if variant === "icon"}
+{#if variant === "icon" || variant === "small"}
 {@const icon = values.find(v => v.label === internal?.label)?.icon}
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger class="size-6 frame bg-primary-foreground rounded-md border" title={label}>
+	<DropdownMenu.Trigger class="{variant === "small" ? "gallery gap-1 px-1" : "frame"} bg-primary-foreground rounded-md border {variant === "small" ? "h-6 w-24" : "size-6"}" title={label}>
 		{#if icon}
-			<svelte:component this={icon} class="size-4"/>
+			<svelte:component this={icon} class={variant === "small" ? "size-3" : "size-4"}/>
+			{#if variant === "small"}
+				<span class="text-sm truncate">
+					{internal?.label}
+				</span>
+			{/if}
 		{:else}
 			?
 		{/if}
