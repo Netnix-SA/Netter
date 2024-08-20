@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
+import type { StateFilter, Status, StatusFilter, Task } from "./server/db/types";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -73,4 +74,38 @@ export function groupBy<T, K>(list: T[], keyGetter: (arg0: T) => K): Map<K, T[]>
 		}
     });
     return map;
+}
+
+export function filterTask(t: Task, filter: StateFilter | StatusFilter, statuses: Status[]): boolean {
+	switch(filter.type) {
+		case "State": {
+			switch (filter.operation) {
+				case '=': {
+					return statuses.find(s => s.id === t.status)?.state === filter.value;
+				}
+				case '!=': {
+					return statuses.find(s => s.id === t.status)?.state !== filter.value;
+				}
+				default: {
+					return false;
+				}
+			}
+		}
+		case "Status": {
+			switch (filter.operation) {
+				case '=': {
+					return t.status === filter.value.id;
+				}
+				case '!=': {
+					return t.status !== filter.value.id;
+				}
+				default: {
+					return false;
+				}
+			}
+		}
+		default: {
+			return false;
+		}
+	}
 }

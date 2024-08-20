@@ -1,7 +1,7 @@
 import { client } from "./state";
 
-export async function addToDo(title: string, url: string) {
-    await client.api.users.me.todos.post({ title, url });
+export async function addToDo(title: string) {
+    await client.api.users.me.todos.post({ title });
 }
 
 export async function addPinned(id: string) {

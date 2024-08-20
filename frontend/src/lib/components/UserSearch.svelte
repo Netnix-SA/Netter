@@ -8,9 +8,7 @@
 	import { tick } from "svelte";
     import Label from "./ui/label/label.svelte";
    
-	let { label, values, searchText = "Search", placeholder = "Select", value = $bindable(null) }: { label: string, values: { id: string, full_name: string }[], searchText: string, placeholder: string, value: { id: string, full_name: string } | null } = $props();
-   
-	let open = $state(false);
+	let { ids, label, values, searchText = "Search", placeholder = "Select", value = $bindable(null) }: { ids: any, label: string, values: { id: string, full_name: string }[], searchText: string, placeholder: string, value: { id: string, full_name: string } | null } = $props();
    
 	const selectedValue = $derived(values.find((f) => f.id === value?.id)?.full_name);
    
@@ -18,7 +16,6 @@
 	// an item from the list so users can continue navigating the
 	// rest of the form with the keyboard.
 	function closeAndFocusTrigger(triggerId: string) {
-		open = false;
 		tick().then(() => {
 			document.getElementById(triggerId)?.focus();
 		});
@@ -33,6 +30,7 @@
 		<Command.Item
 		value={entry.id}
 		onSelect={(currentValue) => {
+			closeAndFocusTrigger(ids.trigger);
 			value = values.find(e => e.id === currentValue) || null
 		}}
 		>

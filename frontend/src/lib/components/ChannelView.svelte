@@ -91,7 +91,7 @@
 					</ContextMenu.Trigger>
 					<ContextMenu.Content>
 						<ContextMenu.Item onclick={() => { question = message; }}>Reply to</ContextMenu.Item>
-						<ContextMenu.Item onclick={async () => await addToDo(message.body, message.id)}>Add to ToDo's</ContextMenu.Item>
+						<ContextMenu.Item onclick={async () => await addToDo(message.body)}>Add to ToDo's</ContextMenu.Item>
 					</ContextMenu.Content>
 				</ContextMenu.Root>
 			</li>

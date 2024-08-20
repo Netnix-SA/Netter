@@ -5,6 +5,7 @@ import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask, tTaskPost
 import { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
+import { map as mapLabel } from "./labels";
 
 export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 
@@ -52,16 +53,16 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 })
 
 .get("/:id/labels", async ({ params: { id } }) => {
-	const results = await db.query<[Label[]]>(surql`SELECT * FROM Label WHERE owner == ${new StringRecordId(id)};`);
+	const results = await db.query<[Label[]]>(surql`SELECT * FROM Label WHERE owner == ${new StringRecordId(id)} || !owner;`);
 
 	const labels = results[0];
 
-	return labels.map(({ id, title, description, color, icon }) => ({
-		id: id.toString(),
-		title, description, color, icon,
-	}));
+	return labels.map(mapLabel);
 }, {
 	response: t.Array(tLabel),
+	detail: {
+		description: "Gets the labels for the project. Includes organization labels and project specific labels.",
+	}
 })
 
 .get("/:id/statuses", async ({ params: { id } }) => {

@@ -70,18 +70,21 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 	}
 })
 
-.get("/me/todos", async ({}) => {
-	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner;", { owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5") });
+.get("/me/todos", async ({ query: { resolved } }) => {
+	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), resolved });
 
 	const todos = results[0];
 
 	return todos.map(mapToDo);
 }, {
 	response: t.Array(tToDo),
+	query: t.Object({
+		resolved: t.Optional(t.Boolean()),
+	}),
 })
 
 .post("/me/todos", async ({ body }) => {
-	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, url: body.url, owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), due: null, done: false });
+	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), due: null, done: false });
 }, {
 	body: tToDoPost,
 	detail: {

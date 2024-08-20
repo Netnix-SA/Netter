@@ -36,6 +36,7 @@
     "isomorphic-dompurify": "^2.14.0",
     "lucide-svelte": "^0.424.0",
     "mode-watcher": "^0.4.1",
+    "svelte-confetti": "^2.0.0",
     "svelte-radix": "^1.1.0",
     "svelte-sonner": "^0.3.27",
     "tailwind-merge": "^2.5.1",

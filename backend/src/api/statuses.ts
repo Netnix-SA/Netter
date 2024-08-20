@@ -6,7 +6,7 @@ import { surql } from "surrealdb";
 
 export const statuses = new Elysia({ prefix: "/statuses", tags: ["Statuses"] })
 .get("", async () => {
-    const results = await db.query<[Status[]]>(surql`SELECT * FROM Status ORDER BY position.i;`);
+    const results = await db.query<[Status[]]>(surql`SELECT * FROM Status ORDER BY position.i ASC;`);
     const statuses = results[0];
     return statuses.map(map);
 }, {

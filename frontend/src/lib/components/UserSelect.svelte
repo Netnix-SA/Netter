@@ -28,7 +28,7 @@
 
 <div class="w-full">
 	<Label>{label}</Label>
-	<Popover.Root class="w-full" bind:open let:ids>
+	<Popover.Root bind:open let:ids>
 		<Popover.Trigger asChild let:builder>
 		<Button
 			builders={[builder]}
@@ -48,7 +48,29 @@
 		</Button>
 		</Popover.Trigger>
 		<Popover.Content class="p-0">
-			<UserSearch bind:value {values}/>
+			<Command.Root class="w-full">
+				<Command.Input placeholder={searchText}/>
+				<Command.Empty class="text-muted-foreground select-none">No results.</Command.Empty>
+				<Command.Group>
+				{#each values as entry}
+					<Command.Item
+					value={entry.id}
+					onSelect={(currentValue) => {
+						closeAndFocusTrigger(ids.trigger);
+						value = values.find(e => e.id === currentValue) || null
+					}}
+					>
+					<Check
+						class={cn(
+						"mr-2 h-4 w-4",
+						value?.id !== entry.id && "text-transparent"
+						)}
+					/>
+					{entry.full_name}
+					</Command.Item>
+				{/each}
+				</Command.Group>
+			</Command.Root>
 		</Popover.Content>
 	</Popover.Root>
 </div>

@@ -184,10 +184,6 @@
 			</Dialog.Root>
 		</div>
 		<div class="mt-4 gallery w-full overflow-x-scroll gap-3">
-			{#each data.task.labels as { id }}
-				{@const label = data.labels.find((l) => l.id === id)}
-				<LabelChip {label} />
-			{/each}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
 					+
@@ -200,6 +196,10 @@
 					{/each}
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
+			{#each data.task.labels as { id }}
+				{@const label = data.labels.find((l) => l.id === id)}
+				<LabelChip {label} />
+			{/each}
 		</div>
 		<Separator class="my-6"/>
 		<div class="h-64">

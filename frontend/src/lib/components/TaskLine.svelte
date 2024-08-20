@@ -17,7 +17,7 @@
 <ContextMenu.Root>
 	<ContextMenu.Trigger class="flex-1 px-2 py-2 gallery">
 		<div id="left" class="gallery flex-1 gap-2">
-			<Circle value={task.progress}/>		
+			<Circle value={task.progress}/>
 			<a href={`/tasks/${task.id}`} class="flex items-center min-w-32">
 				<span class="text-sm tactile-text">
 					{task.title}
@@ -27,7 +27,7 @@
 				<LabelChip label={labels.find(l => l.id === label.id)}/>
 			{/each}
 		</div>
-		<div id="right" class="gallery gap-2">
+		<div id="right" class="gallery gap-2 pr-1">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="size-6 frame bg-primary-foreground rounded-md border">
 					<svelte:component this={EFFORTS_ICONS[task.effort]} class="size-4"/>
@@ -65,6 +65,6 @@
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
 		<ContextMenu.Item onclick={async () => await addPinned(task.id)}>Pin</ContextMenu.Item>
-		<ContextMenu.Item onclick={async () => await addToDo(task.title, "aahah")}>Add to ToDo's</ContextMenu.Item>
+		<ContextMenu.Item onclick={async () => await addToDo(task.title)}>Add to ToDo's</ContextMenu.Item>
 	</ContextMenu.Content>
 </ContextMenu.Root>

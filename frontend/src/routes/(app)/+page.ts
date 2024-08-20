@@ -3,13 +3,13 @@ import { client } from '@/state';
 import { error } from '@sveltejs/kit';
 
 export const load: PageLoad = async ({ params, fetch }) => {
-    const { data: tasks } = await client.api.tasks.get({ query: {} });
+    const { data: tasks } = await client.api.tasks.get({ query: { assignee: "User:yt2hrlb0mynjar8q5la5" } });
 
 	if (!tasks) {
 		throw error(404, "Could not load tasks!");
 	}
 
-	const { data: todos } = await client.api.users.me.todos.get();
+	const { data: todos } = await client.api.users.me.todos.get({ query: { resolved: false } });
 
 	if (!todos) {
 		throw error(404, "Could not load todos!");

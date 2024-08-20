@@ -26,7 +26,7 @@
             </h2>
             <button class="gallery item-background h-10 w-32 rounded justify-evenly">
                 <span class="tactile-text font-medium">Connect</span>
-                <div class="size-2 rounded-full light bg-white"></div>
+                <div class="size-2 rounded-full green-light bg-white"></div>
             </button>
         </div>
     </section>

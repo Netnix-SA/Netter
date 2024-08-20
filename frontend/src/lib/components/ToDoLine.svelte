@@ -1,8 +1,20 @@
 <script lang="ts">
+	import * as ContextMenu from "$lib/components/ui/context-menu";
+    import { client } from "@/state";
+
+	import { Confetti } from "svelte-confetti";
+
 	let { todo }: { todo: { id: string, title: string, done: boolean } } = $props();
 </script>
 
-<div class="flex-1 px-4 py-2 gallery">
+{#if todo.done}
+{#key todo.done}
+<Confetti/>
+{/key}
+{/if}
+
+<ContextMenu.Root>
+	<ContextMenu.Trigger class="flex-1 px-4 py-2 gallery">
 	<div id="left" class="gallery flex-1 gap-2">
 		<input type="checkbox" class="" bind:checked={todo.done}/>
 		<a href={`/todos/${todo.id}`} class="flex items-center">
@@ -22,4 +34,8 @@
 			{/each}
 		</div> -->
 	</div>
-</div>
+	</ContextMenu.Trigger>
+	<ContextMenu.Content>
+		<ContextMenu.Item class="text-red-400" onclick={async () => { await client.api.todos({ id: todo.id }).delete(); }}>Delete</ContextMenu.Item>
+	</ContextMenu.Content>
+</ContextMenu.Root>

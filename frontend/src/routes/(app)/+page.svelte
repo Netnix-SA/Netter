@@ -15,15 +15,17 @@
 
 <div class="w-full h-full grid grid-cols-6 grid-rows-6">
 	<div id="tasks" class="flex flex-col col-span-4 row-span-3 divide-y border-r border-b">
-		<div class="flex w-full px-6 h-10 items-center text-sm header-background">
-			My tasks
+		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
+			<span class=" tactile-text">
+				My tasks
+			</span>			
 		</div>
 		<div>
 			{#await data.tasks}
 				Loading tasks...
 			{:then tasks}
 				{#each tasks as task}
-					<li class="border-b h-10">
+					<li class="gallery border-b h-10">
 						<TaskLine labels={data.labels} {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
 					</li>
 				{/each}
@@ -31,10 +33,12 @@
 		</div>
 	</div>
 	<div id="todo" class="flex flex-col col-span-2 row-span-3 divide-y border-b">
-		<div class="flex w-full px-6 h-10 items-center text-sm header-background">
-			ToDo's
+		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
+			<span class=" tactile-text">
+				ToDo's
+			</span>
 		</div>
-		<div>
+		<ul>
 			{#await data.todos}
 				Loading todos...
 			{:then todos}
@@ -44,18 +48,22 @@
 					</li>
 				{/each}
 			{/await}
-		</div>
+		</ul>
 	</div>
 	<div id="merge-requests" class="flex flex-col col-span-2 row-span-3 divide-y border-r">
-		<div class="flex w-full px-6 h-10 items-center text-sm  header-background">
-			Merge Requests
+		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
+			<span class=" tactile-text">
+				Merge Requests
+			</span>
 		</div>
 		<div>
 		</div>
 	</div>
 	<div id="tasks" class="flex flex-col col-span-4 row-span-3 divide-y">
-		<div class="flex w-full px-6 h-10 items-center text-sm header-background">
-			Pending
+		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
+			<span class=" tactile-text">
+				Pending inquiries
+			</span>
 		</div>
 		<div class="flex-1">
 			{#await data.messages}

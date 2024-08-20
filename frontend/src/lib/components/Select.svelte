@@ -38,7 +38,7 @@
 {@const icon = values.find(v => v.label === internal?.label)?.icon}
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger class="{variant === "small" ? "gallery gap-1 px-1" : "frame"} bg-primary-foreground rounded-md border {variant === "small" ? "h-6 w-24" : "size-6"}" title={label}>
-		{#if icon}
+		{#if internal}
 			<svelte:component this={icon} class={variant === "small" ? "size-3" : "size-4"}/>
 			{#if variant === "small"}
 				<span class="text-sm truncate">
@@ -46,7 +46,9 @@
 				</span>
 			{/if}
 		{:else}
-			?
+			<span class="text-muted-foreground text-sm">
+				{placeholder}
+			</span>
 		{/if}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
