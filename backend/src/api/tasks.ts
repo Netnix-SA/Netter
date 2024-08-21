@@ -142,6 +142,26 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	}
 })
 
+.route("CLOSE", "/:id", async ({ params: { id }, body }) => {
+	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
+
+	const task = results[0][0];
+
+	if (!task) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	await db.merge<Task>(new StringRecordId(id), { status: { id: "", closed_as: "Resolved", note: body.note } }); // TODO: status id
+}, {
+	config: {},
+	body: t.Object({
+		note: t.String(),
+	}),
+	detail: {
+		description: "Closes a task as resolved."
+	}
+})
+
 .post("/:id/updates", async ({ params: { id }, body }) => {
 	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
 
@@ -220,11 +240,13 @@ export const query = async ({ id, assignee, state, belongs_to }: { id?: string, 
 	return tasks.map(map);
 };
 
-export const map = ({ id, title, body, priority, status, updates, labels, assignee, objective, effort, value, progress }: Task & { progress: number | undefined }) => {
+export const map = ({ id, title, body, priority, status, updates, labels, assignee, effort, value, progress }: Task & { progress: number | undefined }) => {
 	return {
 		id: id.toString(),
 		title, body,
-		status: status.toString(),
+		status: {
+			id: status.id.toString(),
+		},
 		labels: labels.map(id => ({
 			id: id.toString(),
 		})),
@@ -234,39 +256,5 @@ export const map = ({ id, title, body, priority, status, updates, labels, assign
 		priority, effort, value,
 		updates,
 		progress: progress ?? 0,
-		objective: objective && {
-			id: objective.toString(),
-		},
 	};
 };
-
-// export const map = ({ id, title, body, priority, status, updates, labels, assignee, tackles, objective, effort, value, children, related, blocking, channel, progress }: Task & { children: TaskId[], related: TaskId[], blocking: TaskId[], tackles: (FeatureId | ApplicationId)[], channel: ChannelId, progress: number | undefined }) => {
-// 	return {
-// 		id: id.toString(),
-// 		title, body,
-// 		status: status.toString(),
-// 		labels: labels.map(id => ({
-// 			id: id.toString(),
-// 		})),
-// 		assignee: assignee && {
-// 			id: assignee.toString()
-// 		},
-// 		relatives: {
-// 			children: children.map(c => ({ id: c.toString() })),
-// 			related: related.map(r => ({ id: r.toString() })),
-// 			blockers: blocking.map(b => ({ id: b.toString() })),
-// 		},
-// 		priority, effort, value,
-// 		channel: {
-// 			id: channel.toString(),
-// 		},
-// 		updates,
-// 		progress: progress ?? 0,
-// 		tackles: tackles.map(id => ({
-// 			id: id.toString(),
-// 		})),
-// 		objective: objective && {
-// 			id: objective.toString(),
-// 		},
-// 	};
-// };

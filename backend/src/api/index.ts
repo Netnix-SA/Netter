@@ -23,6 +23,7 @@ import { products } from "./products";
 import { statuses } from "./statuses";
 import { messages } from "./messages";
 import { StringRecordId } from "surrealdb";
+import { objectives } from "./objectives";
 
 export const server = new Elysia({ prefix: "/api" })
 
@@ -88,6 +89,7 @@ export const server = new Elysia({ prefix: "/api" })
 .use(tasks)
 .use(todos)
 .use(views)
+.use(objectives)
 .use(repositories)
 .use(merge_requests)
 .use(extensions);

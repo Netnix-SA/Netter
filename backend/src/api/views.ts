@@ -3,6 +3,7 @@ import { tFeature, tTask, tView, tViewPost } from "./schemas";
 import { db } from "../db/index";
 import type { Task, View } from "../db/types";
 import { StringRecordId } from "surrealdb";
+import { map as mapTask } from "./tasks";
 
 export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 
@@ -25,15 +26,7 @@ export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 .get("", async ({}) => {
 	const views = await db.select<View>("View");
 
-	return views.map(view => ({
-		id: view.id.toString(),
-		name: view.name,
-		filters: view.filters.map(filter => ({
-			type: filter.type,
-			operation: filter.operation,
-			value: filter.value,
-		})),
-	}));
+	return views.map(map);
 }, {
 	response: t.Array(tView),
 	detail: {
@@ -41,7 +34,18 @@ export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 	},
 })
 
-.get("/:id/query", async ({ params: { id } }) => {
+.get("/:id", async ({ params: { id } }) => {
+	const view = await db.select<View>(new StringRecordId(id));
+
+	return map(view);
+}, {
+	response: tView,
+	detail: {
+		description: "Gets the view by id.",
+	},
+})
+
+.get("/:id/data", async ({ params: { id } }) => {
 	const view = await db.select<View>(new StringRecordId(id));
 
 	let query_pieces: string[] = [];
@@ -92,19 +96,26 @@ export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 		}
 	});
 
-	const query = "SELECT * FROM Task WHERE " + query_pieces.join(" AND ");
+	const query = "SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM Task WHERE " + query_pieces.join(" AND ");
 
-	const results = await db.query<[Task[]]>(query, variables);
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(query, variables);
 
 	const tasks = results[0];
 
-	return tasks.map(task => ({
-		id: task.id.toString(),
-		name: task.title,
-	}));
+	return tasks.map(mapTask);
 }, {
 	response: t.Array(tTask),
 	detail: {
 		description: "Returns the content defined by the view.",
 	},
-})
+});
+
+export const map = ({ id, name, filters }: View) => ({
+	id: id.toString(),
+	name,
+	filters: filters.map(filter => ({
+		type: filter.type,
+		operation: filter.operation,
+		value: filter.value,
+	})),
+});

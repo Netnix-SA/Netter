@@ -5,13 +5,12 @@
 	import Circle from "./Circle.svelte";
 	import UserAvatar from "./UserAvatar.svelte";
 	import { addPinned, addToDo } from "@/actions";
-    import { Button } from "./ui/button";
     import LabelChip from "./LabelChip.svelte";
 
 	type Task = { id: string, title: string, labels: { id: string, }[], progress: number, priority: "Low" | "Medium" | "High" | "Urgent", effort: string };
 	type Label = { id: string, title: string, icon: string, color: string };
 
-	let { task, user, labels }: { task: Task[], labels: Label[], user: { id: string, full_name: string } | undefined/* | ((id: string) => Promise<{ id: string, full_name: string }>)*/ } = $props();
+	let { task, user, labels }: { task: Task, labels: Label[], user: { id: string, full_name: string } | undefined/* | ((id: string) => Promise<{ id: string, full_name: string }>)*/ } = $props();
 </script>
 
 <ContextMenu.Root>
@@ -23,8 +22,11 @@
 					{task.title}
 				</span>
 			</a>
-			{#each task.labels as label}
-				<LabelChip label={labels.find(l => l.id === label.id)}/>
+			{#each task.labels as { id }}
+			{@const label = labels.find(l => l.id === id)}
+			{#if label}
+				<LabelChip {label}/>
+			{/if}
 			{/each}
 		</div>
 		<div id="right" class="gallery gap-2 pr-1">

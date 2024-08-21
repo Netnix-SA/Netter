@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { STATES } from "@/global";
 	import type { PageData } from "./$types";
-	import { groupBy } from "@/utils";
+	import { filterTask, groupBy } from "@/utils";
     import Label from "@/components/LabelChip.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Tabs from "$lib/components/ui/tabs";
@@ -9,67 +9,17 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let filters: ({ type: "State" | "Status" | "Label" | "Text", operator: '=' | "!=" | "CONTAINS", value: string, display: string })[] = $state([]);
+	let filters: ((StateFilter | StatusFilter | TextFilter | LabelFilter) & { display: string })[] = $state([]);
 
 	let groups = $derived(groupBy(data.tasks.filter(t => {
-		return filters.every(filter => {
-			switch (filter.type) {
-				case "State": {
-					switch (filter.operator) {
-						case '=': {
-							return data.statuses.find(s => s.id === t.status)?.state === filter.value;
-						}
-						case '!=': {
-							return data.statuses.find(s => s.id === t.status)?.state !== filter.value;
-						}
-						default: {
-							return false;
-						}
-					}
-				}
-				case "Status": {
-					switch (filter.operator) {
-						case '=': {
-							return t.status === filter.value;
-						}
-						case '!=': {
-							return t.status !== filter.value;
-						}
-						default: {
-							return false;
-						}
-					}
-				}
-				case "Text": {
-					switch (filter.operator) {
-						case 'CONTAINS': {
-							return t.title.toLowerCase() === filter.value.toLowerCase() || t.body.toLowerCase() === filter.value.toLowerCase();
-						}
-						default: {
-							return false;
-						}
-					}
-				}
-				case "Label": {
-					switch (filter.operator) {
-						case 'CONTAINS': {
-							return t.labels.some(l => l.id === filter.value);
-						}
-						default: {
-							return false;
-						}
-					}
-				}
-			}
-		});
-	}), ({ status }) => status));
+		return filters.every(filter => filterTask(t, filter, data.statuses));
+	}), ({ status }) => status.id));
 
 	import { commands } from "@/state";
     import { onMount } from "svelte";
     import UserSearch from "@/components/UserSearch.svelte";
     import UserAvatar from "@/components/UserAvatar.svelte";
     import Input from "@/components/ui/input/input.svelte";
-    import TaskLine from "@/components/TaskLine.svelte";
 
 	let draft_task: { title: string, body: string, status: { id: string, }, priority: Priorities, effort: Efforts, value: Value, assignee: { id: string } | null, labels: { id: string }[], } | undefined = $state(undefined);
 
@@ -97,8 +47,10 @@
 	
     import CreateTask from "@/components/CreateTask.svelte";
     import { page } from "$app/stores";
-    import type { Efforts, Priorities, Value } from "@/server/db/types";
+    import type { Efforts, LabelFilter, Priorities, StateFilter, StatusFilter, TextFilter, Value } from "@/types";
     import Circle from "@/components/Circle.svelte";
+    import TaskList from "@/components/TaskList.svelte";
+    import Filters from "@/components/filters/Filters.svelte";
 	
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -139,7 +91,7 @@
 
 <div class="flex-1 w-full flex flex-col">
 	<div class="h-10 gallery px-4 border-b">
-		<div id="left" class="flex-1 gallery">
+		<div id="left" class="flex-1 gallery gap-2">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					<div class="frame rounded size-6 hover:w-fit border border-dashed hover:bg-primary-foreground group transition-all gap-1 hover:px-2">
@@ -157,7 +109,7 @@
 							<DropdownMenu.SubTrigger>State</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent>
 								{#each STATES as state}
-									<DropdownMenu.Item onclick={() => filters.push({ type: "State", operator: '=', value: state.value, display: state.label })}>{state.label}</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "State", operation: '=', value: state.value, display: state.label })}>{state.label}</DropdownMenu.Item>
 								{/each}
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
@@ -171,7 +123,7 @@
 							<DropdownMenu.SubTrigger>Label</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent>
 								{#each data.labels as label}
-									<DropdownMenu.Item onclick={() => filters.push({ type: "Label", operator: 'CONTAINS', value: label.id, display: label.title })}>{label.title}</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "Label", operation: 'CONTAINS', value: label.id, display: label.title })}>{label.title}</DropdownMenu.Item>
 								{/each}
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
@@ -179,30 +131,20 @@
 							<DropdownMenu.SubTrigger>Status</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent>
 								{#each data.statuses as status}
-									<DropdownMenu.Item onclick={() => filters.push({ type: "Status", operator: '=', value: status.id, display: status.name })}>{status.name}</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => filters.push({ type: "Status", operation: '=', value: status.id, display: status.name })}>{status.name}</DropdownMenu.Item>
 								{/each}
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>Text</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent>
-								<Input onkeydown={(e) => { if (e.key === 'Enter') { filters.push({ type: "Text", operator: '=', value: e.currentTarget.value, display: `"${e.currentTarget.value}"` }); e.currentTarget.blur(); } }}/>
+								<Input onkeydown={(e) => { if (e.key === 'Enter') { filters.push({ type: "Text", operation: 'IN', value: e.currentTarget.value, display: `"${e.currentTarget.value}"` }); e.currentTarget.blur(); } }}/>
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
-			{#each filters as filter, i}
-				{#if i > 0}
-					<div class="gallery h-full px-1">&</div>
-				{/if}
-				<div class="gallery border rounded-md text-xs divide-x h-6 bg-primary-foreground">
-					<div class="gallery h-full px-1">{filter.type}</div>
-					<div class="gallery h-full px-1 text-sm tactile-text">{filter.operator}</div>
-					<div class="gallery h-full px-1">{filter.display}</div>
-					<button class="gallery h-full px-1" onclick={() => { filters = filters.filter(f => f !== filter); }}><X class="w-4 h-4"/></button>
-				</div>
-			{/each}			
+			<Filters bind:filters/>
 		</div>
 		<div id="right" class="gallery gap-4">
 			<Tabs.Root class="" bind:value={view}>
@@ -215,35 +157,7 @@
 		</div>
 	</div>
 	{#if view === "list"}
-		{#each groups as [grouper, tasks]}
-		{@const status = data.statuses.find(s => s.id === grouper)}
-		{@const state_entry = STATES.find(s => s.value === status?.state)}
-			<details open={status.state !== "Resolved"}>
-				<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer">
-					<div class="flex items-center gap-4 tactile-text flex-1">
-						<svelte:component this={state_entry?.icon} class="h-4 w-4"/>
-						{status?.name}
-					</div>
-					<div class="w-12 frame">
-						<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { title: "My task", body: "", assignee: null, labels: [], effort: null, priority: null, status, value: null }}>
-							<Plus class="size-4"/>
-						</button>
-					</div>
-				</summary>
-				{#each tasks as task}
-					<li class="flex items-center border-b h-10 w-full">
-						<TaskLine labels={data.labels} {task} user={data.users.find(u => u.id === task.assignee?.id)}/>
-						<!-- <DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content>
-								<DropdownMenu.Item onclick={() => filters.push({ type: "Label", operator: 'IN', value: "Alive" })} >Filter by this label</DropdownMenu.Item>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root> -->
-					</li>
-				{/each}
-			</details>
-		{/each}
+		<TaskList groups={groups.entries()} labels={data.labels} users={data.users} statuses={data.statuses}/>
 	{:else if view === "kanban"}
 		<div id="arena" class="p-2 flex gap-4 flex-1">
 			{#each groups as [grouper, tasks]}
@@ -258,7 +172,7 @@
 					</div>
 					<ul class="p-2 overflow-scroll flex flex-col gap-2">
 						{#each tasks as task}
-						{@const status = data.statuses.find(s => s.id === task.status)}
+						{@const status = data.statuses.find(s => s.id === task.status.id)}
 						{@const status_entry = STATES.find(s => s.value === status?.state)}
 							<li class="flex flex-col px-2 py-3 h-24 border shadow-lg rounded-lg bg-primary-foreground">
 								<a href={`/tasks/${task.id}`} class="flex flex-col flex-1">

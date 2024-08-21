@@ -6,11 +6,12 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.0",
     "@elysiajs/swagger": "^1.1.1",
+    "elysia": "^1.1.7",
     "octokit": "^4.0.2",
     "surrealdb": "v1.0.0-beta.19"
   }

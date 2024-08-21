@@ -38,6 +38,12 @@ export const tUser = t.Object({
 	color: tColors,
 });
 
+export const tObjective = t.Object({
+	id: tObjectiveId,
+	title: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
+});
+
 export const tTeamPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
@@ -111,13 +117,12 @@ export const tTask = t.Object({
 	id: tTaskId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
 	body: t.String({ maxLength: 8192 }),
-	status: tStatusId,
+	status: t.Object({
+		id: tStatusId,
+	}),
 	priority: tPriorities,
 	effort: tEfforts,
 	value: tValues,
-	objective: t.Nullable(t.Object({
-		id: tObjectiveId,
-	})),
 	progress: t.Number({ minimum: 0, maximum: 100 }),
 	labels: t.Array(t.Object({
 		id: tLabelId,
@@ -166,9 +171,9 @@ export const tProject = t.Object({
 	client: t.Optional(tCompany),
 	end: t.Nullable(t.Date()),
 	milestones: t.Array(tMilestone),
-	objectives: t.Array(t.Object({
-		id: tObjectiveId,
-	})),
+	status: t.Object({
+		id: tStatusId,
+	}),
 });
 
 export const tBugPost = t.Object({

@@ -95,7 +95,11 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 .post("/me/pins", async ({ body }) => {
 	const user = await db.select<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"));
 
-	user.pinned.push(new StringRecordId(body.id));
+	const id = new StringRecordId(body.id);
+
+	if (user.pinned.some(e => e.toString() == id.toString())) { return; }
+
+	user.pinned.push(id);
 
 	await db.merge<User>(new StringRecordId("User:yt2hrlb0mynjar8q5la5"), { pinned: user.pinned });
 }, {
@@ -103,7 +107,7 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		id: t.String(),
 	}),
 	detail: {
-		description: "Creates a todo for the currently logged in user.",
+		description: "Adds a pinned item for the currently logged in user. Does nothing if the pinned item already exists.",
 	}
 })
 

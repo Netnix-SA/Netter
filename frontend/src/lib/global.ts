@@ -1,6 +1,6 @@
-import { Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
-import type { Efforts, Priorities, State, Value } from "./server/db/types";
+import type { Efforts, Priorities, State, Value } from "./types";
 
 export type SelectEntry<T> = {
     label: string;
@@ -130,6 +130,7 @@ export const CLASS_TO_ICON = {
     "Feature": DiamondPlus,
     "Application": Component,
     "Bug": Bug,
+	"Objective": Flag,
 };
 
 export const CLASSES = {

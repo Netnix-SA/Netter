@@ -62,7 +62,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 .get("/:id/messages", async ({ params: { id } }) => {
 	const channel_id = new StringRecordId(id);
 
-	const results = await db.query<[Message[]]>(surql`SELECT * FROM Message WHERE channel == ${channel_id} ORDER BY date ASC;`);
+	const results = await db.query<[Message[]]>(surql`SELECT * FROM Message WHERE channel == ${channel_id} ORDER BY date DESC;`);
 
 	const messages = results[0];
 

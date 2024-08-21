@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Separator from "@/components/ui/separator/separator.svelte";
 	import type { PageData } from "./$types";
-    import type { Value } from "@/server/db/types";
+    import type { Value } from "@/types";
     import Select from "@/components/Select.svelte";
     import { VALUES } from "@/global";
     import AnyChip from "@/components/AnyChip.svelte";

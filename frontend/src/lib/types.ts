@@ -1,22 +1,20 @@
-import type { RecordId, StringRecordId } from "surrealdb";
-
-export type UserId = RecordId<"User">;
-export type BugId = RecordId<"Bug">;
-export type FeatureId = RecordId<"Feature">;
-export type ReleaseId = RecordId<"Release">;
-export type MessageId = RecordId<"Message">;
-export type LabelId = RecordId<"Label">;
-export type ObjectiveId = RecordId<"Objective">;
-export type TaskId = RecordId<"Task">;
-export type StatusId = RecordId<"Status">;
-export type ViewId = RecordId<"View">;
-export type ChannelId = RecordId<"Channel">;
-export type ProjectId = RecordId<"Project">;
-export type ApplicationId = RecordId<"Application">;
-export type ProductId = RecordId<"Product">;
-export type RepositoryId = RecordId<"Repository">;
-export type TeamId = RecordId<"Team">;
-export type ToDoId = RecordId<"ToDo">;
+export type UserId = string;
+export type BugId = string;
+export type FeatureId = string;
+export type ReleaseId = string;
+export type MessageId = string;
+export type LabelId = string;
+export type ObjectiveId = string;
+export type TaskId = string;
+export type StatusId = string;
+export type ViewId = string;
+export type ChannelId = string;
+export type ProjectId = string;
+export type ApplicationId = string;
+export type ProductId = string;
+export type RepositoryId = string;
+export type TeamId = string;
+export type ToDoId = string;
 
 export type User = {
 	id: UserId,
@@ -24,7 +22,7 @@ export type User = {
 	email: string,
 	handle: string,
 	color: Colors,
-	pinned: StringRecordId[],
+	pinned: string[],
 };
 
 export type Role = {
@@ -66,26 +64,30 @@ export type Task = {
 	id: TaskId,
 	title: string,
 	body: string,
-	created: Date,
 
-	labels: LabelId[],
+	labels: {
+		id: LabelId
+	}[],
 
-	assignee: UserId | null,
+	assignee: {
+		id: UserId
+	} | null,
 
-	status: StatusId,
+	status: {
+		id: StatusId,
+	},
 
 	updates: {
 		date: Date,
 		note: string,
 		// The time spent in minutes
-		time_spent: number,
+		// time_spent: number,
 		value: number,
 	}[],
 
 	priority: Priorities,
 	effort: Efforts,
 	value: Value,
-	objective: ObjectiveId | null,
 };
 
 export type Objective = {
@@ -98,8 +100,9 @@ export type Objective = {
 export type Views = "List" | "Kanban" | "Graph" | "Gantt";
 export type OperationEq = "=" | "!=";
 export type OperationCmp = "<" | "<=" | ">" | ">=";
-export type OperationSet = "IN" | "NOT IN";
-export type Operation = OperationEq | OperationCmp | OperationSet;
+export type OperationItem = "IN" | "NOT IN";
+export type OperationSet = "CONTAINS" | "NOT CONTAINS";
+export type Operation = OperationEq | OperationCmp | OperationItem;
 
 export type ProjectFilter = {
 	type: "Project",
@@ -134,7 +137,7 @@ export type StateFilter = {
 export type StatusFilter = {
 	type: "Status",
 	operation: OperationEq,
-	value: Status,
+	value: StatusId,
 };
 
 export type AssigneeFilter = {
@@ -169,13 +172,13 @@ export type ValueFilter = {
 
 export type LabelFilter = {
 	type: "Label",
-	operation: OperationEq,
+	operation: OperationSet,
 	value: LabelId,
 };
 
 export type TextFilter = {
 	type: "Text",
-	operation: OperationSet,
+	operation: OperationItem,
 	value: string,
 };
 

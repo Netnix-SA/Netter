@@ -9,7 +9,7 @@
     import { client } from "@/state";
     import UserSelect from "./UserSelect.svelte";
     import LabelChip from "./LabelChip.svelte";
-    import type { Colors } from "@/server/db/types";
+    import type { Colors } from "@/types";
 
 	type User = { id: string, full_name: string };
 

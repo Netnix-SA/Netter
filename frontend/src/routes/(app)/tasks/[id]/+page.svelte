@@ -101,7 +101,7 @@
 	const { data }: { data: PageData } = $props();
 
 	let body: string = $state(data.task.body);
-	let status: { id: string, state: State } | null = $state(data.statuses.find(s => s.id === data.task.status) || null);
+	let status: { id: string, state: State } | null = $state(data.statuses.find(s => s.id === data.task.status.id) || null);
 	let priority: Priorities | null = $state(data.task.priority);
 	let effort: Efforts | null = $state(data.task.effort);
 	let value: Value | null = $state(data.task.value);

@@ -48,7 +48,7 @@ export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messa
 	}
 })
 
-export const map = ({ id, body, author, date, resolved, question }: Message) => ({
+export const map = ({ id, body, author, date, resolved, question, }: Message) => ({
 	id: id.toString(),
 	body,
 	author: {

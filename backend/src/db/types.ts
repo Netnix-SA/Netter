@@ -72,7 +72,18 @@ export type Task = {
 
 	assignee: UserId | null,
 
-	status: StatusId,
+	status: {
+		id: StatusId,
+	} | {
+		closed_as: "Resolved",
+		note: string,
+	} | {
+		closed_as: "Duplicate",
+		original: TaskId,
+	} | {
+		closed_as: "Cancelled",
+		note: string,
+	},
 
 	updates: {
 		date: Date,
@@ -258,6 +269,8 @@ export type Project = {
 	client: Company | null,
 
 	end: Date | null,
+
+	status: StatusId,
 };
 
 // An update to a Task

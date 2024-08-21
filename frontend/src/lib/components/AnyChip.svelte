@@ -54,17 +54,21 @@
 			return `/bugs/${id}`;
 		}
 
+		if (clss === "Objective") {
+			return `/objectives/${id}`;
+		}
+
 		return "/";
 	}
 
 	let metadata = $state(client.api.metadata({ id }).get());
 
-	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | undefined);
+	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | undefined);
 	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
-<div class="gallery gap-2 h-10 rounded-lg border px-2">
+<div class="gallery gap-2 h-10 rounded-md border px-2">
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
 			<svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
@@ -78,15 +82,21 @@
 		<ContextMenu.Content>
 			<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>
 			{#if clss === "Project"}
-				<ContextMenu.Separator />
+				<ContextMenu.Separator/>
 				<ContextMenu.Label>Project</ContextMenu.Label>
-				<ContextMenu.Separator />
+				<ContextMenu.Separator/>
 				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/tasks`)}>Tasks</ContextMenu.Item>
 			{/if}
+			{#if clss === "Objective"}
+				<ContextMenu.Separator/>
+				<ContextMenu.Label>Objective</ContextMenu.Label>
+				<ContextMenu.Separator/>
+				<ContextMenu.Item onclick={async () => await goto(`/objectives/${id}/tasks`)}>Tasks</ContextMenu.Item>
+			{/if}
 			{#if clss === "Product"}
-				<ContextMenu.Separator />
+				<ContextMenu.Separator/>
 				<ContextMenu.Label>Product</ContextMenu.Label>
-				<ContextMenu.Separator />
+				<ContextMenu.Separator/>
 				<ContextMenu.Item onclick={async () => await goto(`/products/${id}/features`)}>Features</ContextMenu.Item>
 			{/if}
 		</ContextMenu.Content>

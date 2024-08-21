@@ -1,11 +1,12 @@
 import { db } from "../db/index";
 import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
 import { Elysia, t } from "elysia";
-import { tApplication, tLabel, tProject, tProjectPost, tStatus, tTask, tTaskPost } from "./schemas";
+import { tApplication, tLabel, tObjective, tProject, tProjectPost, tStatus, tTask, tTaskPost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
 import { map as mapLabel } from "./labels";
+import { map as mapObjective } from "./objectives";
 
 export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 
@@ -29,7 +30,12 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 	}
 
 	return project;
-}, { response: tProject, detail: { description: "Gets the project by id" } })
+}, {
+	response: tProject,
+	detail: {
+		description: "Gets the project by id"
+	}
+})
 
 .get('/:id/tasks', async ({ params: { id } }) => {
 	return await queryTasks({ belongs_to: new StringRecordId(id) as unknown as ProjectId, assignee: undefined, state: undefined });
@@ -88,8 +94,18 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 	response: t.Array(tApplication),
 })
 
+.get("/:id/objectives", async ({ params: { id } }) => {
+	const results = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}.objectives.id.*;`);
+
+	const objectives = results[0];
+
+	return objectives.map(mapObjective);
+}, {
+	response: t.Array(tObjective),
+})
+
 export const query = async ({ id }: { id?: ProjectId }) => {
-	let query = `SELECT *, (SELECT * FROM Objective WHERE id in $parent.objectives.id) as objectives FROM Project`;
+	let query = `SELECT * FROM Project`;
 
 	let pieces = [];
 
@@ -110,7 +126,7 @@ export const query = async ({ id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, lead, client, end, milestones, objectives }: Omit<Project, "objectives"> & { objectives: Objective[] }) => {
+export const map = ({ id, name, description, status, lead, client, end, milestones }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -118,14 +134,12 @@ export const map = ({ id, name, description, lead, client, end, milestones, obje
 		lead: lead && {
 			id: lead.toString(),
 		},
+		status: {
+			id: status.toString(),
+		},
 		client: client?.toString(),
 		members: [],
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
-		objectives: objectives.map(({ id, title, description }) => ({
-			id: id.toString(),
-			title,
-			description,
-		})),
 	};
-}
+};
