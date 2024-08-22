@@ -4,6 +4,7 @@ import Elysia, { t } from "elysia";
 import { tChannel, tChannelPost, tMessage, tMessagePost } from "./schemas";
 import { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapMessage } from "./messages";
+import { parse_mentions } from "../utils";
 
 export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
 
@@ -46,13 +47,17 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 .post("/:id/messages", async ({ params: { id }, body: { body, is_inquiry } }) => {
 	const channel_id = new StringRecordId(id);
 
-	await db.create<Omit<Message, "id">>("Message", {
+	const mentions = parse_mentions(body).map(mid => new StringRecordId(mid));
+
+	const message = await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
 		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),
 		date: new Date(),
 		resolved: is_inquiry ? false : undefined,
 	});
+
+	await Promise.all(mentions.map(id => db.query("RELATE $mid->mentions->$id;", { mid: message[0].id, id })));
 }, {
 	body: tMessagePost,
 	detail: {

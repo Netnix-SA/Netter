@@ -2,7 +2,7 @@
 	import type { PageData } from "./$types";
 
     import { addPinned } from "@/actions";
-	
+
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 
 	let { data }: { data: PageData } = $props();

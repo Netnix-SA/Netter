@@ -270,54 +270,54 @@ export const tLabel = t.Object({
 	icon: t.Nullable(t.String({ minLength: 1, maxLength: 4 })),
 });
 
-export const tComparison = t.Union([t.Literal("="), t.Literal("<"), t.Literal("<="), t.Literal(">"), t.Literal(">="), t.Literal("!=")]);
+export const tComparison = t.Union([t.Literal("="), t.Literal("<"), t.Literal("<="), t.Literal(">"), t.Literal(">="), t.Literal("!="), t.Literal("IN"), t.Literal("NOT IN")]);
 
 export const tStateFilter = t.Object({
 	type: t.Literal("State"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: tState,
 });
 
 export const tStatusFilter = t.Object({
 	type: t.Literal("Status"),
-	comparator: tComparison,
-	value: tStatus,
+	operation: tComparison,
+	value: tStatusId,
 });
 
 export const tAssigneeFilter = t.Object({
 	type: t.Literal("Assignee"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: tUserId,
 });
 
 export const tCreatorFilter = t.Object({
 	type: t.Literal("Creator"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: tUserId,
 });
 
 export const tPriorityFilter = t.Object({
 	type: t.Literal("Priority"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: t.String(),
 });
 
 export const tEffortFilter = t.Object({
 	type: t.Literal("Effort"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: t.String(),
 });
 
 export const tValueFilter = t.Object({
 	type: t.Literal("Value"),
-	comparator: tComparison,
+	operation: tComparison,
 	value: t.String(),
 });
 
 export const tLabelFilter = t.Object({
 	type: t.Literal("Label"),
-	comparator: tComparison,
-	value: tLabel,
+	operation: tComparison,
+	value: tLabelId,
 });
 
 export const tTextFilter = t.Object({

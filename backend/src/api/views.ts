@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { tFeature, tTask, tView, tViewPost } from "./schemas";
 import { db } from "../db/index";
-import type { Task, View } from "../db/types";
+import type { LabelId, Task, View } from "../db/types";
 import { StringRecordId } from "surrealdb";
 import { map as mapTask } from "./tasks";
 
@@ -49,7 +49,7 @@ export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 	const view = await db.select<View>(new StringRecordId(id));
 
 	let query_pieces: string[] = [];
-	let variables: { text?: string, labels: StringRecordId[] } = { labels: [] };
+	let variables: { text?: string, labels: LabelId[] } = { labels: [] };
 
 	view.filters.forEach(filter => {
 		switch (filter.type) {
@@ -76,14 +76,14 @@ export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
 			}
 			case "Label": {
 				switch (filter.operation) {
-					case "=": {
+					case "IN": {
 						query_pieces.push(`labels CONTAINS $labels[${variables.labels.length}]`);
-						variables.labels.push(new StringRecordId(filter.value));
+						variables.labels.push(filter.value);
 						return;
 					}
-					case "!=": {
+					case "NOT IN": {
 						query_pieces.push(`labels NOT CONTAINS $labels[${variables.labels.length}]`);
-						variables.labels.push(new StringRecordId(filter.value));
+						variables.labels.push(filter.value);
 						return;
 					}
 				}
@@ -116,6 +116,6 @@ export const map = ({ id, name, filters }: View) => ({
 	filters: filters.map(filter => ({
 		type: filter.type,
 		operation: filter.operation,
-		value: filter.value,
+		value: filter.value?.toString(),
 	})),
 });

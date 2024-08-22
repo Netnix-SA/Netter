@@ -59,7 +59,7 @@
 		<div>
 		</div>
 	</div>
-	<div id="tasks" class="flex flex-col col-span-4 row-span-3 divide-y">
+	<div id="tasks" class="flex flex-col col-span-2 row-span-3 divide-y border-r">
 		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
 			<span class=" tactile-text">
 				Pending inquiries
@@ -79,6 +79,32 @@
 					<div class="frame size-full">
 						<span class="text-sm italic text-muted-foreground">
 							No pending inquiries! 🎉
+						</span>
+					</div>
+				{/each}
+			{/await}
+		</div>
+	</div>
+	<div id="tasks" class="flex flex-col col-span-2 row-span-3 divide-y">
+		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
+			<span class=" tactile-text">
+				Pending mentions
+			</span>
+		</div>
+		<div class="flex-1">
+			{#await data.pending_mentions}
+				Loading pending...
+			{:then messages}
+				{#each messages as message}
+					<li class="border-b h-10 gallery">
+						<div class="gallery">
+							<a href={`/channels`} class="ml-4">{message.body}</a>
+						</div>
+					</li>
+				{:else}
+					<div class="frame size-full">
+						<span class="text-sm italic text-muted-foreground">
+							No pending mentions! 🎉
 						</span>
 					</div>
 				{/each}

@@ -188,7 +188,7 @@ export type ValueFilter = {
 
 export type LabelFilter = {
 	type: "Label",
-	operation: OperationEq,
+	operation: OperationSet,
 	value: LabelId,
 };
 

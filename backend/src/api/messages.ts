@@ -2,10 +2,11 @@ import type { Message } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tMessage, tMessagePost, tUserId } from "./schemas";
 import { db } from "../db/index";
+import { StringRecordId } from "surrealdb";
 
 export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messages"], description: "Messages make up the content in channels." }})
 
-.get("", async ({ query: { author, resolved } }) => {
+.get("", async ({ query: { author, resolved, was_mentioned } }) => {
 	let query = "SELECT * FROM Message";
 
 	let where = [];
@@ -16,6 +17,10 @@ export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messa
 
 	if (resolved !== undefined) {
 		where.push(`resolved = ${resolved}`);
+	}
+
+	if (was_mentioned !== undefined) {
+		where.push(`id->mentions->User CONTAINS ${new StringRecordId("User:yt2hrlb0mynjar8q5la5")}`);
 	}
 
 	if (where.length > 0) {
@@ -33,6 +38,7 @@ export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messa
 	query: t.Object({
 		author: t.Optional(tUserId),
 		resolved: t.Optional(t.Boolean()),
+		was_mentioned: t.Optional(t.Boolean()),
 	}),
 	response: t.Array(tMessage),
 })

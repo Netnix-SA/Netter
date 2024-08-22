@@ -41,23 +41,23 @@
 	let view: "list" | "kanban" | "graph" = $state("list");
 
 	import { writable, type Writable } from 'svelte/store';
-	
+
 	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap, type Node, type Edge } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
-	
+
     import CreateTask from "@/components/CreateTask.svelte";
     import { page } from "$app/stores";
     import type { Efforts, LabelFilter, Priorities, StateFilter, StatusFilter, TextFilter, Value } from "@/types";
     import Circle from "@/components/Circle.svelte";
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
-	
+
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
-	
+
 	// same for edges
 	const edges: Writable<Edge[]> = writable([]);
-	
+
 	$effect(() => {
 		const nds = data.tasks.map(task => ({
 			id: task.id,
@@ -95,7 +95,7 @@
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					<div class="frame rounded size-6 hover:w-fit border border-dashed hover:bg-primary-foreground group transition-all gap-1 hover:px-2">
-						<Plus class="size-4"/>
+						<Plus class="size-4 group-hover:green-light"/>
 						<span class="hidden group-hover:block w-0 tactile-text group-hover:w-min text-sm text-clip text-nowrap">
 							Add filter
 						</span>
@@ -191,7 +191,7 @@
 									</div>
 								</a>
 							</li>
-						{/each}						
+						{/each}
 					</ul>
 				</div>
 			{/each}

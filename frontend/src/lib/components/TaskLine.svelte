@@ -14,7 +14,7 @@
 </script>
 
 <ContextMenu.Root>
-	<ContextMenu.Trigger class="flex-1 px-2 py-2 gallery">
+	<ContextMenu.Trigger class="flex-1 px-2 gallery">
 		<div id="left" class="gallery flex-1 gap-2">
 			<Circle value={task.progress}/>
 			<a href={`/tasks/${task.id}`} class="flex items-center min-w-32">
@@ -53,7 +53,7 @@
 						</DropdownMenu.Item>
 					{/each}
 				</DropdownMenu.Content>
-			</DropdownMenu.Root>	
+			</DropdownMenu.Root>
 			<div class="gallery">
 				<UserAvatar {user}/>
 			</div>

@@ -99,11 +99,11 @@
 							<Dialog.Content>
 								<Dialog.Header>Create objective</Dialog.Header>
 								<div class="flex flex-col gap-2">
-									<div class="gallery">
-										<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
-										<input type="text" placeholder="Title" class=""/>
+									<div class="gallery gap-2 h-8">
+										<input type="text" placeholder="Icon" class="border size-8 text-center" value="🎯"/>
+										<input type="text" placeholder="Title" class="border flex-1 h-full px-2"/>
 									</div>
-									<textarea placeholder="Description" class="border"/>
+									<textarea placeholder="Description" class="border px-2 py-1"/>
 								</div>
 								<Dialog.Footer>
 									<Button>Create</Button>
@@ -143,11 +143,11 @@
 							<Dialog.Content>
 								<Dialog.Header>Post project update</Dialog.Header>
 								<div class="flex flex-col gap-2">
-									<div class="gallery">
+									<div class="gallery gap-2 h-8">
 										<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
-										<input type="text" placeholder="Title" class=""/>
+										<input type="text" placeholder="Title" class="flex-1 h-full px-2 border"/>
 									</div>
-									<textarea placeholder="Description" class="border"/>
+									<textarea placeholder="Description" class="border px-2 py-1"/>
 								</div>
 								<Dialog.Footer>
 									<Button>Post</Button>

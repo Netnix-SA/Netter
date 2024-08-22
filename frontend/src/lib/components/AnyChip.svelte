@@ -10,7 +10,7 @@
 
 	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
 
-	function buildUrl(clss: string, id: string) {
+	function buildUrl(clss: Classes, id: string) {
 		if (clss === "Project") {
 			return `/projects/${id}`;
 		}
@@ -68,7 +68,7 @@
 
 	let metadata = $state(client.api.metadata({ id }).get());
 
-	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component" | undefined);
+	let clss = $derived(id.split(':')[0] as Classes | undefined);
 	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>

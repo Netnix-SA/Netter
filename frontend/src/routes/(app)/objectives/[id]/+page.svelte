@@ -28,7 +28,7 @@
 </header>
 <main class="flex flex-col p-24 gap-4 flex-1 w-full">
 	<header class="gallery">
-		<input type="text" class="text-4xl font-bold tactile-text flex-1" placeholder="Title" bind:value={data.objective.title}/>
+		<input type="text" class="text-5xl font-semibold tactile-text flex-1" placeholder="Title" bind:value={data.objective.title}/>
 		{#if data.objective.active}
 			<span class="green-light text-sm text-white font-medium">Active</span>
 		{:else}
@@ -38,11 +38,10 @@
 	<div class="flex">
 		<div class="column flex-1 gap-16">
 			<section class="column gap-2">
-				<h2 class="text-sm text-muted-foreground">Description</h2>
-				<p class="text-lg tactile-text">{data.objective.description}</p>
+				<p class="text-muted-foreground">{data.objective.description}</p>
 			</section>
 			<section class="column gap-2">
-				<h2 class="text-2xl font-semibold tactile-text">Slated features</h2>
+				<h2 class="text-sm text-muted-foreground">Slated features</h2>
 				{#each data.features as feature}
 					<AnyChip id={feature.id} pinned={data.user.pinned}/>
 				{/each}
@@ -50,7 +49,7 @@
 		</div>
 		<side>
 			<section class="column gap-2">
-				<h2 class="text-sm font-semibold tactile-text">Completion</h2>
+				<h2 class="text-sm text-muted-foreground">Completion</h2>
 			</section>
 		</side>
 	</div>

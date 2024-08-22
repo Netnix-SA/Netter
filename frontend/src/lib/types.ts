@@ -31,7 +31,7 @@ export type Role = {
 
 export type Colors =
 	| "Orange/Light" | "Orange/Dark"
-	| "Green/Light"  | "Green/Dark" 
+	| "Green/Light"  | "Green/Dark"
 	| "Red/Light"    | "Red/Dark"
 	| "Blue/Light"   | "Blue/Dark"
 	| "Purple/Light" | "Purple/Dark"
@@ -372,3 +372,5 @@ export type KimaiIntegration = {
 export type SharePointIntegration = {
 	type: "SharePoint",
 };
+
+export type Classes = "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component";

@@ -45,7 +45,24 @@
 {/snippet}
 
 {#snippet mention(title: string)}
-	<span class="text-sm font-semibold">
+{@const results = client.api.get({ query: { text: title.replace("@", "") } })}
+	<div class="absolute top-0 left-0">
+		<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
+			{title}
+		</span>
+		{#await results}
+			Loading...
+		{:then re}
+			{#each re.data as entry}
+				<ul>
+					<li>
+						{entry.title}
+					</li>
+				</ul>
+			{/each}
+		{/await}
+	</div>
+	<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
 		{title}
 	</span>
 {/snippet}
