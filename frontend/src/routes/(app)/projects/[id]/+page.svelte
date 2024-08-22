@@ -34,7 +34,6 @@
 		</div>
 	</div>
 </header>
-
 <div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex items-center justify-center page-backdrop px-48 py-32">
 		<div class="flex flex-1 h-full">
@@ -45,7 +44,6 @@
 						{project.description}
 					</p>
 				</section>
-				<Separator class="my-4"/>
 				<section id="milestones" class="h-fit">
 					<span class="text-sm text-muted-foreground font-regular">Milestones</span>
 					{#snippet milestone_snippet({ i, name, description, status }: { i: number, name: string, description: string, status: "done" | "current" | "upcoming" })}
@@ -90,78 +88,91 @@
 					</div>
 				</section>
 			</div>
-			<Separator orientation="vertical" class="mx-4"/>
-			<div class="w-80">
-				<UserSelect label="Lead" values={data.users} bind:value={lead}/>
-				<Separator class="my-4"/>
-				<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
-				<Separator class="my-4"/>
-				<div class="gallery">
-					<span class="text-sm text-muted-foreground font-regular flex-1">Objectives</span>
-					<Dialog.Root>
-						<Dialog.Trigger>
-							<span class="text-[0.7rem] text-muted-foreground font-regular hover:green-light hover:text-white transition-all">{"New objective"}</span>
-						</Dialog.Trigger>
-						<Dialog.Content>
-							<Dialog.Header>Create objective</Dialog.Header>
-							<div class="flex flex-col gap-2">
-								<div class="gallery">
-									<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
-									<input type="text" placeholder="Title" class=""/>
+			<div class="w-96 column gap-16">
+				<section class="column gap-2">
+					<div class="gallery">
+						<span class="text-sm text-muted-foreground font-regular flex-1">Objectives</span>
+						<Dialog.Root>
+							<Dialog.Trigger>
+								<span class="text-[0.7rem] text-muted-foreground font-regular hover:green-light hover:text-white transition-all">{"New objective"}</span>
+							</Dialog.Trigger>
+							<Dialog.Content>
+								<Dialog.Header>Create objective</Dialog.Header>
+								<div class="flex flex-col gap-2">
+									<div class="gallery">
+										<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
+										<input type="text" placeholder="Title" class=""/>
+									</div>
+									<textarea placeholder="Description" class="border"/>
 								</div>
-								<textarea placeholder="Description" class="border"/>
-							</div>
-							<Dialog.Footer>
-								<Button>Create</Button>
-							</Dialog.Footer>
-						</Dialog.Content>
-					</Dialog.Root>
-				</div>
-				{#each data.objectives as objective}
-					<div class="flex flex-col gap-1 mt-2">
-						<div class="gallery gap-2">
-							<div class="gallery flex-1 gap-2">
-								<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">🎯</span>
-								<a href={`/objectives/${objective.id}`} class="tactile-text">{objective.title}</a>
-							</div>
-							<div class="rounded item-background h-6 w-12 frame">
-								<a href={`/objectives/${objective.id}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
-							</div>
-						</div>
-						<p class="text-muted-foreground text-xs whitespace-pre-wrap">{objective.description}</p>
+								<Dialog.Footer>
+									<Button>Create</Button>
+								</Dialog.Footer>
+							</Dialog.Content>
+						</Dialog.Root>
 					</div>
-				{/each}
-				<Separator class="my-4"/>
-				<div class="gallery">
-					<span class="text-sm text-muted-foreground font-regular flex-1">Updates</span>
-					<Dialog.Root>
-						<Dialog.Trigger>
-							<span class="text-[0.7rem] text-muted-foreground font-regular hover:green-light hover:text-white transition-all">{"New update"}</span>
-						</Dialog.Trigger>
-						<Dialog.Content>
-							<Dialog.Header>Post project update</Dialog.Header>
-							<div class="flex flex-col gap-2">
-								<div class="gallery">
-									<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
-									<input type="text" placeholder="Title" class=""/>
+					{#each data.objectives as objective}
+						<div class="flex flex-col gap-1 h-16">
+							<div class="gallery gap-2">
+								<div class="gallery flex-1 gap-2">
+									<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">🎯</span>
+									<a href={`/objectives/${objective.id}`} class="tactile-text">{objective.title}</a>
+									{#if objective.active}
+										<div class="rounded-full green-light size-1 bg-white animate-pulse"></div>
+									{/if}
 								</div>
-								<textarea placeholder="Description" class="border"/>
+								<div class="rounded item-background h-6 w-12 frame">
+									<a href={`/objectives/${objective.id}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
+								</div>
 							</div>
-							<Dialog.Footer>
-								<Button>Post</Button>
-							</Dialog.Footer>
-						</Dialog.Content>
-					</Dialog.Root>
-				</div>
-				{#each [{ title: "All is well", body: "Project is going great and on time. Thank you everyone!" }] as update}
-					<div class="flex flex-col gap-1 mt-2">
-						<div class="gallery gap-2">
-							<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">👍</span>
-							<span class="tactile-text">{update.title}</span>
+							<p class="text-muted-foreground text-xs whitespace-pre-wrap">{objective.description}</p>
 						</div>
-						<p class="text-muted-foreground text-xs whitespace-pre-wrap">{update.body}</p>
+					{:else}
+						<div class="frame h-16">
+							<span class="text-muted-foreground/50 text-xs select-none">No objectives</span>
+						</div>
+					{/each}
+				</section>
+				<section class="w-full">
+					<div class="gallery">
+						<span class="text-sm text-muted-foreground font-regular flex-1">Updates</span>
+						<Dialog.Root>
+							<Dialog.Trigger>
+								<span class="text-[0.7rem] text-muted-foreground font-regular hover:green-light hover:text-white transition-all">{"New update"}</span>
+							</Dialog.Trigger>
+							<Dialog.Content>
+								<Dialog.Header>Post project update</Dialog.Header>
+								<div class="flex flex-col gap-2">
+									<div class="gallery">
+										<input type="text" placeholder="Icon" class="border size-8 text-center" value="🥳"/>
+										<input type="text" placeholder="Title" class=""/>
+									</div>
+									<textarea placeholder="Description" class="border"/>
+								</div>
+								<Dialog.Footer>
+									<Button>Post</Button>
+								</Dialog.Footer>
+							</Dialog.Content>
+						</Dialog.Root>
 					</div>
-				{/each}
+					{#each data.project.updates as update}
+						<div class="flex flex-col gap-1 h-16">
+							<div class="gallery gap-2">
+								<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">👍</span>
+								<span class="tactile-text">{update.title}</span>
+							</div>
+							<p class="text-muted-foreground text-xs whitespace-pre-wrap">{update.body}</p>
+						</div>
+					{:else}
+						<div class="frame h-16">
+							<span class="text-muted-foreground/50 text-xs select-none">No updates</span>
+						</div>
+					{/each}
+				</section>
+				<section class="column gap-2">
+					<UserSelect label="Lead" values={data.users} bind:value={lead}/>
+					<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
+				</section>
 			</div>
 		</div>
 	</main>

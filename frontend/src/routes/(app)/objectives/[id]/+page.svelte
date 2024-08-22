@@ -1,10 +1,9 @@
 <script lang="ts">
-	import Separator from "@/components/ui/separator/separator.svelte";
-import type { PageData } from "./$types";
+	import type { PageData } from "./$types";
 	import AnyChip from "@/components/AnyChip.svelte";
 	import Button from "@/components/ui/button/button.svelte";
 	import { page } from "$app/stores";
-	import { Pin } from "lucide-svelte";
+	import { Pin, PinOff } from "lucide-svelte";
 	import { addPinned } from "@/actions";
 
 	let { data }: { data: PageData } = $props();
@@ -19,22 +18,40 @@ import type { PageData } from "./$types";
 			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
 		</div>
 	</div>
-	<button class="rounded border frame size-6" onclick={async () => await addPinned(data.objective.id)}><Pin class="text-primary size-4"/></button>
+	<button class="rounded border frame size-6" onclick={async () => await addPinned(data.objective.id)}>
+		{#if data.user.pinned.find(p => p === data.objective.id)}
+			<PinOff class="text-primary size-4"/>
+		{:else}
+			<Pin class="text-primary size-4"/>
+		{/if}
+	</button>
 </header>
 <main class="flex flex-col p-24 gap-4 flex-1 w-full">
 	<header class="gallery">
 		<input type="text" class="text-4xl font-bold tactile-text flex-1" placeholder="Title" bind:value={data.objective.title}/>
-		<Button variant="link" href={`${$page.url}/tasks`}>Tasks</Button>
+		{#if data.objective.active}
+			<span class="green-light text-sm text-white font-medium">Active</span>
+		{:else}
+			<span class="text-sm text-white font-medium">Inactive</span>
+		{/if}
 	</header>
-	<Separator/>
-	<section class="column gap-2">
-		<h2 class="text-sm text-muted-foreground">Description</h2>
-		<p class="text-lg tactile-text">{data.objective.description}</p>
-	</section>
-	<section class="column gap-2">
-		<h2 class="text-2xl font-semibold tactile-text">Features</h2>
-		{#each data.features as feature}
-			<AnyChip id={feature.id}/>
-		{/each}
-	</section>
+	<div class="flex">
+		<div class="column flex-1 gap-16">
+			<section class="column gap-2">
+				<h2 class="text-sm text-muted-foreground">Description</h2>
+				<p class="text-lg tactile-text">{data.objective.description}</p>
+			</section>
+			<section class="column gap-2">
+				<h2 class="text-2xl font-semibold tactile-text">Slated features</h2>
+				{#each data.features as feature}
+					<AnyChip id={feature.id} pinned={data.user.pinned}/>
+				{/each}
+			</section>
+		</div>
+		<side>
+			<section class="column gap-2">
+				<h2 class="text-sm font-semibold tactile-text">Completion</h2>
+			</section>
+		</side>
+	</div>
 </main>

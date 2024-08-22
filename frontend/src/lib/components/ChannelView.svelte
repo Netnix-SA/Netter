@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Paperclip from "lucide-svelte/icons/paperclip";
-	import CornerDownLeft from "lucide-svelte/icons/corner-down-left";
+	import { ArrowUp } from "lucide-svelte";
 	import { Button } from "$lib/components/ui/button";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -12,7 +12,7 @@
 
 	type Message = { id: string, author: { id: string }; body: string, resolved?: boolean, question?: string, replies: Message[] };
 
-	let { channel, messages, users, onSend = async (body) => { await client.api.channels({ id: channel.id }).messages.post({ body }); } }: { channel: { id: string, }, messages: Promise<Message[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
+	let { channel, messages, users, onSend = async (body, is_inquiry = false) => { await client.api.channels({ id: channel.id }).messages.post({ body, is_inquiry }); } }: { channel: { id: string, }, messages: Promise<Message[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
 
 	let message = $state("");
 
@@ -95,6 +95,9 @@
 	<ContextMenu.Content>
 		<ContextMenu.Item onclick={() => { question = message; }}>Reply to</ContextMenu.Item>
 		<ContextMenu.Item onclick={async () => await addToDo(message.body)}>Add to ToDo's</ContextMenu.Item>
+		{#if message.resolved !== undefined}
+			<ContextMenu.Item onclick={() => { question = message; }}>Mark as resolved</ContextMenu.Item>
+		{/if}
 	</ContextMenu.Content>
 </ContextMenu.Root>
 {/snippet}
@@ -147,9 +150,8 @@
 		</div>
 	</div>
 	<div class="column justify-end">
-		<Button type="submit" size="sm" onclick={async () => { await onSend(message); message = ""; }}>
-			Send Message
-			<CornerDownLeft class="size-3.5" />
-		</Button>
+		<button class="size-8 frame rounded-md item-background group transition-all" onclick={async (e) => { await onSend(message, e.getModifierState("Alt")); message = ""; }}>
+			<ArrowUp class="size-4 group-hover:green-light transition-all"/>
+		</button>
 	</div>
 </div>

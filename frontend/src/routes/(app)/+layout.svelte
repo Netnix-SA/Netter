@@ -56,7 +56,7 @@
 	});
 
 	let search = $state("");
-	
+
 	let entries: { id: string, title: string }[] = $state([]);
 
 	async function handleInput(e: Event) {
@@ -138,8 +138,8 @@
 					</Dialog.Content>
 				</Dialog.Root> -->
 			</div>
-			<div class="flex-1 flex flex-col text-sm">
-				<div class="flex-1 flex flex-col gap-1 text-sm">
+			<div class="flex-1 flex flex-col text-sm gap-4">
+				<section class="column gap-1">
 					{#each LINKS as { href, icon, label }}
 						<a {href} class="w-full px-2 py-2 rounded hover:bg-primary-foreground hover:scale-105 transition-all flex gap-2 items-center">
 							<svelte:component this={icon} class="h-4 w-4"/>
@@ -148,18 +148,18 @@
 							</span>
 						</a>
 					{/each}
-					<Separator class="my-2"/>
-					<span class="pr-2 text-muted-foreground temt-sm font-normal">
+				</section>
+				<section class="column gap-2 flex-1">
+					<span class="pr-2 text-muted-foreground text-sm">
 						Pinned
 					</span>
-					<div class="column gap-2">
+					<div class="column gap-2 overflow-scroll">
 						{#each data.user.pinned as pinned}
-							<AnyChip id={pinned}/>
+							<AnyChip id={pinned} pinned={data.user.pinned}/>
 						{/each}
 					</div>
-				</div>
-				<Separator class="my-2"/>
-				<a href="/settings" class="w-full px-4 py-2 rounded hover:bg-primary-background transition-colors">
+				</section>
+				<a href="/settings" class="w-full px-2 py-2 rounded text-muted-foreground hover:text-primary transition-colors">
 					Settings
 				</a>
 			</div>

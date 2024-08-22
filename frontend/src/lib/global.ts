@@ -1,4 +1,4 @@
-import { Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
 
@@ -130,13 +130,14 @@ export const CLASS_TO_ICON = {
     "Feature": DiamondPlus,
     "Application": Component,
     "Bug": Bug,
-	"Objective": Flag,
+    "Objective": Flag,
+    "Component": Blocks,
 };
 
 export const CLASSES = {
     "Task": {
         icon: CLASS_TO_ICON["Task"],
-        url: "/tasks",        
+        url: "/tasks",
     }
 };
 

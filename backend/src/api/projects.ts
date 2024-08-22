@@ -126,7 +126,7 @@ export const query = async ({ id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, status, lead, client, end, milestones }: Project) => {
+export const map = ({ id, name, description, status, lead, client, end, milestones, updates }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -141,5 +141,6 @@ export const map = ({ id, name, description, status, lead, client, end, mileston
 		members: [],
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
+		updates,
 	};
 };

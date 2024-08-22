@@ -18,7 +18,7 @@
 		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">
 			<span class=" tactile-text">
 				My tasks
-			</span>			
+			</span>
 		</div>
 		<div>
 			{#await data.tasks}
@@ -70,9 +70,9 @@
 				Loading pending...
 			{:then messages}
 				{#each messages as message}
-					<li class="border-b h-10">
-						<div class="flex items-center">
-							<div class="ml-2">{message.body}</div>
+					<li class="border-b h-10 gallery">
+						<div class="gallery">
+							<a href={`/channels`} class="ml-4">{message.body}</a>
 						</div>
 					</li>
 				{:else}

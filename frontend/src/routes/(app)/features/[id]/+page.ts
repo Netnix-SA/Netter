@@ -21,9 +21,16 @@ export const load: PageLoad = async ({ params: { id } }) => {
 		throw error(404, "Could not load tasks!");
 	}
 
+	const { data: components } = await client.api.features({ id }).components.get();
+
+	if (components === null) {
+		throw error(404, "Could not load components!");
+	}
+
 	return {
 		feature,
 		bugs,
 		tasks,
+		components,
 	};
 };

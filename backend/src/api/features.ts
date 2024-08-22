@@ -1,9 +1,10 @@
 import { Elysia, t } from "elysia";
-import { tBug, tFeature, tFeaturePost, tTask } from "./schemas";
+import { tBug, tComponent, tFeature, tFeaturePost, tTask } from "./schemas";
 import { db } from "../db/index";
-import { type Bug, type Feature, type Task } from "../db/types";
+import { type Bug, type Component, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
+import { map as mapComponent } from "./components";
 import { StringRecordId } from "surrealdb";
 
 export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
@@ -54,6 +55,16 @@ export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
 	return tasks.map(mapTask);
 }, {
 	response: t.Array(tTask),
+})
+
+.get("/:id/components", async ({ params: { id } }) => {
+	const results = await db.query<[Component[]]>("$id->needs->Component.*;", { id: new StringRecordId(id) });
+
+	const components = results[0];
+
+	return components.map(mapComponent);
+}, {
+	response: t.Array(tComponent),
 })
 
 export const map = ({ id, name, description, value }: Feature) => {

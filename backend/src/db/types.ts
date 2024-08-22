@@ -3,6 +3,7 @@ import type { RecordId, StringRecordId } from "surrealdb";
 export type UserId = RecordId<"User">;
 export type BugId = RecordId<"Bug">;
 export type FeatureId = RecordId<"Feature">;
+export type ComponentId = RecordId<"Component">;
 export type ReleaseId = RecordId<"Release">;
 export type MessageId = RecordId<"Message">;
 export type LabelId = RecordId<"Label">;
@@ -14,9 +15,11 @@ export type ChannelId = RecordId<"Channel">;
 export type ProjectId = RecordId<"Project">;
 export type ApplicationId = RecordId<"Application">;
 export type ProductId = RecordId<"Product">;
-export type RepositoryId = RecordId<"Repository">;
 export type TeamId = RecordId<"Team">;
 export type ToDoId = RecordId<"ToDo">;
+export type RepositoryId = RecordId<"Repository">;
+export type BranchId = RecordId<"Branch">;
+export type MergeRequestId = RecordId<"MergeRequest">;
 
 export type User = {
 	id: UserId,
@@ -33,7 +36,7 @@ export type Role = {
 
 export type Colors =
 	| "Orange/Light" | "Orange/Dark"
-	| "Green/Light"  | "Green/Dark" 
+	| "Green/Light"  | "Green/Dark"
 	| "Red/Light"    | "Red/Dark"
 	| "Blue/Light"   | "Blue/Dark"
 	| "Purple/Light" | "Purple/Dark"
@@ -107,6 +110,7 @@ export type Objective = {
 	id: ObjectiveId,
 	title: string,
 	description: string,
+	active: boolean,
 	end: Date | null,
 };
 
@@ -264,6 +268,11 @@ export type Project = {
 	members: User[],
 
 	milestones: Milestone[],
+	updates: {
+		title: string,
+		body: string,
+	},
+
 	objectives: { id: ObjectiveId }[],
 
 	client: Company | null,
@@ -304,6 +313,12 @@ export type Feature = {
 	name: string,
 	description: string,
 	value: Value,
+};
+
+export type Component = {
+	id: ComponentId,
+	name: string,
+	description: string,
 };
 
 export type Repository = {

@@ -35,7 +35,7 @@
 		</section>
 	</div>
 	<Separator orientation="vertical" class="mx-4"/>
-	<div class="column w-96 gap-8">
+	<aside class="column w-96 gap-8">
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Execution status</span>
 			<div class="gallery gap-8">
@@ -59,6 +59,15 @@
 			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={data.feature.value}/>
 		</section>
 		<section class="column gap-2">
+			<span class="text-sm text-muted-foreground">Components</span>
+			<div class="column flex-1 overflow-y-scroll gap-2">
+				{#each data.components as component}
+				<AnyChip id={component.id}/>
+				{/each}
+			</div>
+			<!-- <textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea> -->
+		</section>
+		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Bugs</span>
 			<div class="column flex-1 overflow-y-scroll gap-2">
 				{#each data.bugs as bug}
@@ -76,5 +85,5 @@
 			</div>
 			<!-- <textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea> -->
 		</section>
-	</div>
+	</aside>
 </div>

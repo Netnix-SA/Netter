@@ -5,6 +5,7 @@ export const tCompanyId = t.String({ title: "CompanyId", pattern: "^Company:[a-z
 export const tProductId = t.String({ title: "ProductId", pattern: "^Product:[a-z0-9]{20}$" });
 export const tApplicationId = t.String({ title: "ApplicationId", pattern: "^Application:[a-z0-9]{20}$" });
 export const tFeatureId = t.String({ title: "FeatureId", pattern: "^Feature:[a-z0-9]{20}$" });
+export const tComponentId = t.String({ title: "ComponentId", pattern: "^Component:[a-z0-9]{20}$" });
 export const tBugId = t.String({ title: "BugId", pattern: "^Bug:[a-z0-9]{20}$" });
 export const tChannelId = t.String({ title: "ChannelId", pattern: "^Channel:[a-z0-9]{20}$" });
 export const tLabelId = t.String({ title: "LabelId", pattern: "^Label:[a-z0-9]{20}$" });
@@ -12,9 +13,10 @@ export const tMessageId = t.String({ title: "MessageId", pattern: "^Message:[a-z
 export const tTaskId = t.String({ title: "TaskId", pattern: "^Task:[a-z0-9]{20}$" });
 export const tObjectiveId = t.String({ title: "ObjectiveId", pattern: "^Objective:[a-z0-9]{20}$" });
 export const tStatusId = t.String({ title: "StatusId", pattern: "^Status:[a-z0-9]{20}$" });
-export const tRepositoryId = t.String({ title: "RepositoryId", pattern: "^Repository:[a-z0-9]{20}$" });
 export const tToDoId = t.String({ title: "ToDoId", pattern: "^ToDo:[a-z0-9]{20}$" });
 export const tReleaseId = t.String({ title: "ReleaseId", pattern: "^Release:[a-z0-9]{20}$" });
+export const tRepositoryId = t.String({ title: "RepositoryId", pattern: "^Repository:[a-z0-9]{20}$" });
+export const tMergeRequestId = t.String({ title: "MergeRequestId", pattern: "^MergeRequest:[a-z0-9]{20}$" });
 
 export const tValues = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High")], { default: "Medium" });
 export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Literal("High"), t.Literal("Urgent")], { default: "Medium" });
@@ -42,6 +44,7 @@ export const tObjective = t.Object({
 	id: tObjectiveId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	active: t.Boolean(),
 });
 
 export const tTeamPost = t.Object({
@@ -83,6 +86,7 @@ export const tChannel = t.Object({
 
 export const tMessagePost = t.Object({
 	body: t.String({ minLength: 1, maxLength: 8192, }),
+	is_inquiry: t.Boolean({ default: false }),
 });
 
 export const tMessage = t.Object({
@@ -174,6 +178,10 @@ export const tProject = t.Object({
 	status: t.Object({
 		id: tStatusId,
 	}),
+	updates: t.Array(t.Object({
+		title: t.String({ minLength: 3, maxLength: 128 }),
+		body: t.String({ maxLength: 8192 }),
+	})),
 });
 
 export const tBugPost = t.Object({
@@ -231,6 +239,12 @@ export const tFeature = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
 	value: tValues,
+});
+
+export const tComponent = t.Object({
+	id: tComponentId,
+	name: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
 });
 
 export const tState = t.Object({

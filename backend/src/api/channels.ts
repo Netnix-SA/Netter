@@ -43,7 +43,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 	},
 })
 
-.post("/:id/messages", async ({ params: { id }, body: { body, } }) => {
+.post("/:id/messages", async ({ params: { id }, body: { body, is_inquiry } }) => {
 	const channel_id = new StringRecordId(id);
 
 	await db.create<Omit<Message, "id">>("Message", {
@@ -51,6 +51,7 @@ export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Chann
 		channel: channel_id as unknown as RecordId<"Channel">,
 		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),
 		date: new Date(),
+		resolved: is_inquiry ? false : undefined,
 	});
 }, {
 	body: tMessagePost,

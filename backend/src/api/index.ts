@@ -12,6 +12,7 @@ import { bugs } from "./bugs";
 import { tasks } from "./tasks";
 import { projects } from "./projects";
 import { features } from "./features";
+import { components } from "./components";
 import { views } from "./views";
 import { todos } from "./todos";
 import { channels } from "./channels";
@@ -82,6 +83,7 @@ export const server = new Elysia({ prefix: "/api" })
 .use(projects)
 .use(bugs)
 .use(features)
+.use(components)
 .use(applications)
 .use(products)
 .use(labels)

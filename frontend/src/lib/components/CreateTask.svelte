@@ -19,6 +19,7 @@
 		priority: Priorities, effort: Efforts, value: Value,
 		assignee: { id: string } | null,
 		labels: { id: string }[],
+		tackles: { id: string }[],
 	};
 
 	let { task, project, statuses, users, labels }: { task: Task, project: string | undefined, users: User[], labels: { id: string, icon: string, title: string, color: Colors }[], statuses: { id: string, name: string, state: State, }[], } = $props();

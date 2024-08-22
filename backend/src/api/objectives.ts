@@ -33,7 +33,7 @@ export const objectives = new Elysia({ prefix: "/objectives", detail: { tags:["O
 })
 
 .get("/:id/tasks", async ({ params: { id } }) => {
-    const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}<-slated<-Feature<-tackles<-Task;`);
+    const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}<-slated<-Feature<-tackles<-Task, ${new StringRecordId(id)}<-slated<-Feature->needs->Component<-tackles<-Task);`);
 
     const tasks = results[0];
 
@@ -45,7 +45,8 @@ export const objectives = new Elysia({ prefix: "/objectives", detail: { tags:["O
     },
 });
 
-export const map = ({ id, title, description }: Objective) => ({
+export const map = ({ id, title, description, active }: Objective) => ({
     id: id.toString(),
     title, description,
+    active,
 });

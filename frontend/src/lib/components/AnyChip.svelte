@@ -3,11 +3,12 @@
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
-    import { removePinned } from "@/actions";
+	import CreateTask from "$lib/components/CreateTask.svelte";
+    import { removePinned, addPinned } from "@/actions";
     import { goto } from "$app/navigation";
     import { client } from "@/state";
 
-	let { id }: { id: string } = $props();
+	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
 
 	function buildUrl(clss: string, id: string) {
 		if (clss === "Project") {
@@ -58,12 +59,16 @@
 			return `/objectives/${id}`;
 		}
 
+		if (clss === "Component") {
+			return `/component/${id}`;
+		}
+
 		return "/";
 	}
 
 	let metadata = $state(client.api.metadata({ id }).get());
 
-	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | undefined);
+	let clss = $derived(id.split(':')[0] as "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component" | undefined);
 	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
@@ -80,12 +85,25 @@
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
-			<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>
+			{#if pinned.includes(id)}
+				<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>
+			{:else}
+				<ContextMenu.Item onclick={async () => await addPinned(id)}>Pin '{name}'</ContextMenu.Item>
+			{/if}
+			{#if clss === "Feature"}
+				<ContextMenu.Separator/>
+				<ContextMenu.Label>Feature</ContextMenu.Label>
+				<ContextMenu.Separator/>
+				<ContextMenu.Item>
+					<!-- <CreateTask task={{ feature: id }}/> -->
+				</ContextMenu.Item>
+			{/if}
 			{#if clss === "Project"}
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Project</ContextMenu.Label>
 				<ContextMenu.Separator/>
 				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/tasks`)}>Tasks</ContextMenu.Item>
+				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/objectives/active`)}>Objective</ContextMenu.Item>
 			{/if}
 			{#if clss === "Objective"}
 				<ContextMenu.Separator/>
@@ -100,5 +118,5 @@
 				<ContextMenu.Item onclick={async () => await goto(`/products/${id}/features`)}>Features</ContextMenu.Item>
 			{/if}
 		</ContextMenu.Content>
-	</ContextMenu.Root>    
+	</ContextMenu.Root>
 </div>

@@ -12,10 +12,11 @@
 	<title>Projects</title>
 </svelte:head>
 
+<header class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground border-b">
+	My projects
+</header>
+
 <div class="flex-1 flex flex-col w-full divide-y">
-	<header class="flex w-full px-6 h-10 items-center text-sm header-background">
-		My projects
-	</header>
 	<main>
 		<ul class="divide-y">
 			{#each projects as project}
@@ -26,9 +27,14 @@
 								{project.name}
 							</span>
 						</a>
-						<a href={`/projects/${project.id}/tasks`} class="text-xs gallery item-background h-6 px-2 rounded">
-							Tasks
-						</a>
+						<div class="gallery gap-2">
+							<a href={`/projects/${project.id}/tasks`} class="text-xs gallery item-background h-6 px-2 rounded">
+								Tasks
+							</a>
+							<a href={`/projects/${project.id}/objectives/active`} class="text-xs gallery item-background h-6 px-2 rounded">
+								Objective
+							</a>
+						</div>
 					</div>
 					<div class="gallery gap-2">
 						<div class="gallery gap-2">
