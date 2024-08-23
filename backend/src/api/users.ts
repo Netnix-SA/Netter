@@ -1,8 +1,8 @@
-import { StringRecordId } from "surrealdb";
+import { RecordId, StringRecordId } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
 
-import { type User, type ToDo } from "../db/types";
-import { tUserPost, tUser, tToDo, tToDoPost } from "./schemas";
+import { type User, type ToDo, type Colors } from "../db/types";
+import { tUserPost, tUser, tToDo, tToDoPost, tColors } from "./schemas";
 import { db } from "../db/index";
 import { map as mapToDo } from "./todos";
 
@@ -51,6 +51,20 @@ export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
 		This method will fail if the handle or email already exists.
 		This method will fail if the email's domain is not allowed in the organization.`,
 	}
+})
+
+.patch("/me", async ({ body }) => {
+	let user: { color?: Colors } = {};
+
+	if (body.color !== undefined) {
+		user.color = body.color;
+	}
+
+	await db.merge<User>(new RecordId("User", "yt2hrlb0mynjar8q5la5"), user);
+}, {
+	body: t.Object({
+		color: t.Optional(tColors),
+	})
 })
 
 .get("/me", async ({}) => {

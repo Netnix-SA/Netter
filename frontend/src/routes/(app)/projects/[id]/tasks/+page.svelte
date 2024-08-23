@@ -5,7 +5,7 @@
     import Label from "@/components/LabelChip.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Tabs from "$lib/components/ui/tabs";
-    import { Filter, Kanban, List, Plus, Share2, X } from "lucide-svelte";
+    import { Kanban, List, Plus, Share2 } from "lucide-svelte";
 
 	let { data }: { data: PageData } = $props();
 
@@ -20,8 +20,6 @@
     import UserSearch from "@/components/UserSearch.svelte";
     import UserAvatar from "@/components/UserAvatar.svelte";
     import Input from "@/components/ui/input/input.svelte";
-
-	let draft_task: { title: string, body: string, status: { id: string, }, priority: Priorities, effort: Efforts, value: Value, assignee: { id: string } | null, labels: { id: string }[], } | undefined = $state(undefined);
 
 	onMount(() => {
 		const entry = { name: "Project", commands: [{ name: "Create task", key: 'c', do: () => {
@@ -45,12 +43,11 @@
 	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap, type Node, type Edge } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 
-    import CreateTask from "@/components/CreateTask.svelte";
-    import { page } from "$app/stores";
-    import type { Efforts, LabelFilter, Priorities, StateFilter, StatusFilter, TextFilter, Value } from "@/types";
+    import type { LabelFilter, StateFilter, StatusFilter, TextFilter } from "@/types";
     import Circle from "@/components/Circle.svelte";
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
+    import { task } from "@/all.svelte";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -157,7 +154,7 @@
 		</div>
 	</div>
 	{#if view === "list"}
-		<TaskList groups={groups.entries()} labels={data.labels} users={data.users} statuses={data.statuses}/>
+		<TaskList groups={groups.entries()} labels={data.labels} users={data.users} statuses={data.statuses} bind:draft_task={task.value}/>
 	{:else if view === "kanban"}
 		<div id="arena" class="p-2 flex gap-4 flex-1">
 			{#each groups as [grouper, tasks]}
@@ -210,9 +207,3 @@
 	</SvelteFlow>
 	{/if}
 </div>
-
-{#if draft_task}
-{#key draft_task}
-	<CreateTask labels={data.labels} task={draft_task} statuses={data.statuses} users={data.users} project={$page.params.id}/>
-{/key}
-{/if}

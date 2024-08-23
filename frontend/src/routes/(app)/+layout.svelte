@@ -1,17 +1,23 @@
 <script lang="ts">
     import { onMount, type Snippet } from "svelte";
 
-	import { Settings } from "lucide-svelte";
+	import { Settings, Star } from "lucide-svelte";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Command from "$lib/components/ui/command";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import * as Dialog from "$lib/components/ui/dialog";
     import { goto, onNavigate } from "$app/navigation";
 	import { Separator } from "$lib/components/ui/separator";
     import { client, commands } from "@/state";
-    import { LINKS } from "@/global";
+    import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/global";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
     import { toast } from "svelte-sonner";
+    import { task, todo } from "@/all.svelte";
+    import { Button } from "@/components/ui/button";
+    import { addToDo } from "@/actions";
+    import { Select } from "@/components/ui/select";
+    import UserSelect from "@/components/UserSelect.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -83,6 +89,30 @@
 
 		if (entry.startsWith("Product")) {
 			return goto(`/products/${entry}`);
+		}
+	}
+
+	async function createTask() {
+		if (project === undefined) {
+			await client.api.tasks.post({
+				title: task.title,
+				body: task.body,
+				status: task.status?.id || null,
+				priority: task.priority,
+				effort: task.effort,
+				value: task.value,
+				assignee: task.assignee?.id || null,
+			});
+		} else {
+			await client.api.projects({ id: project }).tasks.post({
+				title: task.title,
+				body: task.body,
+				status: task.status?.id || null,
+				priority: task.priority,
+				effort: task.effort,
+				value: task.value,
+				assignee: task.assignee?.id || null,
+			});
 		}
 	}
 </script>
@@ -211,3 +241,73 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
+
+<Dialog.Root open={todo.value !== null} onOpenChange={(o) => { if (!o) { todo.value = null; }}}>
+	<Dialog.Trigger>Create Task</Dialog.Trigger>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Create ToDo</Dialog.Title>
+		</Dialog.Header>
+		<section class="column gap-1">
+			<label class="text-muted-foreground text-sm">Related to</label>
+			{#if todo.value.related !== null}
+				<AnyChip id={todo.value.related.id} pinned={data.user.pinned}/>
+			{/if}
+		</section>
+		<input type="text" placeholder="Title" class="px-2 py-1 w-full"/>
+		<Dialog.Footer>
+			<Button onclick={async () => await addToDo(todo.value?.title ?? "")}>Create</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={task.value !== null} onOpenChange={(o) => { if (!o) { task.value = null; }}}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>
+				Create task
+			</Dialog.Title>
+		</Dialog.Header>
+		<input type="text" placeholder="Title" class="border-b appearance-none outline-none text-2xl tactile-text bg-transparent" bind:value={task.value.title}/>
+		<div class="mt-4 gallery w-full gap-3">
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
+					+
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content>
+					{#each data.labels.filter(l => !task.value.labels.some(tl => tl.id === l.id)) as label}
+						<DropdownMenu.Item class="gallery gap-2" onclick={() => { task.value.labels.push({ id: label.id }); }}>
+							{label.icon} {label.title}
+						</DropdownMenu.Item>
+					{/each}
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+			<div class="gallery gap-3 overflow-scroll w-full">
+				{#each task.value.labels.filter(l => l.id) as { id }}
+					{@const label = labels.find((l) => l.id === id)}
+					<LabelChip {label} />
+				{/each}
+			</div>
+		</div>
+		<textarea class="bg-transparent text-sm min-h-[2lh]" placeholder="Description" bind:value={task.value.body}>
+		</textarea>
+		<div class="w-full flex flex-wrap gap-2">
+			<UserSelect values={data.users} bind:value={task.value.assignee}/>
+			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status} />
+			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority} />
+			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort} />
+			<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value} />
+		</div>
+		<section class="column gap-1">
+			<label class="text-muted-foreground text-sm">Related</label>
+			<div class="column gap-1 max-h-16 overflow-scroll">
+				{#each task.value.related as related}
+					<AnyChip id={related.id} pinned={data.user.pinned}/>
+				{/each}
+			</div>
+		</section>
+		<Dialog.Footer>
+			<!-- <Button onclick={createTask}>Create</Button> -->
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

@@ -3,8 +3,8 @@
 	import AnyChip from "@/components/AnyChip.svelte";
 	import Button from "@/components/ui/button/button.svelte";
 	import { page } from "$app/stores";
-	import { Pin, PinOff } from "lucide-svelte";
 	import { addPinned } from "@/actions";
+	import Pin from "@/components/Pin.svelte";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -18,13 +18,7 @@
 			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
 		</div>
 	</div>
-	<button class="rounded border frame size-6" onclick={async () => await addPinned(data.objective.id)}>
-		{#if data.user.pinned.find(p => p === data.objective.id)}
-			<PinOff class="text-primary size-4"/>
-		{:else}
-			<Pin class="text-primary size-4"/>
-		{/if}
-	</button>
+	<Pin pinned={data.user.pinned} id={data.objective.id}/>
 </header>
 <main class="flex flex-col p-24 gap-4 flex-1 w-full">
 	<header class="gallery">

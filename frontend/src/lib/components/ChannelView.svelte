@@ -46,25 +46,33 @@
 
 {#snippet mention(title: string)}
 {@const results = client.api.get({ query: { text: title.replace("@", "") } })}
-	<div class="absolute top-0 left-0">
-		<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
+<div class="relative">
+	<div class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow">
+		<div class="text-md border-b px-2 h-8 gallery">
 			{title}
-		</span>
+		</div>
 		{#await results}
 			Loading...
 		{:then re}
 			{#each re.data as entry}
-				<ul>
-					<li>
+				<ul class="flex-1">
+					<option class="gallery px-2 h-6 border-b">
 						{entry.title}
-					</li>
+					</option>
 				</ul>
+			{:else}
+				<div class="frame flex-1 w-full h-full text-muted-foreground/50 text-sm">
+					<span>
+					No results
+					</span>
+				</div>
 			{/each}
 		{/await}
 	</div>
 	<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
 		{title}
 	</span>
+</div>
 {/snippet}
 
 {#snippet link(title: string, href: string)}
@@ -132,7 +140,7 @@
 		{/each}
 	{/await}
 </ul>
-<div id="input-box" class="overflow-hidden rounded-t-lg bg-neutral-900 border-t px-3 py-2 gap-2 flex">
+<div id="input-box" class="rounded-t-lg bg-neutral-900 border-t px-3 py-2 gap-2 flex">
 	<div id="left" class="flex flex-1 gap-2">
 		<Tooltip.Root>
 			<Tooltip.Trigger asChild let:builder>

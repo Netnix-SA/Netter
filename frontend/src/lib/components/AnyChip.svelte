@@ -3,67 +3,31 @@
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
-	import CreateTask from "$lib/components/CreateTask.svelte";
     import { removePinned, addPinned } from "@/actions";
     import { goto } from "$app/navigation";
     import { client } from "@/state";
+    import type { Classes } from "@/types";
+    import { task, todo } from "@/all.svelte.ts";
 
 	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
 
 	function buildUrl(clss: Classes, id: string) {
-		if (clss === "Project") {
-			return `/projects/${id}`;
+		switch (clss) {
+			case "Project": return `/projects/${id}`;
+			case "User": return `/users/${id}`;
+			case "Team": return `/teams/${id}`;
+			case "Task": return `/tasks/${id}`;
+			case "Repository": return `/repositories/${id}`;
+			case "Channel": return `/channels/${id}`;
+			case "View": return `/views/${id}`;
+			case "Product": return `/products/${id}`;
+			case "Feature": return `/features/${id}`;
+			case "Application": return `/applications/${id}`;
+			case "Bug": return `/bugs/${id}`;
+			case "Objective": return `/objectives/${id}`;
+			case "Component": return `/component/${id}`;
+			default: return "/";
 		}
-
-		if (clss === "User") {
-			return `/users/${id}`;
-		}
-
-		if (clss === "Team") {
-			return `/teams/${id}`;
-		}
-
-		if (clss === "Task") {
-			return `/tasks/${id}`;
-		}
-
-		if (clss === "Repository") {
-			return `/repositories/${id}`;
-		}
-
-		if (clss === "Channel") {
-			return `/channels/${id}`;
-		}
-
-		if (clss === "View") {
-			return `/views/${id}`;
-		}
-
-		if (clss === "Product") {
-			return `/products/${id}`;
-		}
-
-		if (clss === "Feature") {
-			return `/features/${id}`;
-		}
-
-		if (clss === "Application") {
-			return `/applications/${id}`;
-		}
-
-		if (clss === "Bug") {
-			return `/bugs/${id}`;
-		}
-
-		if (clss === "Objective") {
-			return `/objectives/${id}`;
-		}
-
-		if (clss === "Component") {
-			return `/component/${id}`;
-		}
-
-		return "/";
 	}
 
 	let metadata = $state(client.api.metadata({ id }).get());
@@ -90,13 +54,14 @@
 			{:else}
 				<ContextMenu.Item onclick={async () => await addPinned(id)}>Pin '{name}'</ContextMenu.Item>
 			{/if}
+			<ContextMenu.Item onclick={() => todo.value = { title: "", related: { id, title: name } }}>
+				Add ToDo
+			</ContextMenu.Item>
 			{#if clss === "Feature"}
+				<ContextMenu.Item onclick={async () => task.value = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", value: "Medium", related: [{ id }] }}>Create related task</ContextMenu.Item>
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Feature</ContextMenu.Label>
 				<ContextMenu.Separator/>
-				<ContextMenu.Item>
-					<!-- <CreateTask task={{ feature: id }}/> -->
-				</ContextMenu.Item>
 			{/if}
 			{#if clss === "Project"}
 				<ContextMenu.Separator/>
@@ -106,6 +71,7 @@
 				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/objectives/active`)}>Objective</ContextMenu.Item>
 			{/if}
 			{#if clss === "Objective"}
+				<ContextMenu.Item onclick={async () => task.value = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", value: "Medium", related: [{ id }] }}>Create related task</ContextMenu.Item>
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Objective</ContextMenu.Label>
 				<ContextMenu.Separator/>

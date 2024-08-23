@@ -4,11 +4,11 @@
 	import { Carta, MarkdownEditor } from "carta-md";
 	import DOMPurify from "isomorphic-dompurify";
 
-	import { Separator } from "$lib/components/ui/separator";
 	import "carta-md/default.css";
 	import Label from "@/components/ui/label/label.svelte";
 	import { EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
 	import UserSelect from "@/components/UserSelect.svelte";
+	import Pin from "@/components/Pin.svelte";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
@@ -27,7 +27,6 @@
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
-    import { Loading } from "@/components/ui/command";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -127,7 +126,11 @@
 	<title>{data.task.title}</title>
 </svelte:head>
 
-<div class="flex">
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+	<div class="flex-1"></div>
+	<Pin pinned={data.user.pinned} id={data.task.id}/>
+</header>
+<div class="flex-1 flex p-24">
 	<div class="flex flex-col w-[64em]">
 		<div class="gallery">
 			<div id="left" class="flex-1 gallery gap-2">
@@ -201,7 +204,6 @@
 				<LabelChip {label} />
 			{/each}
 		</div>
-		<Separator class="my-6"/>
 		<div class="h-64">
 			<MarkdownEditor
 				bind:value={body}
@@ -210,7 +212,6 @@
 				{carta}
 			/>
 		</div>
-		<Separator class="my-8"/>
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
 			<div class="h-72 rounded-lg border column overflow-hidden">
@@ -218,7 +219,6 @@
 			</div>
 		</div>
 	</div>
-	<Separator orientation="vertical" class="mx-8" />
 	<div class="flex flex-col w-64 gap-2">
 		<UserSelect
 			label="Assignee"
@@ -233,7 +233,6 @@
 			<Select label="Effort" comparator={(a, b) => a === b} values={EFFORTS} bind:value={effort}/>
 			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={value}/>
 		</div>
-		<Separator orientation="horizontal" class="my-4"/>
 		{#await data.related}
 			Loading related tasks...
 		{:then related}
@@ -262,7 +261,6 @@
 			</Dialog.Root>
 		{/if}
 		{/await}
-		<Separator orientation="horizontal" class="my-4"/>
 		{#await data.tackled}
 			Loading tackled tasks...
 		{:then tackled}
@@ -277,7 +275,6 @@
 				<Label>Tackles</Label>
 			{/if}
 		{/await}
-		<Separator orientation="horizontal" class="my-4"/>
 		<div class="column">
 			{#await data.children}
 				Loading children...

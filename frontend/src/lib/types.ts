@@ -373,4 +373,4 @@ export type SharePointIntegration = {
 	type: "SharePoint",
 };
 
-export type Classes = "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component";
+export type Classes = "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component" | "Feature" | "Repository" | "Channel" | "View" | "Application" | "Component" | "Bug";

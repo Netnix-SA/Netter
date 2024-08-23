@@ -1,28 +1,44 @@
 <script lang="ts">
-    import { Plus } from "lucide-svelte";
+    import { ChevronDown, Plus } from "lucide-svelte";
 
     import TaskLine from "./TaskLine.svelte";
     import type { Efforts, Priorities, Value } from "@/types";
     import { STATES } from "@/global";
 
-	type Task = { id: string, progress: number, title: string, body: string, status: { id: string, }, priority: Priorities, effort: Efforts, value: Value, assignee: { id: string } | null, labels: { id: string }[], };
+	type Task = {
+		id: string,
+		progress: number,
+		title: string, body: string,
+		status: { id: string, },
+		priority: Priorities, effort: Efforts, value: Value,
+		assignee: { id: string } | null,
+		labels: { id: string }[],
+		related: { id: string }[],
+	};
 
-	let { groups, statuses, labels, users }: { groups: [string, Task[]][], statuses: any[], labels: any[], users: any[] } = $props();
+	let { groups, statuses, labels, users, draft_task = $bindable() }: { groups: [string, Task[]][], statuses: any[], labels: any[], users: any[], draft_task?: Omit<Task, "id"> | null } = $props();
 </script>
 
 {#each groups as [grouper, tasks]}
 {@const status = statuses.find(s => s.id === grouper)}
 {@const state_entry = STATES.find(s => s.value === status?.state)}
 	<details open={status.state !== "Resolved"}>
-		<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer">
-			<div class="flex items-center gap-4 tactile-text flex-1">
-				<svelte:component this={state_entry?.icon} class="h-4 w-4"/>
-				{status?.name}
+		<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer group-[summary]">
+			<div class="flex items-center gap-2 flex-1">
+				<div class="gallery gap-4 tactile-text">
+					<svelte:component this={state_entry?.icon} class="h-4 w-4"/>
+					{status?.name}
+				</div>
+				<div>
+					{#if draft_task !== undefined}
+						<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", status, value: "Medium", related: [] }}>
+							<Plus class="size-4"/>
+						</button>
+					{/if}
+				</div>
 			</div>
 			<div class="w-12 frame">
-				<!-- <button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { title: "My task", body: "", assignee: null, labels: [], effort: null, priority: null, status, value: null }}>
-					<Plus class="size-4"/>
-				</button> -->
+				<ChevronDown class="size-4 group-[summary]-open:rotate-180"/>
 			</div>
 		</summary>
 		{#each tasks as task}
