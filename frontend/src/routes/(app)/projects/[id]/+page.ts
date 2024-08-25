@@ -3,9 +3,10 @@ import { client } from '@/state';
 import { error } from '@sveltejs/kit';
 
 export const load: PageLoad = async ({ params: { id }, fetch }) => {
-    const { data: project } = await client.api.projects({ id }).get();
+    const { data: project, error: e } = await client.api.projects({ id }).get();
 
 	if (project === null) {
+		console.log(e);
 		throw error(404, "Could not load project!");
 	}
 

@@ -1,11 +1,10 @@
 import { Elysia, t } from "elysia";
 import { tFeature, tTask, tView, tViewPost } from "./schemas";
-import { db } from "../db/index";
 import type { LabelId, Task, View } from "../db/types";
-import { StringRecordId } from "surrealdb";
+import Surreal, { StringRecordId } from "surrealdb";
 import { map as mapTask } from "./tasks";
 
-export const views = new Elysia({ prefix: "/views", tags: ["Views"] })
+export const views = (db: Surreal) => new Elysia({ prefix: "/views", tags: ["Views"] })
 
 .post("", async ({ body }) => {
 	await db.create<Omit<View, "id">>("View", {

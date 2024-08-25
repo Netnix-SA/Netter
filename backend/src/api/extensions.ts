@@ -1,12 +1,13 @@
 import { Elysia } from "elysia";
 import { tApplication, tFeature, tGithubOrganizationIntegration, tKimaiOrganizationIntegration } from "./schemas";
+import type Surreal from "surrealdb";
 
-export const extensions = new Elysia({ prefix: "/extensions", tags: ["Extensions"] });
+export const extensions = (db: Surreal) => new Elysia({ prefix: "/extensions", tags: ["Extensions"] })
 
-extensions.post("/github", () => {
+.post("/github", () => {
 
-}, { body: tGithubOrganizationIntegration });
+}, { body: tGithubOrganizationIntegration })
 
-extensions.post("/kimai", () => {
+.post("/kimai", () => {
 
 }, { body: tKimaiOrganizationIntegration });

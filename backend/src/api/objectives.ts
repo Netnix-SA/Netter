@@ -1,12 +1,11 @@
 import { Elysia, t } from "elysia";
 import type { Feature, Objective, Task } from "../db/types";
 import { tFeature, tObjective, tTask } from "./schemas";
-import { StringRecordId, surql } from "surrealdb";
-import { db } from "../db";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapTask } from "./tasks";
 import { map as mapFeature } from "./features";
 
-export const objectives = new Elysia({ prefix: "/objectives", detail: { tags:["Objectives"], description: "Objectives are the high-level goals of a project." }})
+export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", detail: { tags:["Objectives"], description: "Objectives are the high-level goals of a project." }})
 
 .get("/:id", async ({ params: { id } }) => {
     const objective = await db.select<Objective>(new StringRecordId(id));

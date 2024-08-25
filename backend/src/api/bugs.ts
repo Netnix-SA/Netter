@@ -1,11 +1,10 @@
-import { db } from "../db/index";
 import { type Bug, type Feature } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tBug, tBugPost, tFeature } from "./schemas";
-import { StringRecordId, surql } from "surrealdb";
-import type { applications } from "./applications";
+import Surreal, { StringRecordId, surql } from "surrealdb";
+import { map as mapFeature } from "./features";
 
-export const bugs = new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
+export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 
 .post("", async ({ body: { title, description, } }) => {
 	await db.create<Omit<Bug, "id">>("Bug", {
@@ -50,10 +49,7 @@ export const bugs = new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 	const features = results[0];
 
 	return {
-		features: features.map(({ id, name, description }) => ({
-			id: id?.toString(),
-			name, description,
-		})),
+		features: features.map(mapFeature),
 	};
 }, {
 	response: t.Object({
@@ -62,7 +58,7 @@ export const bugs = new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 	detail: {
 		description: "Returns the items impacted/affected by this bug.",
 	}
-})
+});
 
 export const map = ({ id, title, description, resolved, release, applications, created, features }: Bug) => ({
 	id: id.toString(),

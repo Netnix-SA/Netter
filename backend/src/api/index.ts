@@ -2,7 +2,6 @@ import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors'
 
-import { db } from "../db/index";
 import type { BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, UserId } from "../db/types";
 
 import { users } from "./users";
@@ -23,13 +22,13 @@ import { extensions } from "./extensions";
 import { products } from "./products";
 import { statuses } from "./statuses";
 import { messages } from "./messages";
-import { StringRecordId } from "surrealdb";
 import { objectives } from "./objectives";
+import Surreal, { StringRecordId } from "surrealdb";
 
-export const server = new Elysia({ prefix: "/api" })
+export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 
 .use(cors())
-.use(await swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
+.use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
 
 .ws("/ws", {
 	open(ws) {
@@ -76,25 +75,25 @@ export const server = new Elysia({ prefix: "/api" })
 	response: t.Object({ id: t.String(), title: t.String() }),
 })
 
-.use(users)
-.use(teams)
-.use(channels)
-.use(messages)
-.use(projects)
-.use(bugs)
-.use(features)
-.use(components)
-.use(applications)
-.use(products)
-.use(labels)
-.use(statuses)
-.use(tasks)
-.use(todos)
-.use(views)
-.use(objectives)
-.use(repositories)
-.use(merge_requests)
-.use(extensions);
+.use(users(db))
+.use(teams(db))
+.use(channels(db))
+.use(messages(db))
+.use(projects(db))
+.use(bugs(db))
+.use(features(db))
+.use(components(db))
+.use(applications(db))
+.use(products(db))
+.use(labels(db))
+.use(statuses(db))
+.use(tasks(db))
+.use(todos(db))
+.use(views(db))
+.use(objectives(db))
+.use(repositories(db))
+.use(merge_requests(db))
+.use(extensions(db));
 
 // The uuid of the live query will be returned
 // const queryUuid = await db.live(

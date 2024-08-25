@@ -1,10 +1,9 @@
 import type { Message } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tMessage, tMessagePost, tUserId } from "./schemas";
-import { db } from "../db/index";
-import { StringRecordId } from "surrealdb";
+import Surreal, { StringRecordId } from "surrealdb";
 
-export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messages"], description: "Messages make up the content in channels." }})
+export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detail: { tags: ["Messages"], description: "Messages make up the content in channels." } })
 
 .get("", async ({ query: { author, resolved, was_mentioned } }) => {
 	let query = "SELECT * FROM Message";
@@ -34,7 +33,7 @@ export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messa
 	const messages = results[0];
 
 	return messages.map(map);
-},{
+}, {
 	query: t.Object({
 		author: t.Optional(tUserId),
 		resolved: t.Optional(t.Boolean()),
@@ -52,7 +51,7 @@ export const messages = new Elysia({ prefix: "/messages", detail: { tags:["Messa
 	detail: {
 		description: "Adds a message as a reply to another message.",
 	}
-})
+});
 
 export const map = ({ id, body, author, date, resolved, question, }: Message) => ({
 	id: id.toString(),

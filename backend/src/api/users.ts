@@ -1,12 +1,11 @@
-import { RecordId, StringRecordId } from "surrealdb";
+import Surreal, { RecordId, StringRecordId } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
 
 import { type User, type ToDo, type Colors } from "../db/types";
 import { tUserPost, tUser, tToDo, tToDoPost, tColors } from "./schemas";
-import { db } from "../db/index";
 import { map as mapToDo } from "./todos";
 
-export const users = new Elysia({ prefix: "/users", tags: ["Users"] })
+export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Users"] })
 
 .get("", async () => {
 	const users = await db.select<User>("User");

@@ -1,15 +1,14 @@
-import { db } from "../db/index";
 import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, StatusId, Task, UserId, Value } from "../db/types";
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
 import { tChannel, tFeature, tTask, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
-import { RecordId, StringRecordId, surql, Table } from "surrealdb";
+import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
-export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
+export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
 .get("", async ({ query: { assignee } }) => {
-	return await query({ assignee, state: undefined, belongs_to: undefined });
+	return await query(db, { assignee, state: undefined, belongs_to: undefined });
 }, {
 	response: t.Array(tTask),
 	query: t.Object({
@@ -21,7 +20,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 })
 
 .get("/:id", async ({ params: { id } }) => {
-	const tasks = await query({ id, assignee: undefined, state: undefined, belongs_to: undefined });
+	const tasks = await query(db, { id, assignee: undefined, state: undefined, belongs_to: undefined });
 
 	const task = tasks[0];
 
@@ -134,7 +133,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 		throw new Error("Did not find a status");
 	}
 
-	await create(body.title, body.body, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
+	await create(db, body.title, body.body, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
 }, {
 	body: tTaskPost,
 	detail: {
@@ -191,7 +190,7 @@ export const tasks = new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 	}
 });
 
-export const create = async (title: string, body: string, belongs_to: ProjectId, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
+export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
 	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status });
 
 	const task = tasks[0];
@@ -203,7 +202,7 @@ export const create = async (title: string, body: string, belongs_to: ProjectId,
 	const channel = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
 };
 
-export const query = async ({ id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
+export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
 	// let query = `SELECT *, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, FROM Task`;
 	let query = `SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
 

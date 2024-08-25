@@ -1,6 +1,6 @@
 import Surreal from "surrealdb";
 
-export const db = new Surreal();
+const db = new Surreal();
 
 await db.connect("http://db:8000/rpc", {
 	auth: {

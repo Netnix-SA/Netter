@@ -1,27 +1,26 @@
-import { db } from "../db/index";
 import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tApplication, tLabel, tObjective, tProject, tProjectPost, tStatus, tTask, tTaskPost } from "./schemas";
-import { RecordId, StringRecordId, surql } from "surrealdb";
+import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
 import { map as mapLabel } from "./labels";
 import { map as mapObjective } from "./objectives";
 
-export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
+export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags: ["Projects"] })
 
 .post("", async ({ body }) => {
 	await db.create<Omit<Project, "id">>("Project", { name: body.name, description: body.description, lead: body.lead ? new StringRecordId(body.lead) as unknown as UserId : null, members: [], milestones: [], end: null, client: null });
 }, { body: tProjectPost, detail: { description: "Creates a project under the connected user's organization" } })
 
 .get("", async () => {
-	const projects = await query({});
+	const projects = await query(db, {});
 
 	return projects;
 }, { response: t.Array(tProject), detail: { description: "Gets the projects for the querying user" } })
 
 .get("/:id", async ({ params: { id } }) => {
-	const projects = await query({ id });
+	const projects = await query(db, { id });
 
 	const project = projects[0];
 
@@ -102,9 +101,9 @@ export const projects = new Elysia({ prefix: "/projects", tags: ["Projects"] })
 	return objectives.map(mapObjective);
 }, {
 	response: t.Array(tObjective),
-})
+});
 
-export const query = async ({ id }: { id?: ProjectId }) => {
+export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	let query = `SELECT * FROM Project`;
 
 	let pieces = [];

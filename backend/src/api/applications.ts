@@ -1,41 +1,40 @@
 import { Elysia, t } from "elysia";
 import { tApplication, tApplicationPost, tBug, tFeature } from "./schemas";
-import { db } from "../db/index";
 import { type Application, type Bug } from "../db/types";
-import { StringRecordId, surql } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapBug } from "./bugs";
 
-export const applications = new Elysia({ prefix: "/applications", tags: ["Applications"] })
+export const applications = (db: Surreal) => new Elysia({ prefix: "/applications", tags: ["Applications"] })
 
-.post("", async ({ body: { name, description } }) => {
-    await db.create<Omit<Application, "id">>("Application", {
-        name, description,
-    });
+.post("", async ({ body: { name, description }}) => {
+	await db.create<Omit<Application, "id">>("Application", {
+		name, description,
+	});
 }, {
-    body: tApplicationPost,
-    detail:
-    {
-        description: "Creates an application under the connected user's organization"
-    }
+	body: tApplicationPost,
+	detail:
+	{
+		description: "Creates an application under the connected user's organization"
+	}
 })
 
 .get("", async () => {
-    const applications = await db.select<Application>("Application");
+	const applications = await db.select<Application>("Application");
 
-    return applications.map(map);
+	return applications.map(map);
 }, {
-    response: t.Array(tApplication)
+	response: t.Array(tApplication)
 })
 
 .get("/:id", async ({ params: { id } }) => {
-    const application = await db.select<Application>(new StringRecordId(id));
+	const application = await db.select<Application>(new StringRecordId(id));
 
-    return map(application);
+	return map(application);
 }, {
-    response: tApplication,
-    detail: {
-        description: "Returns the application with the given id."
-    }
+	response: tApplication,
+	detail: {
+		description: "Returns the application with the given id."
+	}
 })
 
 .get("/:id/bugs", async ({ params: { id } }) => {
@@ -55,7 +54,7 @@ export const applications = new Elysia({ prefix: "/applications", tags: ["Applic
 	detail: {
 		description: "Returns the bugs the application currently has.",
 	}
-})
+});
 
 export const map = ({ id, name, description, repository }: Application) => {
 	return {

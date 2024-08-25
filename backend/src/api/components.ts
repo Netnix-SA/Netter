@@ -1,10 +1,9 @@
 import Elysia from "elysia";
 import type { Component } from "../db/types";
 import { tComponent } from "./schemas";
-import { db } from "../db";
-import { StringRecordId, surql } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 
-export const components = new Elysia({ prefix: "/components", tags: ["Components"] })
+export const components = (db: Surreal) => new Elysia({ prefix: "/components", tags: ["Components"] })
 
 .get("/:id", async ({ params: { id } }) => {
 	const results = await db.query<[Component[]]>("SELECT * FROM Component WHERE id == $id;", { id: new StringRecordId(id) });

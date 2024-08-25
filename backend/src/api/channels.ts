@@ -1,12 +1,11 @@
-import { db } from "../db/index";
 import type { Channel, Message } from "../db/types";
 import Elysia, { t } from "elysia";
 import { tChannel, tChannelPost, tMessage, tMessagePost } from "./schemas";
-import { RecordId, StringRecordId, surql } from "surrealdb";
+import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapMessage } from "./messages";
 import { parse_mentions } from "../utils";
 
-export const channels = new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
+export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
 
 .get("", async () => {
 	const results = await db.query<[Channel[]]>("SELECT * FROM Channel WHERE type::is::array(target);");

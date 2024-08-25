@@ -1,13 +1,12 @@
 import { Elysia, t } from "elysia";
 import { tBug, tComponent, tFeature, tFeaturePost, tTask } from "./schemas";
-import { db } from "../db/index";
 import { type Bug, type Component, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
 import { map as mapComponent } from "./components";
-import { StringRecordId } from "surrealdb";
+import Surreal, { StringRecordId } from "surrealdb";
 
-export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
+export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags: ["Features"] })
 
 .post("", async ({ body: { name, description } }) => {
 	await db.create<Omit<Feature, "id">>("Feature", {
@@ -65,7 +64,7 @@ export const features = new Elysia({ prefix: "/features", tags: ["Features"] })
 	return components.map(mapComponent);
 }, {
 	response: t.Array(tComponent),
-})
+});
 
 export const map = ({ id, name, description, value }: Feature) => {
 	return {

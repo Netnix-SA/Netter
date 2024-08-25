@@ -2,11 +2,10 @@ import { Elysia, t } from "elysia";
 import { tFeature, tRepositoryId } from "./schemas";
 import { App } from "octokit";
 import { tRepository } from "./schemas";
-import { db } from "../db/index";
 import type { Organization, Repository } from "../db/types";
-import { StringRecordId } from "surrealdb";
+import Surreal, { StringRecordId } from "surrealdb";
 
-export const repositories = new Elysia({ prefix: "/repositories", tags: ["Repositories"] })
+export const repositories = (db: Surreal) => new Elysia({ prefix: "/repositories", tags: ["Repositories"] })
 
 .post("", async () => {
 
@@ -16,7 +15,7 @@ export const repositories = new Elysia({ prefix: "/repositories", tags: ["Reposi
 	const results = await db.query<[Repository[]]>("SELECT * FROM Repository;");
 
 	const repositories = results[0];
-	
+
 	return repositories.map(map);
 }, {
 	response: t.Array(tRepository),
@@ -70,9 +69,11 @@ export const repositories = new Elysia({ prefix: "/repositories", tags: ["Reposi
 			throw new Error("Invalid repository url!");
 		}
 
-		const { data } = await inst.request('GET /repos/{owner}/{repo}/branches', { repo, owner, headers: {
-			'X-GitHub-Api-Version': '2022-11-28'
-		} });
+		const { data } = await inst.request('GET /repos/{owner}/{repo}/branches', {
+			repo, owner, headers: {
+				'X-GitHub-Api-Version': '2022-11-28'
+			}
+		});
 
 		let branches = data.map(({ name }: { name: string }) => ({ name }));
 
@@ -83,7 +84,7 @@ export const repositories = new Elysia({ prefix: "/repositories", tags: ["Reposi
 		allowMeta: true,
 	},
 	params: t.Object({ id: tRepositoryId }),
-})
+});
 
 const map = ({ id, name, url, branches }: Repository) => {
 	return {

@@ -1,12 +1,11 @@
 import { Elysia, t } from "elysia";
 import { tApplication, tFeature, tProduct, tProductPost } from "./schemas";
-import { db } from "../db/index";
 import { type Application, type Feature, type Product } from "../db/types";
-import { StringRecordId, surql } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
 import { map as mapApplication } from "./applications";
 
-export const products = new Elysia({ prefix: "/products", tags: ["Products"] })
+export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
 .post("", async ({ body: { name, description } }) => {
 	await db.create<Omit<Product, "id">>("Product", {
@@ -54,11 +53,11 @@ export const products = new Elysia({ prefix: "/products", tags: ["Products"] })
 	return applications.map(mapApplication);
 }, {
 	response: t.Array(tApplication),
-})
+});
 
 export const map = ({ id, name, description }: Product) => {
 	return {
 		id: id.toString(),
 		name, description,
 	};
-}
+};
