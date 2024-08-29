@@ -40,7 +40,8 @@
 <div class="gallery gap-2 h-10 rounded-md border px-2">
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
-			<svelte:component this={clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion} class="size-4"/>
+			{@const Icon = clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion}
+			<Icon class="size-4"/>
 			{#await metadata}
 				<div class="w-16 h-2 animate-pulse">
 				</div>

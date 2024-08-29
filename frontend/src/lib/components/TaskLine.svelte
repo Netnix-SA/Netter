@@ -32,24 +32,28 @@
 		<div id="right" class="gallery gap-2 pr-1">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="size-6 frame bg-primary-foreground rounded-md border">
-					<svelte:component this={EFFORTS_ICONS[task.effort]} class="size-4"/>
+					{@const Icon = EFFORTS_ICONS[task.effort]}
+					<Icon class="size-4"/>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					{#each EFFORTS as effort}
 						<DropdownMenu.Item onclick={() => { task.effort = effort.value; /* TODO: post update */ }}>
-							<svelte:component this={EFFORTS_ICONS[effort.value]} class="size-4 mr-2"/> {effort.label}
+							{@const Icon = EFFORTS_ICONS[effort.value]}
+							<Icon class="size-4 mr-2"/> {effort.label}
 						</DropdownMenu.Item>
 					{/each}
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="size-6 frame bg-primary-foreground rounded-md border">
-					<svelte:component this={PRIORITIES_ICONS[task.priority]} class="size-4"/>
+					{@const Icon = PRIORITIES_ICONS[task.priority]}
+					<Icon class="size-4"/>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					{#each PRIORITIES as priority}
 						<DropdownMenu.Item onclick={() => { task.priority = priority.value; /* TODO: post update */ }}>
-							<svelte:component this={PRIORITIES_ICONS[priority.value]} class="size-4 mr-2"/> {priority.label}
+							{@const Icon = PRIORITIES_ICONS[priority.value]}
+							<Icon class="size-4 mr-2"/> {priority.label}
 						</DropdownMenu.Item>
 					{/each}
 				</DropdownMenu.Content>

@@ -2,7 +2,7 @@ import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, S
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tChannel, tFeature, tTask, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
+import { tChannel, tFeature, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
@@ -16,6 +16,27 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}),
 	detail: {
 		description: "Gets the tasks for the querying user"
+	}
+})
+
+.delete("/:id", async ({ params: { id }, body }) => {
+	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
+
+	const task = results[0][0];
+
+	if (!task) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	await db.merge<Task>(new StringRecordId(id), { status: { id: new StringRecordId(body.id), closed_as: "Resolved", note: body.note } });
+}, {
+	config: {},
+	body: t.Object({
+		id: tStatusId,
+		note: t.String(),
+	}),
+	detail: {
+		description: "Closes a task as resolved."
 	}
 })
 
@@ -133,31 +154,16 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 		throw new Error("Did not find a status");
 	}
 
-	await create(db, body.title, body.body, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
+	const task = await create(db, body.title, body.body, undefined, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
+
+	return {
+		id: task.id.toString(),
+	};
 }, {
 	body: tTaskPost,
+	response: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Creates a task.",
-	}
-})
-
-.route("CLOSE", "/:id", async ({ params: { id }, body }) => {
-	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
-
-	const task = results[0][0];
-
-	if (!task) {
-		throw new NotFoundError("No task under that id found!");
-	}
-
-	await db.merge<Task>(new StringRecordId(id), { status: { id: "", closed_as: "Resolved", note: body.note } }); // TODO: status id
-}, {
-	config: {},
-	body: t.Object({
-		note: t.String(),
-	}),
-	detail: {
-		description: "Closes a task as resolved."
 	}
 })
 
@@ -190,8 +196,8 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}
 });
 
-export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status });
+export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId | undefined, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
+	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
 
 	const task = tasks[0];
 
@@ -200,6 +206,8 @@ export const create = async (db: Surreal, title: string, body: string, belongs_t
 	}
 
 	const channel = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
+
+	return task;
 };
 
 export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
@@ -245,6 +253,8 @@ export const map = ({ id, title, body, priority, status, updates, labels, assign
 		title, body,
 		status: {
 			id: status.id.toString(),
+			closed_as: status.closed_as,
+			note: status.note,
 		},
 		labels: labels.map(id => ({
 			id: id.toString(),

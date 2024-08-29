@@ -58,7 +58,7 @@ export type Status = {
 	id: StatusId,
 	name: string,
 	state: State,
-	color: string,
+	color: Colors,
 	icon: string,
 	position: {
 		i: number,
@@ -77,7 +77,7 @@ export type Task = {
 
 	status: {
 		id: StatusId,
-	} | {
+	} & ({
 		closed_as: "Resolved",
 		note: string,
 	} | {
@@ -86,7 +86,7 @@ export type Task = {
 	} | {
 		closed_as: "Cancelled",
 		note: string,
-	},
+	}),
 
 	updates: {
 		date: Date,

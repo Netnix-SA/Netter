@@ -26,7 +26,8 @@
 		<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer group-[summary]">
 			<div class="flex items-center gap-2 flex-1">
 				<div class="gallery gap-4 tactile-text">
-					<svelte:component this={state_entry?.icon} class="h-4 w-4"/>
+					{@const Icon = state_entry?.icon}
+					<Icon class="size-4"/>
 					{status?.name}
 				</div>
 				<div>

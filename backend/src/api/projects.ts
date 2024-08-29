@@ -1,6 +1,6 @@
 import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
 import { Elysia, t } from "elysia";
-import { tApplication, tLabel, tObjective, tProject, tProjectPost, tStatus, tTask, tTaskPost } from "./schemas";
+import { tApplication, tLabel, tObjective, tProject, tProjectId, tProjectPost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
@@ -10,8 +10,35 @@ import { map as mapObjective } from "./objectives";
 export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags: ["Projects"] })
 
 .post("", async ({ body }) => {
-	await db.create<Omit<Project, "id">>("Project", { name: body.name, description: body.description, lead: body.lead ? new StringRecordId(body.lead) as unknown as UserId : null, members: [], milestones: [], end: null, client: null });
-}, { body: tProjectPost, detail: { description: "Creates a project under the connected user's organization" } })
+	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
+	const statuses = results[0];
+
+	const first_status = statuses[0];
+
+	if (!first_status) {
+		throw new Error("Did not find a status");
+	}
+
+	const project = await db.create<Omit<Project, "id">>("Project", {
+		name: body.name, description: body.description,
+		lead: body.lead ? new StringRecordId(body.lead) as unknown as UserId : null,
+		members: [], milestones: [],
+		end: null,
+		client: null,
+		status: first_status.id,
+		objectives: [],
+		updates: [],
+		milestones: [],
+	});
+
+	return { id: project[0].id.toString() };
+}, {
+	body: tProjectPost,
+	response: t.Object({ id: tProjectId }),
+	detail: {
+		description: "Creates a project under the connected user's organization. Needs a backlog status to exist to be created."
+	}
+})
 
 .get("", async () => {
 	const projects = await query(db, {});
@@ -37,7 +64,7 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .get('/:id/tasks', async ({ params: { id } }) => {
-	return await queryTasks({ belongs_to: new StringRecordId(id) as unknown as ProjectId, assignee: undefined, state: undefined });
+	return await queryTasks(db, { belongs_to: new StringRecordId(id) as unknown as ProjectId, assignee: undefined, state: undefined });
 }, {
 	response: t.Array(tTask),
 })
@@ -52,9 +79,12 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 		throw new Error("Did not find a status");
 	}
 
-	await createTask(body.title, body.body, new StringRecordId(id) as unknown as ProjectId, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, body.status as unknown as StatusId || first_status.id);
+	const task = await createTask(db, body.title, body.body, new StringRecordId(id) as unknown as ProjectId, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, body.status as unknown as StatusId || first_status.id);
+
+	return { id: task.id.toString() };
 }, {
 	body: tTaskPost,
+	response: t.Object({ id: tTaskId }),
 })
 
 .get("/:id/labels", async ({ params: { id } }) => {
@@ -68,6 +98,19 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	detail: {
 		description: "Gets the labels for the project. Includes organization labels and project specific labels.",
 	}
+})
+
+.post("/:id/statuses", async ({ body, params: { id } }) => {
+	const project_id = new StringRecordId(id) as unknown as ProjectId;
+
+	const statuses = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
+
+	const status = statuses[0];
+
+	return { id: status.id.toString() };
+}, {
+	body: tStatusPost,
+	response: t.Object({ id: tStatusId }),
 })
 
 .get("/:id/statuses", async ({ params: { id } }) => {
@@ -125,7 +168,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, status, lead, client, end, milestones, updates }: Project) => {
+export const map = ({ id, name, description, status, lead, client, end, milestones, updates, objectives }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -141,5 +184,6 @@ export const map = ({ id, name, description, status, lead, client, end, mileston
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
 		updates,
+		objectives: objectives.map(objective => ({ id: objective.id.toString() })),
 	};
 };

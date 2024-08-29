@@ -14,23 +14,25 @@
 
 	let { channel, messages, users, onSend = async (body, is_inquiry = false) => { await client.api.channels({ id: channel.id }).messages.post({ body, is_inquiry }); } }: { channel: { id: string, }, messages: Promise<Message[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
 
-	let message = $state("");
+	let pre_message = $state("");
+	let post_message = $state("");
+	let tokens = $state([]);
 
 	let question: Message | undefined = $state(undefined);
 
-	function tokenize(body: string): ({ prop: string, snip: Snippet<[{ title: string }]> } | { prop: string, snip: Snippet<[{ t: string }]> })[] {
+	function tokenize(body: string): ({ prop: string, snip: Snippet<[{ title: string, dodo: (v:string) => void, active: boolean }]> } | { prop: string, snip: Snippet<[{ t: string, dodo: (v:string) => void, active: boolean }]> })[] {
 		const tokens = body.split(" ");
 		const snippets = [];
 
 		for (let i = 0; i < tokens.length; i++) {
-			const token = tokens[i];
+			let token = tokens[i];
 
 			if (token.startsWith("@")) {
 				const oid = token.slice(1, -1);
 
-				snippets.push({ prop: token, snip: mention });
+				snippets.push({ prop: token, snip: mention, dodo: (v: string) => { post_message += v + ' '; pre_message = ""; } });
 			} else {
-				snippets.push({ prop: token, snip: text });
+				snippets.push({ prop: token, snip: text, dodo: (v: string) => { pre_message += v; } });
 			}
 		}
 
@@ -38,15 +40,16 @@
 	}
 </script>
 
-{#snippet text(t: string)}
+{#snippet text(t: string, dodo: (v: string) => void)}
 	<span>
 		{t}
 	</span>
 {/snippet}
 
-{#snippet mention(title: string)}
+{#snippet mention(title: string, dodo: (v: string) => void, active: boolean)}
 {@const results = client.api.get({ query: { text: title.replace("@", "") } })}
 <div class="relative">
+	{#if active}
 	<div class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow">
 		<div class="text-md border-b px-2 h-8 gallery">
 			{title}
@@ -56,7 +59,7 @@
 		{:then re}
 			{#each re.data as entry}
 				<ul class="flex-1">
-					<option class="gallery px-2 h-6 border-b">
+					<option class="gallery px-2 h-6 border-b" onclick={() => dodo(`@${entry.id}`)}>
 						{entry.title}
 					</option>
 				</ul>
@@ -69,6 +72,7 @@
 			{/each}
 		{/await}
 	</div>
+	{/if}
 	<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
 		{title}
 	</span>
@@ -81,7 +85,7 @@
 	</a>
 {/snippet}
 
-{#snippet message_snippet(message: Message)}
+{#snippet message_snippet(message: Message, dodo: (v: string) => void)}
 {@const user = users.find(u => u.id === message.author.id)}
 <ContextMenu.Root>
 	<ContextMenu.Trigger class="flex-1 gallery px-4 py-2 gap-2">
@@ -166,16 +170,22 @@
 				bind:value={message}
 			>
 			</textarea> -->
-			<input type="text" bind:value={message} class=""/>
+			<input type="text" bind:value={pre_message} class=""/>
 			<div id="message" placeholder="Type your message here..." class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
-				{#each tokenize(message) as { snip, prop }}
-					{@render snip(prop)}
+				{#each tokenize(pre_message) as { snip, prop, dodo }}
+					{@render snip(prop, dodo, true)}
+				{/each}
+			</div>
+			<input type="text" bind:value={post_message} class=""/>
+			<div id="message" placeholder="Type your message here..." class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
+				{#each tokenize(post_message) as { snip, prop, dodo }}
+					{@render snip(prop, dodo, false)}
 				{/each}
 			</div>
 		</div>
 	</div>
 	<div class="column justify-end">
-		<button class="size-8 frame rounded-md item-background group transition-all" onclick={async (e) => { await onSend(message, e.getModifierState("Alt")); message = ""; }}>
+		<button class="size-8 frame rounded-md item-background group transition-all" onclick={async (e) => { await onSend(pre_message, e.getModifierState("Alt")); pre_message = ""; }}>
 			<ArrowUp class="size-4 group-hover:green-light transition-all"/>
 		</button>
 	</div>

@@ -12,11 +12,12 @@
     import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/global";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
+    import LabelChip from "@/components/LabelChip.svelte";
     import { toast } from "svelte-sonner";
     import { task, todo } from "@/all.svelte";
     import { Button } from "@/components/ui/button";
     import { addToDo } from "@/actions";
-    import { Select } from "@/components/ui/select";
+    import Select from "@/components/Select.svelte";
     import UserSelect from "@/components/UserSelect.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
@@ -115,6 +116,17 @@
 			});
 		}
 	}
+
+	$effect(() => {
+		if (task.value !== null) {
+			task.value.priority = task.value.priority ?? PRIORITIES[0].value;
+			task.value.effort = task.value.effort ?? EFFORTS[0].value;
+			task.value.value = task.value.value ?? VALUES[0].value;
+			task.value.status = task.value.status ?? data.statuses[0];
+		}
+	});
+
+	$inspect(task.value);
 </script>
 
 <Toaster/>
@@ -170,9 +182,9 @@
 			</div>
 			<div class="flex-1 flex flex-col text-sm gap-4">
 				<section class="column gap-1">
-					{#each LINKS as { href, icon, label }}
+					{#each LINKS as { href, icon: Icon, label }}
 						<a {href} class="w-full px-2 py-2 rounded hover:bg-primary-foreground hover:scale-105 transition-all flex gap-2 items-center">
-							<svelte:component this={icon} class="h-4 w-4"/>
+							<Icon class="h-4 w-4"/>
 							<span class="text-muted-foreground">
 								{label}
 							</span>
@@ -229,8 +241,8 @@
 		{/if}
 		<Command.Separator />
 		<Command.Group heading="Sections">
-			{#each LINKS as link}
-				<Command.Item class="h-8" onSelect={async () => await goto(link.href)}><svelte:component this={link.icon} class="mr-2 size-4"/> {link.label}</Command.Item>
+			{#each LINKS as { icon: Icon, label }}
+				<Command.Item class="h-8" onSelect={async () => await goto(link.href)}><Icon class="mr-2 size-4"/> {label}</Command.Item>
 			{/each}
 		</Command.Group>
 		<Command.Separator />
@@ -243,7 +255,6 @@
 </Command.Dialog>
 
 <Dialog.Root open={todo.value !== null} onOpenChange={(o) => { if (!o) { todo.value = null; }}}>
-	<Dialog.Trigger>Create Task</Dialog.Trigger>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>Create ToDo</Dialog.Title>
@@ -268,8 +279,8 @@
 				Create task
 			</Dialog.Title>
 		</Dialog.Header>
-		<input type="text" placeholder="Title" class="border-b appearance-none outline-none text-2xl tactile-text bg-transparent" bind:value={task.value.title}/>
-		<div class="mt-4 gallery w-full gap-3">
+		<input type="text" placeholder="Title" class="text-2xl tactile-text" bind:value={task.value.title}/>
+		<div class="gallery w-full gap-3">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
 					+
@@ -284,7 +295,7 @@
 			</DropdownMenu.Root>
 			<div class="gallery gap-3 overflow-scroll w-full">
 				{#each task.value.labels.filter(l => l.id) as { id }}
-					{@const label = labels.find((l) => l.id === id)}
+					{@const label = data.labels.find((l) => l.id === id)}
 					<LabelChip {label} />
 				{/each}
 			</div>
@@ -293,10 +304,10 @@
 		</textarea>
 		<div class="w-full flex flex-wrap gap-2">
 			<UserSelect values={data.users} bind:value={task.value.assignee}/>
-			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status} />
-			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority} />
-			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort} />
-			<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value} />
+			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status}/>
+			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority}/>
+			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort}/>
+			<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value}/>
 		</div>
 		<section class="column gap-1">
 			<label class="text-muted-foreground text-sm">Related</label>

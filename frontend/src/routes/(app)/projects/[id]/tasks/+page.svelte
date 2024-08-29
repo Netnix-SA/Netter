@@ -161,9 +161,10 @@
 			{@const status = data.statuses.find(s => s.id === grouper)}
 			{@const status_entry = STATES.find(s => s.value === status?.state)}
 				<div id="column" class="flex flex-col border w-80 rounded-lg overflow-hidden h-full shadow-2xl">
-					<div class="bg-primary-foreground flex items-center px-4 py-2 border-b w-80 bg-primary-foreground">
+					<div class="flex items-center px-4 py-2 border-b w-80 bg-primary-foreground">
 						<div class="flex items-center gap-3 tactile-text font-medium">
-							<svelte:component this={status_entry?.icon} class="h-4 w-4"/>
+							{@const Icon = status_entry?.icon}
+							<Icon class="size-4"/>
 							{status?.name}
 						</div>
 					</div>

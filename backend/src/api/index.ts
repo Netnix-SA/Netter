@@ -1,8 +1,9 @@
 import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
-import { cors } from '@elysiajs/cors'
+import { cors } from '@elysiajs/cors';
+import { jwt } from '@elysiajs/jwt';
 
-import type { BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, UserId } from "../db/types";
+import type { BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
 
 import { users } from "./users";
 import { teams } from "./teams";
@@ -23,12 +24,34 @@ import { products } from "./products";
 import { statuses } from "./statuses";
 import { messages } from "./messages";
 import { objectives } from "./objectives";
-import Surreal, { StringRecordId } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 
 export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 
 .use(cors())
 .use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
+.use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
+
+.post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
+	const email = body.email;
+
+	const results = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
+	const users = results[0];
+	const user = users[0];
+
+	if (user === undefined) {
+		throw new Error("User not found.");
+	}
+
+	auth.set({
+		value: await jwt.sign({ id: user.id.toString() }),
+		httpOnly: true,
+		maxAge: 60 * 60 * 24 * 7,
+		path: "/",
+	});
+}, {
+	body: t.Object({ email: t.String() }),
+})
 
 .ws("/ws", {
 	open(ws) {
@@ -75,6 +98,15 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 	response: t.Object({ id: t.String(), title: t.String() }),
 })
 
+.resolve({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
+	const token = await jwt.verify(auth.value);
+
+	if (!token) {
+		throw new Error("Invalid token.");
+	}
+
+	return { id: token.sub };
+})
 .use(users(db))
 .use(teams(db))
 .use(channels(db))
@@ -107,4 +139,4 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 // 	}
 // )
 
-export type App = typeof server;
+export type App = ReturnType<typeof server>;

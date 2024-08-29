@@ -2,6 +2,7 @@ import { t } from "elysia";
 
 export const tUserId = t.String({ title: "UserId", pattern: "^User:[a-z0-9]{20}$" });
 export const tCompanyId = t.String({ title: "CompanyId", pattern: "^Company:[a-z0-9]{20}$" });
+export const tProjectId = t.String({ title: "ProjectId", pattern: "^Project:[a-z0-9]{20}$" });
 export const tProductId = t.String({ title: "ProductId", pattern: "^Product:[a-z0-9]{20}$" });
 export const tApplicationId = t.String({ title: "ApplicationId", pattern: "^Application:[a-z0-9]{20}$" });
 export const tFeatureId = t.String({ title: "FeatureId", pattern: "^Feature:[a-z0-9]{20}$" });
@@ -123,6 +124,8 @@ export const tTask = t.Object({
 	body: t.String({ maxLength: 8192 }),
 	status: t.Object({
 		id: tStatusId,
+		closed_as: t.Optional(t.Union([t.Literal("Resolved")])),
+		note: t.Optional(t.String({ maxLength: 8192 })),
 	}),
 	priority: tPriorities,
 	effort: tEfforts,
@@ -153,11 +156,11 @@ export const tMergeRequest = t.Object({
 
 export const tProjectPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
-	description: t.String({ minLength: 0, maxLength: 8192 }),
-	lead: t.Optional(tUserId),
+	description: t.String({ minLength: 0, maxLength: 8192, default: "" }),
+	lead: t.Nullable(tUserId),
 	members: t.Array(tUserId, { default: [] }),
-	client: t.Optional(tCompany),
-	end: t.Optional(t.Date()),
+	client: t.Optional(tCompany, false),
+	end: t.Nullable(t.Date()),
 });
 
 export const tMilestone = t.Object({
@@ -249,6 +252,11 @@ export const tComponent = t.Object({
 
 export const tState = t.Object({
 	value: t.String({ minLength: 3, maxLength: 64 }),
+});
+
+export const tStatusPost = t.Object({
+	state: t.Union([t.Literal("Backlog"), t.Literal("Alive"), t.Literal("Resolved")]),
+	name: t.String({ minLength: 3, maxLength: 64 }),
 });
 
 export const tStatus = t.Object({
