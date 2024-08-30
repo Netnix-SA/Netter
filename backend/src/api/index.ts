@@ -35,6 +35,8 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
 	const email = body.email;
 
+	console.log(email);
+
 	const results = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 	const users = results[0];
 	const user = users[0];
@@ -43,11 +45,13 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 		throw new Error("User not found.");
 	}
 
+	const value = await jwt.sign({ sub: user.id.toString() });
+
 	auth.set({
-		value: await jwt.sign({ id: user.id.toString() }),
+		value,
 		httpOnly: true,
+		sameSite: "strict",
 		maxAge: 60 * 60 * 24 * 7,
-		path: "/",
 	});
 }, {
 	body: t.Object({ email: t.String() }),
@@ -98,15 +102,15 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 	response: t.Object({ id: t.String(), title: t.String() }),
 })
 
-.resolve({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
-	const token = await jwt.verify(auth.value);
+// .resolve({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
+// 	const token = await jwt.verify(auth.value);
 
-	if (!token) {
-		throw new Error("Invalid token.");
-	}
+// 	if (!token) {
+// 		throw new Error("Invalid token.");
+// 	}
 
-	return { id: token.sub };
-})
+// 	return { id: token.sub };
+// })
 .use(users(db))
 .use(teams(db))
 .use(channels(db))

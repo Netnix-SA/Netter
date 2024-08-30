@@ -7,11 +7,14 @@ import { create_db, create_status, create_task, create_user } from "./utils";
 test("Create user successfully", async () => {
 	const db = await create_db();
 
-	const api = treaty(server(db));
+	const app = server(db);
+	const api = treaty(app, { fetch: { credentials: "include" } });
 
 	const response = await api.api.users.post({ email: "fvilla@netnix.net", full_name: "Facundo Villa" });
 
 	expect(response.status).toBe(200);
+
+	const re = await api.api.auth.token.post({ email: "fvilla@netnix.net" });
 
 	const users = await api.api.users.get();
 
@@ -26,13 +29,12 @@ test("Create user successfully", async () => {
 describe("Pins", async () => {
 	const db = await create_db();
 
-	const api = treaty(server(db));
+	const app = server(db);
+	const api = treaty(app, { fetch: { credentials: "include" } });
 
 	const user = await create_user(api);
 	const status = await create_status(api);
 	const task = await create_task(api, status);
-
-	// const task = await create_task(api);
 
 	test("Pin item", async () => {
 		const response = await api.api.users.me.pins.post({ id: task.id });

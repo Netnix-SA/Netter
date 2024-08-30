@@ -1,10 +1,14 @@
-import { client } from "@/state";
+// import { client } from "@/state";
+import { treaty } from "@elysiajs/eden";
 import type { LayoutLoad } from "./$types";
 import { error } from "@sveltejs/kit";
+import type { App } from "../../../../backend/src/api";
 
 export const ssr = false;
 
-export const load: LayoutLoad = async () => {
+export const load: LayoutLoad = async ({ fetch }) => {
+	const client = treaty<App>('localhost', { fetcher: fetch, fetch: { credentials: "include" } });
+
     const { data: user, error: e } = await client.api.users.me.get();
 
     if(!user) {

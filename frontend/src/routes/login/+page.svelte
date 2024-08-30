@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
 	import type { PageData } from './$types';
     import { error } from '@sveltejs/kit';
+    import { client } from '$lib/state';
     import { goto } from '$app/navigation';
     import Button from '@/components/ui/button/button.svelte';
     import { Github, GithubIcon, Key } from 'lucide-svelte';
@@ -16,12 +17,12 @@
 		console.log(message);
 	};
 
+	let email = $state("fvilla@netnix.net");
+
 	onMount(async () => {
 		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
 			throw error(500, "Browser does not support passkeys, which are required by Netter.");
 		}
-
-		
 	});
 
 	const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
@@ -48,10 +49,11 @@
 	};
 
 	async function handleLogin() {
-		const credential = await navigator.credentials.create({
-			publicKey: publicKeyCredentialCreationOptions
-		});
+		// const credential = await navigator.credentials.create({
+		// 	publicKey: publicKeyCredentialCreationOptions
+		// });
 
+		await goto(`/auth?email=${email}`);
 	}
 
 	async function handleGitHubLogin() {
@@ -70,12 +72,12 @@
 			Login
 		</span>
 		<div class="flex-1 column">
-			<input name="email" type="email" class="border rounded-lg bg-transparent h-10"/>
+			<input name="email" type="email" class="border px-2 py-1" bind:value={email}/>
 		</div>
 		<div class="frame flex-col w-full gap-2">
-			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`} class="gap-2">
+			<Button variant="default" onclick={handleLogin} class="gap-2">
 				<Key class="size-4"/>
-				Login with PassKey
+				Login
 			</Button>
 			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`} class="gap-2">
 				<GithubIcon class="size-4"/>

@@ -8,26 +8,6 @@ import { map as mapToDo } from "./todos";
 
 export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Users"] })
 .use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
-.resolve({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
-	const token = await jwt.verify(auth.value);
-
-	if (!token) {
-		throw new Error("Invalid token.");
-	}
-
-	return { id: token.sub };
-})
-
-.get("", async () => {
-	const users = await db.select<User>("User");
-
-	return users.map(map)
-}, {
-	response: t.Array(tUser),
-	detail: {
-		description: "Returns all users that belong to the querying user's organization.",
-	}
-})
 
 .post("", async ({ body }) => {
 	let handle: string;
@@ -64,24 +44,51 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 		This method will fail if the handle or email already exists.
 		This method will fail if the email's domain is not allowed in the organization.`,
 	}
+}) // TODO: put after auth
+
+.resolve(async ({ jwt, cookie: { auth } }) => {
+	if (!auth) {
+		console.error("No token provided.");
+		throw new Error("No token provided.");
+	}
+
+	const token = await jwt.verify(auth.value);
+
+	if (!token || !token.sub) {
+		console.error("Invalid token:", auth.value);
+		throw new Error("Invalid token.");
+	}
+
+	return { id: token.sub };
 })
 
-.patch("/me", async ({ body }) => {
+.get("", async () => {
+	const users = await db.select<User>("User");
+
+	return users.map(map)
+}, {
+	response: t.Array(tUser),
+	detail: {
+		description: "Returns all users that belong to the querying user's organization.",
+	}
+})
+
+.patch("/me", async ({ body, id }) => {
 	let user: { color?: Colors } = {};
 
 	if (body.color !== undefined) {
 		user.color = body.color;
 	}
 
-	await db.merge<User>(new RecordId("User", "yt2hrlb0mynjar8q5la5"), user);
+	await db.merge<User>(new StringRecordId(id), user);
 }, {
 	body: t.Object({
 		color: t.Optional(tColors),
 	})
 })
 
-.get("/me", async ({}) => {
-	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId("User:yt2hrlb0mynjar8q5la5") });
+.get("/me", async ({ id }) => {
+	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId(id) });
 
 	const user = results[0][0];
 
@@ -97,8 +104,8 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.get("/me/todos", async ({ query: { resolved } }) => {
-	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), resolved });
+.get("/me/todos", async ({ query: { resolved }, id }) => {
+	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId(id), resolved });
 
 	const todos = results[0];
 
@@ -110,8 +117,8 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}),
 })
 
-.post("/me/todos", async ({ body }) => {
-	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId("User:yt2hrlb0mynjar8q5la5"), due: null, done: false });
+.post("/me/todos", async ({ body, id }) => {
+	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId(id), due: null, done: false });
 }, {
 	body: tToDoPost,
 	detail: {
@@ -122,7 +129,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 .get("/me/pins", async ({ body, id: uid }) => {
 	const user = await db.select<User>(new StringRecordId(uid));
 
-	return user.pinned.map(id => { id: id.toString() });
+	return user.pinned.map(id => ({ id: id.toString() }));
 }, {
 	response: t.Array(t.Object({
 		id: t.String(),

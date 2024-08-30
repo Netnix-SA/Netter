@@ -24,16 +24,17 @@ export async function create_task(api: any, status: any) {
 
 export async function create_user(api: any) {
 	const { data: user } = await api.api.users.post({ email: "fvilla@netnix.net", full_name: "Facundo Villa" });
+	const response = await api.api.auth.token.post({ email: "fvilla@netnix.net" });
 	return user;
 }
 
 export async function create_status(api: any) {
-	const { data: status } = await api.api.statuses.post({ state: "Backlog", name: "Backlog", });
+	const { data: status, error } = await api.api.statuses.post({ state: "Backlog", name: "Backlog", });
 	return status;
 }
 
 // The backlog status is needed to create a project but not explicitly consumed
 export async function create_project(api: any, backlog_status: any) {
-	const { data: project } = await api.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
+	const { data: project, error } = await api.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
 	return project;
 }
