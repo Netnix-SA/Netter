@@ -14,10 +14,12 @@
 	<title>Channels</title>
 </svelte:head>
 
-<div class="flex-1 flex flex-col w-full divide-y">
-	<header class="flex w-full px-6 h-10 items-center text-sm">
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+	<h1 class="tactile-text text-sm">
 		My channels
-	</header>
+	</h1>
+</header>
+<div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex">
 		<div id="channels" class="w-72 flex flex-col gap-2 border-r">
 			<ul class="">

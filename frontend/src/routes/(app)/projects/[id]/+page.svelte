@@ -5,14 +5,22 @@
 	import * as Sheet from "$lib/components/ui/sheet";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { blur } from 'svelte/transition';
+	import { onMount } from "svelte";
+	import { task } from "@/all.svelte";
     import { CalendarArrowUp, Check, Clock9, Star } from "lucide-svelte";
     import UserSelect from "@/components/UserSelect.svelte";
     import { STATES } from "@/global";
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
+    import Pin from "@/components/Pin.svelte";
 
 	const { data }: { data: PageData } = $props();
+
 	const project = $derived(data.project);
+
+	onMount(() => {
+		task.project = data.project.id;
+	});
 
 	let lead = $state(data.users.find(u => u.id === data.project.lead?.id) || null);
 </script>
@@ -21,9 +29,11 @@
 	<title>{project.name}</title>
 </svelte:head>
 
-<header class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground border-b">
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
 	<div class="gallery flex-1 gap-4">
-		{project.name}
+		<h1 class="tactile-text text-sm">
+			{project.name}
+		</h1>
 		<div class="gallery gap-2">
 			<div class="rounded item-background h-6 w-12 frame">
 				<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
@@ -33,6 +43,7 @@
 			</div>
 		</div>
 	</div>
+	<Pin pinned={data.user.pinned} id={data.project.id}/>
 </header>
 <div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex items-center justify-center page-backdrop px-48 py-32">

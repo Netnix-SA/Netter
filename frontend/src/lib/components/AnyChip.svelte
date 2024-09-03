@@ -37,7 +37,7 @@
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
-<div class="gallery gap-2 h-10 rounded-md border px-2">
+<div class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all">
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
 			{@const Icon = clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion}
@@ -59,20 +59,28 @@
 				Add ToDo
 			</ContextMenu.Item>
 			{#if clss === "Feature"}
-				<ContextMenu.Item onclick={async () => task.value = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", value: "Medium", related: [{ id }] }}>Create related task</ContextMenu.Item>
+				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Feature</ContextMenu.Label>
 				<ContextMenu.Separator/>
 			{/if}
 			{#if clss === "Project"}
+				<ContextMenu.Item onclick={() => { task.project = id; task.value = {}; }}>Create task</ContextMenu.Item>
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Project</ContextMenu.Label>
 				<ContextMenu.Separator/>
 				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/tasks`)}>Tasks</ContextMenu.Item>
 				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/objectives/active`)}>Objective</ContextMenu.Item>
 			{/if}
+			{#if clss === "Component"}
+				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
+				<!-- <ContextMenu.Separator/>
+				<ContextMenu.Label>Objective</ContextMenu.Label>
+				<ContextMenu.Separator/>
+				<ContextMenu.Item onclick={async () => await goto(`/objectives/${id}/tasks`)}>Tasks</ContextMenu.Item> -->
+			{/if}
 			{#if clss === "Objective"}
-				<ContextMenu.Item onclick={async () => task.value = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", value: "Medium", related: [{ id }] }}>Create related task</ContextMenu.Item>
+				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
 				<ContextMenu.Separator/>
 				<ContextMenu.Label>Objective</ContextMenu.Label>
 				<ContextMenu.Separator/>

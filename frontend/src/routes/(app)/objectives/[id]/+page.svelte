@@ -34,7 +34,7 @@
 			<section class="column gap-2">
 				<p class="text-muted-foreground">{data.objective.description}</p>
 			</section>
-			<section class="column gap-2">
+			<section class="column gap-2 w-96">
 				<h2 class="text-sm text-muted-foreground">Slated features</h2>
 				{#each data.features as feature}
 					<AnyChip id={feature.id} pinned={data.user.pinned}/>

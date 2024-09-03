@@ -3,12 +3,12 @@ import type { PageLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 
 export const load: PageLoad = async ({ params: { id } }) => {
-	const { data: tasks, error: e } = await client.api.projects({ id }).tasks.get();
+	const { data: project } = await client.api.projects({ id }).get();
+	const { data: tasks } = await client.api.projects({ id }).tasks.get();
 	const { data: labels, } = await client.api.projects({ id }).labels.get();
 	const { data: statuses, } = await client.api.projects({ id }).statuses.get();
 
 	if (!tasks) {
-		console.error(e);
 		throw error(404, "Could not load tasks!");
 	}
 
@@ -21,6 +21,7 @@ export const load: PageLoad = async ({ params: { id } }) => {
 	}
 
 	return {
+		project,
 		tasks,
 		labels,
 		statuses,

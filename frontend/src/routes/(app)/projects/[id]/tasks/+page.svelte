@@ -17,6 +17,7 @@
 
 	import { commands } from "@/state";
     import { onMount } from "svelte";
+    import { page } from "$app/stores";
     import UserSearch from "@/components/UserSearch.svelte";
     import UserAvatar from "@/components/UserAvatar.svelte";
     import Input from "@/components/ui/input/input.svelte";
@@ -30,6 +31,8 @@
 			c.push(entry);
 			return c;
 		});
+
+		task.project = data.project.id;
 
 		return () => {
 			commands.update(c => { return c.filter(e => e != entry); });
@@ -65,18 +68,18 @@
 
 		nodes.set(nds);
 
-		const edgs = data.tasks.map(task => {
-			return task.relatives.children.map(child => {
-				return {
-					id: `${task.id}-${child.id}`,
-					source: task.id,
-					target: child.id,
-					type: 'default'
-				};
-			});
-		}).flat();
+		// const edgs = data.tasks.map(task => {
+		// 	return task.relatives.children.map(child => {
+		// 		return {
+		// 			id: `${task.id}-${child.id}`,
+		// 			source: task.id,
+		// 			target: child.id,
+		// 			type: 'default'
+		// 		};
+		// 	});
+		// }).flat();
 
-		edges.set(edgs);
+		// edges.set(edgs);
 	});
 
 	const snapGrid: [number, number] = [25, 25];
@@ -160,10 +163,10 @@
 			{#each groups as [grouper, tasks]}
 			{@const status = data.statuses.find(s => s.id === grouper)}
 			{@const status_entry = STATES.find(s => s.value === status?.state)}
+			{@const Icon = status_entry?.icon}
 				<div id="column" class="flex flex-col border w-80 rounded-lg overflow-hidden h-full shadow-2xl">
 					<div class="flex items-center px-4 py-2 border-b w-80 bg-primary-foreground">
 						<div class="flex items-center gap-3 tactile-text font-medium">
-							{@const Icon = status_entry?.icon}
 							<Icon class="size-4"/>
 							{status?.name}
 						</div>

@@ -11,8 +11,16 @@
 	<title>Products</title>
 </svelte:head>
 
-<header class="flex w-full px-4 h-10 items-center text-sm bg-primary-foreground border-b">
-	My products
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+	<div class="gallery flex-1 gap-4">
+		<h1 class="tactile-text text-sm">
+			My products
+		</h1>
+		<!-- <div class="rounded item-background h-6 w-12 frame">
+			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
+		</div> -->
+	</div>
+	<!-- <Pin pinned={data.user.pinned} id={data.objective.id}/> -->
 </header>
 <div class="flex-1 flex flex-col w-full divide-y">
 	<main>

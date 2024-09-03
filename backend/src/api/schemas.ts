@@ -366,6 +366,8 @@ export const tProduct = t.Object({
 
 export const tToDoPost = t.Object({
 	title: t.Nullable(t.String({ minLength: 3, maxLength: 64 })),
+	related: t.Optional(t.String()),
+	tag: t.Optional(t.String()),
 });
 
 export const tToDo = t.Object({

@@ -1,11 +1,12 @@
 <script lang="ts">
     import { onMount, type Snippet } from "svelte";
 
-	import { Settings, Star } from "lucide-svelte";
+	import { Settings, Star, SquareCheckBig } from "lucide-svelte";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import * as Command from "$lib/components/ui/command";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Dialog from "$lib/components/ui/dialog";
+	import * as Tooltip from "$lib/components/ui/tooltip";
     import { goto, onNavigate } from "$app/navigation";
 	import { Separator } from "$lib/components/ui/separator";
     import { client, commands } from "@/state";
@@ -19,6 +20,7 @@
     import { addToDo } from "@/actions";
     import Select from "@/components/Select.svelte";
     import UserSelect from "@/components/UserSelect.svelte";
+    import Search from "@/components/Search.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -94,25 +96,30 @@
 	}
 
 	async function createTask() {
-		if (project === undefined) {
+		const t = task.value;
+		if (t === null) {
+			console.error("Task is null");
+			return;
+		}
+		if (task.project === undefined) {
 			await client.api.tasks.post({
-				title: task.title,
-				body: task.body,
-				status: task.status?.id || null,
-				priority: task.priority,
-				effort: task.effort,
-				value: task.value,
-				assignee: task.assignee?.id || null,
+				title: t.title,
+				body: t.body,
+				status: t.status?.id || null,
+				priority: t.priority,
+				effort: t.effort,
+				value: t.value,
+				assignee: t.assignee?.id || null,
 			});
 		} else {
 			await client.api.projects({ id: project }).tasks.post({
-				title: task.title,
-				body: task.body,
-				status: task.status?.id || null,
-				priority: task.priority,
-				effort: task.effort,
-				value: task.value,
-				assignee: task.assignee?.id || null,
+				title: t.title,
+				body: t.body,
+				status: t.status?.id || null,
+				priority: t.priority,
+				effort: t.effort,
+				value: t.value,
+				assignee: t.assignee?.id || null,
 			});
 		}
 	}
@@ -125,8 +132,6 @@
 			task.value.status = task.value.status ?? data.statuses[0];
 		}
 	});
-
-	$inspect(task.value);
 </script>
 
 <Toaster/>
@@ -151,34 +156,14 @@
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				</div>
-				<!-- <Dialog.Root>
-					<Dialog.Trigger class="h-4/5 aspect-square border rounded flex items-center justify-center">
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-								<SquareCheckBig class="h-4 w-4"/>
-							</Tooltip.Trigger>
-							<Tooltip.Content>
-								<p>ToDo's</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</Dialog.Trigger>
-					<Dialog.Content>
-						<Dialog.Header>
-							<Dialog.Title>ToDo's</Dialog.Title>
-						</Dialog.Header>
-						<div class="flex flex-col divide-y">
-							<div>
-								a
-							</div>
-							<div>
-								b
-							</div>
-						</div>
-						<Dialog.Footer>
-							<Input id="username" value="@peduarte" class="w-full"/>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root> -->
+				<Tooltip.Root>
+					<Tooltip.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="outline" size="icon" onclick={() => todo.value = {}}>
+							<SquareCheckBig class="size-4"/>
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content>Create ToDo</Tooltip.Content>
+				</Tooltip.Root>
 			</div>
 			<div class="flex-1 flex flex-col text-sm gap-4">
 				<section class="column gap-1">
@@ -191,16 +176,18 @@
 						</a>
 					{/each}
 				</section>
-				<section class="column gap-2 flex-1">
-					<span class="pr-2 text-muted-foreground text-sm">
-						Pinned
-					</span>
-					<div class="column gap-2 overflow-scroll">
-						{#each data.user.pinned as pinned}
-							<AnyChip id={pinned} pinned={data.user.pinned}/>
-						{/each}
-					</div>
-				</section>
+				<div class="flex-1">
+					<section class="column gap-2 flex-1 max-h-64">
+						<span class="pr-2 text-muted-foreground text-sm">
+							Pinned
+						</span>
+						<div class="column flex-1 gap-2 overflow-scroll">
+							{#each data.user.pinned as pinned}
+								<AnyChip id={pinned} pinned={data.user.pinned}/>
+							{/each}
+						</div>
+					</section>
+				</div>
 				<a href="/settings" class="w-full px-2 py-2 rounded text-muted-foreground hover:text-primary transition-colors">
 					Settings
 				</a>
@@ -259,13 +246,17 @@
 		<Dialog.Header>
 			<Dialog.Title>Create ToDo</Dialog.Title>
 		</Dialog.Header>
+		<div class="gallery gap-2 h-10">
+			<input type="text" placeholder="Tag" class="px-2 py-1 w-20 border text-sm h-full"/>
+			<input type="text" placeholder="Title" class="px-2 py-1 flex-1 border text-sm h-full"/>
+		</div>
 		<section class="column gap-1">
 			<label class="text-muted-foreground text-sm">Related to</label>
 			{#if todo.value.related !== null}
 				<AnyChip id={todo.value.related.id} pinned={data.user.pinned}/>
 			{/if}
+			<Search />
 		</section>
-		<input type="text" placeholder="Title" class="px-2 py-1 w-full"/>
 		<Dialog.Footer>
 			<Button onclick={async () => await addToDo(todo.value?.title ?? "")}>Create</Button>
 		</Dialog.Footer>
@@ -275,8 +266,9 @@
 <Dialog.Root open={task.value !== null} onOpenChange={(o) => { if (!o) { task.value = null; }}}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>
+			<Dialog.Title class="gallery gap-2">
 				Create task
+				<span class="text-muted-foreground text-sm font-normal">{task.project}</span>
 			</Dialog.Title>
 		</Dialog.Header>
 		<input type="text" placeholder="Title" class="text-2xl tactile-text" bind:value={task.value.title}/>

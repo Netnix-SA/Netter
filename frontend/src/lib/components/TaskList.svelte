@@ -22,24 +22,25 @@
 {#each groups as [grouper, tasks]}
 {@const status = statuses.find(s => s.id === grouper)}
 {@const state_entry = STATES.find(s => s.value === status?.state)}
+{@const Icon = state_entry?.icon}
 	<details open={status.state !== "Resolved"}>
 		<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer group-[summary]">
 			<div class="flex items-center gap-2 flex-1">
-				<div class="gallery gap-4 tactile-text">
-					{@const Icon = state_entry?.icon}
+				<div class="gallery gap-4 tactile-text min-w-32">
 					<Icon class="size-4"/>
 					{status?.name}
 				</div>
 				<div>
-					{#if draft_task !== undefined}
-						<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { title: "", body: "", assignee: null, labels: [], effort: "Day", priority: "Medium", status, value: "Medium", related: [] }}>
-							<Plus class="size-4"/>
-						</button>
-					{/if}
+
 				</div>
 			</div>
 			<div class="w-12 frame">
-				<ChevronDown class="size-4 group-[summary]-open:rotate-180"/>
+				{#if draft_task !== undefined}
+					<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = { status, }}>
+						<Plus class="size-4"/>
+					</button>
+				{/if}
+				<!-- <ChevronDown class="size-4 group-[summary]-open:rotate-180"/> -->
 			</div>
 		</summary>
 		{#each tasks as task}
