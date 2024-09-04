@@ -1,6 +1,6 @@
 import type { Channel, Message } from "../db/types";
 import Elysia, { t } from "elysia";
-import { tChannel, tChannelPost, tMessage, tMessagePost } from "./schemas";
+import { tChannel, tChannelId, tChannelPost, tMessage, tMessageId, tMessagePost } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapMessage } from "./messages";
 import { parse_mentions } from "../utils";
@@ -21,12 +21,19 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 })
 
 .post("", async ({ body: { name, } }) => {
-	await db.create<Omit<Channel, "id">>("Channel", {
+	const [channel] = await db.create<Omit<Channel, "id">>("Channel", {
 		name,
 		subscribers: [],
 	});
+
+	if (!channel) {
+		throw new Error("Channel not created");
+	}
+
+	return { id: channel.id.toString() };
 }, {
 	body: tChannelPost,
+	response: t.Object({ id: tChannelId }),
 	detail: {
 		description: "Creates a channel with the querying user as subscriber.",
 	},
@@ -44,11 +51,13 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 })
 
 .post("/:id/messages", async ({ params: { id }, body: { body, is_inquiry } }) => {
+	// TODO: check if user is member of channel
+
 	const channel_id = new StringRecordId(id);
 
 	const mentions = parse_mentions(body).map(mid => new StringRecordId(mid));
 
-	const message = await db.create<Omit<Message, "id">>("Message", {
+	const [message] = await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
 		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),
@@ -56,9 +65,12 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 		resolved: is_inquiry ? false : undefined,
 	});
 
-	await Promise.all(mentions.map(id => db.query("RELATE $mid->mentions->$id;", { mid: message[0].id, id })));
+	await Promise.all(mentions.map(id => db.query("RELATE $mid->mentions->$id;", { mid: message.id, id })));
+
+	return { id: message.id.toString() };
 }, {
 	body: tMessagePost,
+	response: t.Object({ id: tMessageId }),
 	detail: {
 		description: "Posts a message to a channel with the querying user as author.",
 	},

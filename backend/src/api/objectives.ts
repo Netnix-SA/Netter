@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import type { Feature, Objective, Task } from "../db/types";
-import { tFeature, tObjective, tTask } from "./schemas";
+import { tFeature, tFeatureId, tFeatureId, tObjective, tTask } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapTask } from "./tasks";
 import { map as mapFeature } from "./features";
@@ -42,7 +42,22 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
     detail: {
         description: "Returns all tasks related to the objective.",
     },
+})
+
+.post("/:id/slated", async ({ params: { id }, body }) => {
+	const objective_id = new StringRecordId(id);
+
+	const feature_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${feature_id}->slated->${objective_id};`);
+}, {
+	body: t.Object({ id: tFeatureId }),
+	detail: {
+		description: "Adds a slated feature to the objective.",
+	}
 });
+
+;
 
 export const map = ({ id, title, description, active }: Objective) => ({
     id: id.toString(),

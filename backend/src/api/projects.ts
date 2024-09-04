@@ -1,6 +1,6 @@
 import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tApplication, tLabel, tObjective, tObjectivePost, tProject, tProjectId, tProjectPost, tProjectUpdatePost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost, tUserId } from "./schemas";
+import { tApplication, tLabel, tObjective, tObjectiveId, tObjectivePost, tProject, tProjectId, tProjectPost, tProjectUpdatePost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
@@ -164,8 +164,11 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	const project = await db.select<Project>(project_id);
 
 	await db.merge(project_id, { objectives: [...project.objectives, { id: objective.id }] });
+
+	return { id: objective.id.toString() };
 }, {
 	body: tObjectivePost,
+	response: t.Object({ id: tObjectiveId }),
 })
 
 .post("/:id/updates", async ({ params: { id }, body }) => {

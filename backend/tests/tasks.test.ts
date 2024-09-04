@@ -124,7 +124,7 @@ test("Add children task", async () => {
 
 	expect(response.status).toBe(200);
 
-	const { data: tasks, error } = await api.api.tasks({ id: task.id }).children.get();
+	const { data: tasks } = await api.api.tasks({ id: task.id }).children.get();
 
 	expect(tasks).toMatchObject([{ id: child_task.id }]);
 });
@@ -148,3 +148,6 @@ test("Add blockers task", async () => {
 
 	expect(tasks).toMatchObject([{ id: blocker_task.id }]);
 });
+
+test.todo("Mention other object in channel message and add related");
+test.todo("Send message in task channel");

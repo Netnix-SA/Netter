@@ -11,7 +11,7 @@ export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"
 		title, description,
 		features: [],
 		applications: [],
-		date: new Date(),
+		created: new Date(),
 		resolved: false,
 		release: null,
 	});

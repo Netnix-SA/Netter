@@ -51,6 +51,16 @@ export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detai
 	detail: {
 		description: "Adds a message as a reply to another message.",
 	}
+})
+
+.patch("/:id", async ({ params: { id }, body: { resolved } }) => {
+	// TODO: what if message is not an inquiry?
+	await db.merge<Message>(new StringRecordId(id), { resolved });
+}, {
+	body: t.Object({ resolved: t.Boolean() }),
+	detail: {
+		description: "Resolves a message.",
+	}
 });
 
 export const map = ({ id, body, author, date, resolved, question, }: Message) => ({

@@ -49,6 +49,11 @@ export async function create_feature(api: any) {
 	return feature;
 }
 
+export async function create_objective(api: any, project: any) {
+	const { data: objective } = await api.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+	return objective;
+}
+
 export function log_error(error: any) {
 	if (error && error.value) {
 		console.error(error.value);
