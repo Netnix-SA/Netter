@@ -265,13 +265,13 @@ export type Project = {
 	description: string,
 	lead: UserId | null,
 
-	members: User[],
+	members: { id: UserId }[],
 
 	milestones: Milestone[],
 	updates: {
 		title: string,
 		body: string,
-	},
+	}[],
 
 	objectives: { id: ObjectiveId }[],
 
@@ -311,7 +311,7 @@ export type Product = {
 export type Feature = {
 	id: FeatureId,
 	name: string,
-	description: string,
+	description: string, constraints: string, notes: string,
 	value: Value,
 };
 

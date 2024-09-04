@@ -1,9 +1,18 @@
-import Elysia from "elysia";
+import { Elysia, t } from "elysia";
 import type { Component } from "../db/types";
-import { tComponent } from "./schemas";
+import { tComponent, tComponentId, tComponentPost } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 
 export const components = (db: Surreal) => new Elysia({ prefix: "/components", tags: ["Components"] })
+
+.post("", async ({ body }) => {
+	const [component] = await db.create<Omit<Component, "id">>("Component", { name: body.name, description: body.description });
+
+	return { id: component.id.toString() };
+}, {
+	body: tComponentPost,
+	response: t.Object({ id: tComponentId }),
+})
 
 .get("/:id", async ({ params: { id } }) => {
 	const results = await db.query<[Component[]]>("SELECT * FROM Component WHERE id == $id;", { id: new StringRecordId(id) });

@@ -41,6 +41,16 @@ export const tUser = t.Object({
 	color: tColors,
 });
 
+export const tProjectUpdatePost = t.Object({
+	title: t.String({ minLength: 3, maxLength: 64 }),
+	body: t.String({ maxLength: 8192 }),
+});
+
+export const tObjectivePost = t.Object({
+	title: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
+});
+
 export const tObjective = t.Object({
 	id: tObjectiveId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
@@ -122,11 +132,27 @@ export const tTask = t.Object({
 	id: tTaskId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
 	body: t.String({ maxLength: 8192 }),
-	status: t.Object({
-		id: tStatusId,
-		closed_as: t.Optional(t.Union([t.Literal("Resolved")])),
-		note: t.Optional(t.String({ maxLength: 8192 })),
-	}),
+	// status: t.Union([
+	// 	t.Object({
+	// 		id: tStatusId,
+	// 	}),
+	// 	t.Object({
+	// 		id: tStatusId,
+	// 		closed_as: t.Literal("Resolved"),
+	// 		note: t.String({ maxLength: 8192 }),
+	// 	}),
+	// 	t.Object({
+	// 		id: tStatusId,
+	// 		closed_as: t.Literal("Cancelled"),
+	// 		note: t.String({ maxLength: 8192 }),
+	// 	}),
+	// 	t.Object({
+	// 		id: tStatusId,
+	// 		closed_as: t.Literal("Duplicate"),
+	// 		original: tTaskId,
+	// 	}),
+	// ]),
+	status: t.Any(),
 	priority: tPriorities,
 	effort: tEfforts,
 	value: tValues,
@@ -174,7 +200,7 @@ export const tProject = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ minLength: 0, maxLength: 8192 }),
 	lead: t.Nullable(t.Object({ id: tUserId })),
-	members: t.Array(tUserId),
+	members: t.Array(t.Object({ id: tUserId })),
 	client: t.Optional(tCompany),
 	end: t.Nullable(t.Date()),
 	milestones: t.Array(tMilestone),
@@ -234,6 +260,8 @@ export const tRepository = t.Object({
 export const tFeaturePost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	constraints: t.String({ maxLength: 8192 }),
+	notes: t.String({ maxLength: 8192 }),
 	value: tValues,
 });
 
@@ -241,7 +269,14 @@ export const tFeature = t.Object({
 	id: tFeatureId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	constraints: t.String({ maxLength: 8192 }),
+	notes: t.String({ maxLength: 8192 }),
 	value: tValues,
+});
+
+export const tComponentPost = t.Object({
+	name: t.String({ minLength: 3, maxLength: 64 }),
+	description: t.String({ maxLength: 8192 }),
 });
 
 export const tComponent = t.Object({

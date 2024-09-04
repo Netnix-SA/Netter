@@ -38,3 +38,19 @@ export async function create_project(api: any, backlog_status: any) {
 	const { data: project, error } = await api.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
 	return project;
 }
+
+export async function create_product(api: any) {
+	const { data: product } = await api.api.products.post({ name: "Test Product", description: "This is a test product", });
+	return product;
+}
+
+export async function create_feature(api: any) {
+	const { data: feature } = await api.api.features.post({ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" });
+	return feature;
+}
+
+export function log_error(error: any) {
+	if (error && error.value) {
+		console.error(error.value);
+	}
+}

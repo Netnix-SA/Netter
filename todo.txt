@@ -2,5 +2,11 @@
 - test objective completion stats
 - implement unfurl
 - add add button to objective slated features
-- create objective
-- create update
+- create objective under project
+- create update under project
+- create feature under products
+- create components under features
+- add "add related" under task
+- add "add tackled" under task
+- add "add child" under task
+- add "add blocking" under task

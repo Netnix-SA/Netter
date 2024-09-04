@@ -2,7 +2,7 @@ import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, S
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tChannel, tFeature, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
+import { tChannel, tFeature, tFeatureId, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
@@ -28,13 +28,32 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 		throw new NotFoundError("No task under that id found!");
 	}
 
-	await db.merge<Task>(new StringRecordId(id), { status: { id: new StringRecordId(body.id), closed_as: "Resolved", note: body.note } });
+	const task_id = new StringRecordId(id);
+
+	switch (body.close_as) {
+		case "Cancelled": case "Resolved": {
+			await db.merge<Task>(task_id, { status: { id: new StringRecordId(body.id), closed_as: body.close_as, note: body.note } });
+			break;
+		}
+		case "Duplicate": {
+			await db.merge<Task>(task_id, { status: { id: new StringRecordId(body.id), closed_as: "Duplicate", original: new StringRecordId(body.original) } });
+			break;
+		}
+	}
 }, {
 	config: {},
-	body: t.Object({
-		id: tStatusId,
-		note: t.String(),
-	}),
+	body: t.Union([
+		t.Object({
+			id: tStatusId,
+			close_as: t.Union([t.Literal("Resolved"), t.Literal("Cancelled")]),
+			note: t.String(),
+		}), 
+		t.Object({
+			id: tStatusId,
+			close_as: t.Literal("Duplicate"),
+			original: tTaskId,		
+		})
+	]),
 	detail: {
 		description: "Closes a task as resolved."
 	}
@@ -93,6 +112,19 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}
 })
 
+.post("/:id/related", async ({ params: { id }, body }) => {
+	const task_id = new StringRecordId(id);
+
+	const related_task_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${task_id}->is_related_to->${related_task_id};`);
+}, {
+	body: t.Object({ id: tTaskId }),
+	detail: {
+		description: "Adds a related task to the task."
+	}
+})
+
 .get("/:id/blockers", async ({ params: { id } }) => {
 	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}<-is_blocking<-Task;`);
 
@@ -107,6 +139,19 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	response: t.Array(tTask),
 	detail: {
 		description: "Gets the relatives of the task"
+	}
+})
+
+.post("/:id/blockers", async ({ params: { id }, body }) => {
+	const task_id = new StringRecordId(id);
+
+	const blocker_task_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${blocker_task_id}->is_blocking->${task_id};`);
+}, {
+	body: t.Object({ id: tTaskId }),
+	detail: {
+		description: "Adds a blocking task to the task."
 	}
 })
 
@@ -127,6 +172,19 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}
 })
 
+.post("/:id/children", async ({ params: { id }, body }) => {
+	const parent_id = new StringRecordId(id);
+
+	const child_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${parent_id}->is_parent_of->${child_id};`);
+}, {
+	body: t.Object({ id: tTaskId }),
+	detail: {
+		description: "Adds a child task to the task."
+	}
+})
+
 .get("/:id/tackled", async ({ params: { id } }) => {
 	const results = await db.query<[Feature[]]>(surql`SELECT * FROM ${new StringRecordId(id)}->tackles->Feature;`);
 
@@ -141,6 +199,20 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	response: t.Array(tFeature),
 	detail: {
 		description: "Gets the items tackled by the task. Tackled items can be features or bugs."
+	}
+})
+
+.post("/:id/tackled", async ({ params: { id }, body }) => {
+	const task_id = new StringRecordId(id);
+
+	const tackled_object_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${task_id}->tackles->${tackled_object_id};`);
+}, {
+	body: t.Object({ id: tFeatureId }),
+	params: t.Object({ id: tTaskId }),
+	detail: {
+		description: "Adds a tackled item to the task. Tackled items can be features or bugs."
 	}
 })
 
@@ -248,14 +320,21 @@ export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { 
 };
 
 export const map = ({ id, title, body, priority, status, updates, labels, assignee, effort, value, progress }: Task & { progress: number | undefined }) => {
+	const r_status = {
+		id: status.id.toString(),
+		...(status.closed_as ? (status.closed_as === "Resolved" || status.closed_as === "Cancelled" ? {
+			closed_as: status.closed_as,
+			note: status.note,
+		} : {
+			closed_as: status.closed_as,
+			original: status.original.toString(),
+		}) : {}),
+	};
+
 	return {
 		id: id.toString(),
 		title, body,
-		status: {
-			id: status.id.toString(),
-			closed_as: status.closed_as,
-			note: status.note,
-		},
+		status: r_status,
 		labels: labels.map(id => ({
 			id: id.toString(),
 		})),

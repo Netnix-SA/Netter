@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { tBug, tComponent, tFeature, tFeaturePost, tTask } from "./schemas";
+import { tBug, tComponent, tFeature, tFeatureId, tFeaturePost, tTask } from "./schemas";
 import { type Bug, type Component, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
@@ -8,13 +8,19 @@ import Surreal, { StringRecordId } from "surrealdb";
 
 export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags: ["Features"] })
 
-.post("", async ({ body: { name, description } }) => {
-	await db.create<Omit<Feature, "id">>("Feature", {
+.post("", async ({ body: { name, description, constraints, notes, value } }) => {
+	const [feature] = await db.create<Omit<Feature, "id">>("Feature", {
 		name,
 		description,
+		constraints,
+		notes,
+		value,
 	});
+
+	return { id: feature.id.toString() };
 }, {
 	body: tFeaturePost,
+	response: t.Object({ id: tFeatureId }),
 	detail: {
 		description: "Creates a feature under the connected user's organization"
 	}
@@ -66,10 +72,11 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	response: t.Array(tComponent),
 });
 
-export const map = ({ id, name, description, value }: Feature) => {
+export const map = ({ id, name, description, constraints, notes, value }: Feature) => {
 	return {
 		id: id.toString(),
-		name, description,
+		name,
+		description, constraints, notes,
 		value,
 	};
 };

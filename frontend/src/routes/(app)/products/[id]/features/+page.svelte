@@ -5,10 +5,14 @@
 	let { data, children }: { data: PageData, children: Snippet<[]> } = $props();
 </script>
 
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+	<div class="gallery flex-1 gap-4">
+		<h1 class="tactile-text text-sm">
+			My features
+		</h1>
+	</div>
+</header>
 <div class="flex-1 flex flex-col w-full divide-y">
-	<header class="flex w-full px-6 h-10 items-center text-sm">
-		My features
-	</header>
 	<main class="flex-1 flex">
 		<div id="features" class="w-72 flex flex-col gap-2 border-r">
 			<ul class="">

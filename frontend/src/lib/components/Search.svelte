@@ -11,18 +11,24 @@
 	}
 </script>
 
-<input type="search" placeholder={"Search"} bind:value={search} oninput={handleInput}/>
-{#key search}
-<Command>
-	<CommandList>
-		<CommandEmpty>No results found.</CommandEmpty>
-		{#if entries.length > 0}
-		
-			{#each entries as { id, title }(id)}
-				<CommandItem class="h-8" onSelect={async () => {}}>{title}</CommandItem>
-			{/each}
-			<CommandSeparator/>
-			{/if}
-		</CommandList>
-	</Command>
-{/key}
+<div class="relative min-h-10 w-64 group">
+	<input type="search" placeholder={"Search"} class="border px-2 py-1" bind:value={search} oninput={handleInput}/>
+	<div class="absolute shadow-2xl top-10 left-0 border rounded-md w-64 hidden group-focus-within:block">
+		{#key search}
+		<Command>
+			<CommandList>
+				{#if search === ""}
+					<CommandEmpty>Start typing to search.</CommandEmpty>
+				{:else}
+					<CommandEmpty>No results found.</CommandEmpty>
+				{/if}
+				{#if entries.length > 0}
+					{#each entries as { id, title }(id)}
+						<CommandItem class="h-8" onSelect={async () => {}}>{title}</CommandItem>
+					{/each}
+				{/if}
+			</CommandList>
+		</Command>
+		{/key}
+	</div>
+</div>

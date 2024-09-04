@@ -127,7 +127,11 @@
 </svelte:head>
 
 <header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
-	<div class="flex-1"></div>
+	<div class="flex-1">
+		<h1 class="tactile-text text-sm">
+			{data.task.title}
+		</h1>
+	</div>
 	<Pin pinned={data.user.pinned} id={data.task.id}/>
 </header>
 <div class="flex-1 flex p-24">

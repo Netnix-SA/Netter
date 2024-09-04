@@ -1,6 +1,6 @@
 import type { Application, Label, Objective, Project, ProjectId, Status, StatusId, Task, TaskId, UserId } from "../db/types";
-import { Elysia, t } from "elysia";
-import { tApplication, tLabel, tObjective, tProject, tProjectId, tProjectPost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost } from "./schemas";
+import { Elysia, NotFoundError, t } from "elysia";
+import { tApplication, tLabel, tObjective, tObjectivePost, tProject, tProjectId, tProjectPost, tProjectUpdatePost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapApplication } from "./applications";
@@ -28,7 +28,6 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 		status: first_status.id,
 		objectives: [],
 		updates: [],
-		milestones: [],
 	});
 
 	return { id: project[0].id.toString() };
@@ -38,6 +37,20 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	detail: {
 		description: "Creates a project under the connected user's organization. Needs a backlog status to exist to be created."
 	}
+})
+
+.post("/:id/members", async ({ body, params: { id } }) => {
+	const project_id = new StringRecordId(id);
+
+	const project = await db.select<Project>(project_id);
+
+	if (!project) {
+		throw new NotFoundError("No project under that id found!");
+	}
+
+	await db.merge(project_id, { members: [...project.members, { id: new StringRecordId(body.id) as unknown as UserId }] });
+}, {
+	body: t.Object({ id: tUserId }),
 })
 
 .get("", async () => {
@@ -137,13 +150,31 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .get("/:id/objectives", async ({ params: { id } }) => {
-	const results = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}.objectives.id.*;`);
-
-	const objectives = results[0];
+	const [objectives] = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}.objectives.id.*;`);
 
 	return objectives.map(mapObjective);
 }, {
 	response: t.Array(tObjective),
+})
+
+.post("/:id/objectives", async ({ params: { id }, body }) => {
+	const [objective] = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true });
+
+	const project_id = new StringRecordId(id);
+	const project = await db.select<Project>(project_id);
+
+	await db.merge(project_id, { objectives: [...project.objectives, { id: objective.id }] });
+}, {
+	body: tObjectivePost,
+})
+
+.post("/:id/updates", async ({ params: { id }, body }) => {
+	const project_id = new StringRecordId(id);
+	const project = await db.select<Project>(project_id);
+
+	await db.merge(project_id, { updates: [...project.updates, { title: body.title, body: body.body }] });
+}, {
+	body: tProjectUpdatePost,
 });
 
 export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
@@ -168,7 +199,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, status, lead, client, end, milestones, updates, objectives }: Project) => {
+export const map = ({ id, name, description, status, members, lead, client, end, milestones, updates, objectives }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -180,7 +211,7 @@ export const map = ({ id, name, description, status, lead, client, end, mileston
 			id: status.toString(),
 		},
 		client: client?.toString(),
-		members: [],
+		members: members.map(member => ({ id: member.id.toString() })),
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
 		updates,
