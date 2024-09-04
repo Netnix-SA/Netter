@@ -21,6 +21,29 @@ export type RepositoryId = RecordId<"Repository">;
 export type BranchId = RecordId<"Branch">;
 export type MergeRequestId = RecordId<"MergeRequest">;
 
+export type UserTable = "User";
+export type BugTable = "Bug";
+export type FeatureTable = "Feature";
+export type ComponentTable = "Component";
+export type ReleaseTable = "Release";
+export type MessageTable = "Message";
+export type LabelTable = "Label";
+export type ObjectiveTable = "Objective";
+export type TaskTable = "Task";
+export type StatusTable = "Status";
+export type ViewTable = "View";
+export type ChannelTable = "Channel";
+export type ProjectTable = "Project";
+export type ApplicationTable = "Application";
+export type ProductTable = "Product";
+export type TeamTable = "Team";
+export type ToDoTable = "ToDo";
+export type RepositoryTable = "Repository";
+export type BranchTable = "Branch";
+export type MergeRequestTable = "MergeRequest";
+
+export type Tables = UserTable | BugTable | FeatureTable | ComponentTable | ReleaseTable | MessageTable | LabelTable | ObjectiveTable | TaskTable | StatusTable | ViewTable | ChannelTable | ProjectTable | ApplicationTable | ProductTable | TeamTable | ToDoTable | RepositoryTable | BranchTable | MergeRequestTable;
+
 export type User = {
 	id: UserId,
 	full_name: string,

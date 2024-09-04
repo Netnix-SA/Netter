@@ -32,13 +32,13 @@ describe("Close task", async () => {
 
 	test("as resolved", async () => {
 		const task = await create_task(api, status);
-	
+
 		const response = await api.api.tasks({ id: task.id }).delete({ id: status.id, close_as: "Resolved", note: "This task was completed!" });
-	
+
 		expect(response.status).toBe(200);
-	
+
 		const closed_task = await api.api.tasks({ id: task.id }).get();
-	
+
 		expect(closed_task.status).toBe(200);
 		expect(closed_task.data).toMatchObject({ status: { id: status.id, closed_as: "Resolved", note: "This task was completed!" } });
 	});
@@ -46,7 +46,7 @@ describe("Close task", async () => {
 	test("as duplicate", async () => {
 		const task = await create_task(api, status);
 		const duplicate_task = await create_task(api, status);
-	
+
 		const response = await api.api.tasks({ id: duplicate_task.id }).delete({ id: status.id, close_as: "Duplicate", original: task.id });
 
 		const closed_task = await api.api.tasks({ id: duplicate_task.id }).get();
@@ -57,11 +57,11 @@ describe("Close task", async () => {
 
 	test("as canceled", async () => {
 		const task = await create_task(api, status);
-	
+
 		const response = await api.api.tasks({ id: task.id }).delete({ id: status.id, close_as: "Cancelled", note: "This task was canceled!" });
-	
+
 		expect(response.status).toBe(200);
-	
+
 		const closed_task = await api.api.tasks({ id: task.id }).get();
 
 		expect(closed_task.status).toBe(200);
@@ -151,3 +151,12 @@ test("Add blockers task", async () => {
 
 test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");
+test.todo("Add and remove labels");
+test.todo("Change task title");
+test.todo("Post update");
+test.todo("Change assignee");
+test.todo("Change status");
+test.todo("Change priority");
+test.todo("Change effort");
+test.todo("Change value");
+test.todo("Change task body");

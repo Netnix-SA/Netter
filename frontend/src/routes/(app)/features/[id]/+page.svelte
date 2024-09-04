@@ -22,12 +22,12 @@
 		</section>
 		<div class="gallery gap-4">
 			<section class="flex flex-col flex-1">
-				<span class="text-sm text-muted-foreground">Acceptance criteria</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea>
+				<span class="text-sm text-muted-foreground">Constraints</span>
+				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.constraints}</textarea>
 			</section>
 			<section class="flex flex-col flex-1">
 				<span class="text-sm text-muted-foreground">Notes</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea>
+				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.notes}</textarea>
 			</section>
 		</div>
 		<section>

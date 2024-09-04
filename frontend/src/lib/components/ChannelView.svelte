@@ -10,6 +10,8 @@
     import { addToDo } from "@/actions";
     import type { Snippet } from "svelte";
 
+    import MessageBody from "@/components/MessageBody.svelte";
+
 	type Message = { id: string, author: { id: string }; body: string, resolved?: boolean, question?: string, replies: Message[] };
 
 	let { channel, messages, users, onSend = async (body, is_inquiry = false) => { await client.api.channels({ id: channel.id }).messages.post({ body, is_inquiry }); } }: { channel: { id: string, }, messages: Promise<Message[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
@@ -116,9 +118,7 @@
 			</span>
 			</div>
 			{/if}
-			<span class="text-sm">
-				{message.body}
-			</span>
+			<MessageBody body={message.body}/>
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>

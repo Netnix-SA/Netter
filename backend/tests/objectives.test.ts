@@ -44,3 +44,4 @@ test("Add slated feature", async () => {
 
 test.todo("Get completion stats");
 test.todo("Get tasks");
+test.todo("Change active objective");

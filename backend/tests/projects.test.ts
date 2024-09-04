@@ -59,3 +59,6 @@ test("Post update succesfully", async () => {
 	expect(project_response.status).toBe(200);
 	expect(project_response.data.updates).toMatchObject([{ title: "Test Objective", body: "This is a test objective" }]);
 });
+
+test.todo("Add project milestione");
+test.todo("Update project lead and status");

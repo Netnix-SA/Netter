@@ -13,3 +13,8 @@ test("Create feature succesfully", async () => {
 
 	expect(response.status).toBe(200);
 });
+
+test.todo("Get execution stats");
+test.todo("Get tackling tasks");
+test.todo("Get related components");
+test.todo("Get related bugs");

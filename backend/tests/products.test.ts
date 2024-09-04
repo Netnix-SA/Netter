@@ -20,3 +20,10 @@ test("Create feature succesfully", async () => {
 	expect(feature_response.status).toBe(200);
 	expect(feature_response.data).toMatchObject([{ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" }]);
 });
+
+test.todo("Get related applications");
+test.todo("Get related projects");
+test.todo("Update product description and title");
+
+test.todo("Get product features");
+test.todo("Add product feature");

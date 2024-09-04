@@ -5,6 +5,7 @@
     import type { PageData } from "./$types";
     import TaskLine from "@/components/TaskLine.svelte";
     import ToDoLine from "@/components/ToDoLine.svelte";
+    import MessageBody from "@/components/MessageBody.svelte";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -72,7 +73,9 @@
 				{#each messages as message}
 					<li class="border-b h-10 gallery">
 						<div class="gallery">
-							<a href={`/channels`} class="ml-4">{message.body}</a>
+							<a href={`/messages/${message.id}`} class="ml-4">
+								<MessageBody body={message.body}/>
+							</a>
 						</div>
 					</li>
 				{:else}
@@ -98,7 +101,9 @@
 				{#each messages as message}
 					<li class="border-b h-10 gallery">
 						<div class="gallery">
-							<a href={`/channels`} class="ml-4">{message.body}</a>
+							<a href={`/messages/${message.id}`} class="ml-4">
+								<MessageBody body={message.body}/>
+							</a>
 						</div>
 					</li>
 				{:else}
