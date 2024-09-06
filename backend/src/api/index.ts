@@ -16,7 +16,6 @@ import { components } from "./components";
 import { views } from "./views";
 import { todos } from "./todos";
 import { channels } from "./channels";
-import { applications } from "./applications";
 import { repositories } from "./repositories";
 import { merge_requests } from "./merge_requests";
 import { extensions } from "./extensions";
@@ -89,13 +88,13 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 	const table = id.split(":")[0];
 	const oid = id.split(":")[1];
 
-	const results = await db.query<[any[]]>(`SELECT id, name, title FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
+	const results = await db.query<[any[]]>(`SELECT id, name, title, full_name FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
 
 	const metadata = results[0][0];
 
 	return {
 		id: metadata.id.toString(),
-		title: metadata.title || metadata.name,
+		title: metadata.title || metadata.name || metadata.full_name,
 	};
 }, {
 	params: t.Object({ id: t.String() }),
@@ -119,7 +118,6 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 .use(bugs(db))
 .use(features(db))
 .use(components(db))
-.use(applications(db))
 .use(products(db))
 .use(labels(db))
 .use(statuses(db))

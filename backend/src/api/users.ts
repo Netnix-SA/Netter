@@ -34,7 +34,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 
 	const user = await db.create<Omit<User, "id">>("User", { email: body.email, full_name: body.full_name, handle, pinned: [], color: "Green/Light" });
 
-	return { id: user[0].id.toString() };
+	return { id: user.id.toString() };
 }, {
 	body: tUserPost,
 	response: t.Object({ id: tUserId }),

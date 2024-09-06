@@ -3,7 +3,6 @@ import { Elysia, NotFoundError, t } from "elysia";
 import { tApplication, tLabel, tObjective, tObjectiveId, tObjectivePost, tProject, tProjectId, tProjectPost, tProjectUpdatePost, tStatus, tStatusId, tStatusPost, tTask, tTaskId, tTaskPost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
-import { map as mapApplication } from "./applications";
 import { map as mapLabel } from "./labels";
 import { map as mapObjective } from "./objectives";
 
@@ -30,7 +29,7 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 		updates: [],
 	});
 
-	return { id: project[0].id.toString() };
+	return { id: project.id.toString() };
 }, {
 	body: tProjectPost,
 	response: t.Object({ id: tProjectId }),
@@ -114,11 +113,9 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .post("/:id/statuses", async ({ body, params: { id } }) => {
-	const project_id = new StringRecordId(id) as unknown as ProjectId;
+	const project_id = new StringRecordId(id);
 
-	const statuses = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
-
-	const status = statuses[0];
+	const status = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
 
 	return { id: status.id.toString() };
 }, {
@@ -139,15 +136,16 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	response: t.Array(tStatus),
 })
 
-.get("/:id/applications", async ({ params: { id } }) => {
-	const results = await db.query<[Application[]]>(surql`SELECT * FROM Application WHERE id IN (SELECT applications FROM Project WHERE id == ${new StringRecordId(id)})[0].applications;`);
+// TODO: get components
+// .get("/:id/applications", async ({ params: { id } }) => {
+// 	const results = await db.query<[Application[]]>(surql`SELECT * FROM Application WHERE id IN (SELECT applications FROM Project WHERE id == ${new StringRecordId(id)})[0].applications;`);
 
-	const applications = results[0];
+// 	const applications = results[0];
 
-	return applications.map(mapApplication);
-}, {
-	response: t.Array(tApplication),
-})
+// 	return applications.map(mapApplication);
+// }, {
+// 	response: t.Array(tApplication),
+// })
 
 .get("/:id/objectives", async ({ params: { id } }) => {
 	const [objectives] = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}.objectives.id.*;`);
@@ -158,7 +156,7 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .post("/:id/objectives", async ({ params: { id }, body }) => {
-	const [objective] = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true });
+	const objective = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true });
 
 	const project_id = new StringRecordId(id);
 	const project = await db.select<Project>(project_id);

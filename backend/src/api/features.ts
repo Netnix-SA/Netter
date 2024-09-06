@@ -4,12 +4,12 @@ import { type Bug, type Component, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
 import { map as mapComponent } from "./components";
-import Surreal, { StringRecordId } from "surrealdb";
+import { Surreal, StringRecordId, surql } from "surrealdb";
 
 export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags: ["Features"] })
 
 .post("", async ({ body: { name, description, constraints, notes, value } }) => {
-	const [feature] = await db.create<Omit<Feature, "id">>("Feature", {
+	const feature = await db.create<Omit<Feature, "id">>("Feature", {
 		name,
 		description,
 		constraints,
@@ -43,13 +43,13 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 })
 
 .get("/:id/bugs", async ({ params: { id } }) => {
-	const results = await db.query<[Bug[]]>("SELECT * FROM Bug WHERE $id IN features;", { id: new StringRecordId(id) });
-
-	const bugs = results[0];
+	const feature_id = new StringRecordId(id);
+	const [bugs] = await db.query<[Bug[]]>(surql`${feature_id}<-impacts<-Bug.*;`);
 
 	return bugs.map(mapBug);
 }, {
 	response: t.Array(tBug),
+	params: t.Object({ id: tFeatureId }),
 })
 
 .get("/:id/tasks", async ({ params: { id } }) => {
@@ -70,7 +70,9 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	return components.map(mapComponent);
 }, {
 	response: t.Array(tComponent),
-});
+})
+
+;
 
 export const map = ({ id, name, description, constraints, notes, value }: Feature) => {
 	return {

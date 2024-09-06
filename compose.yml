@@ -25,13 +25,13 @@ services:
       - .env
     command: bun run dev -- --host --port 80
   db:
-    image: surrealdb/surrealdb:v2.0.0-alpha.8
+    image: surrealdb/surrealdb:v2.0.0-beta.2
     user: root
     expose:
       - 8000
     ports:
       - 8000:8000
-    command: start --user root --pass root file:/data/database.db
+    command: start --user root --pass root surrealkv://data/database.db
     volumes:
       - db:/data
 

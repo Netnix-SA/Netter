@@ -24,48 +24,50 @@ test("Create task", async () => {
 describe("Close task", async () => {
 	const db = await create_db();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db));
 
-	const status = await create_status(api);
-	const project = await create_project(api, status);
-	const { data: resolved_status } = await api.api.projects({ id: project.id }).statuses.post({ state: "Resolved", name: "Resolved", });
+	const status = await create_status(client);
+	const project = await create_project(client, status);
+	const { data: resolved_status } = await client.api.projects({ id: project.id }).statuses.post({ state: "Resolved", name: "Resolved", });
+
+	if (!resolved_status) { throw new Error("Resolved status not created"); }
 
 	test("as resolved", async () => {
-		const task = await create_task(api, status);
+		const task = await create_task(client, status);
 
-		const response = await api.api.tasks({ id: task.id }).delete({ id: status.id, close_as: "Resolved", note: "This task was completed!" });
+		const response = await client.api.tasks({ id: task.id }).delete({ id: resolved_status.id, close_as: "Resolved", note: "This task was completed!" });
 
 		expect(response.status).toBe(200);
 
-		const closed_task = await api.api.tasks({ id: task.id }).get();
+		const closed_task = await client.api.tasks({ id: task.id }).get();
 
 		expect(closed_task.status).toBe(200);
-		expect(closed_task.data).toMatchObject({ status: { id: status.id, closed_as: "Resolved", note: "This task was completed!" } });
+		expect(closed_task.data).toMatchObject({ status: { id: resolved_status.id, closed_as: "Resolved", note: "This task was completed!" } });
 	});
 
 	test("as duplicate", async () => {
-		const task = await create_task(api, status);
-		const duplicate_task = await create_task(api, status);
+		const task = await create_task(client, status);
+		const duplicate_task = await create_task(client, status);
 
-		const response = await api.api.tasks({ id: duplicate_task.id }).delete({ id: status.id, close_as: "Duplicate", original: task.id });
+		const response = await client.api.tasks({ id: duplicate_task.id }).delete({ id: resolved_status.id, close_as: "Duplicate", original: task.id });
 
-		const closed_task = await api.api.tasks({ id: duplicate_task.id }).get();
+		const closed_task = await client.api.tasks({ id: duplicate_task.id }).get();
 
 		expect(closed_task.status).toBe(200);
-		expect(closed_task.data).toMatchObject({ status: { id: status.id, closed_as: "Duplicate", original: task.id } });
+		expect(closed_task.data).toMatchObject({ status: { id: resolved_status.id, closed_as: "Duplicate", original: task.id } });
 	});
 
 	test("as canceled", async () => {
-		const task = await create_task(api, status);
+		const task = await create_task(client, status);
 
-		const response = await api.api.tasks({ id: task.id }).delete({ id: status.id, close_as: "Cancelled", note: "This task was canceled!" });
+		const response = await client.api.tasks({ id: task.id }).delete({ id: resolved_status.id, close_as: "Cancelled", note: "This task was canceled!" });
 
 		expect(response.status).toBe(200);
 
-		const closed_task = await api.api.tasks({ id: task.id }).get();
+		const closed_task = await client.api.tasks({ id: task.id }).get();
 
 		expect(closed_task.status).toBe(200);
-		expect(closed_task.data).toMatchObject({ status: { id: status.id, closed_as: "Cancelled", note: "This task was canceled!" } });
+		expect(closed_task.data).toMatchObject({ status: { id: resolved_status.id, closed_as: "Cancelled", note: "This task was canceled!" } });
 	});
 });
 
@@ -153,7 +155,60 @@ test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");
 test.todo("Add and remove labels");
 test.todo("Change task title");
-test.todo("Post update");
+
+test("Post update", async () => {
+	const db = await create_db();
+	const client = treaty(server(db));
+
+	const user = await create_user(client);
+	const status = await create_status(client);
+
+	const task = await create_task(client, status);
+
+	{ // Check that the task starts with 0 progress and no updates
+		const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+		expect(task_g.progress).toBe(0);
+		const { data: updates } = await client.api.tasks({ id: task.id }).updates.get();
+		expect(updates).toMatchObject([]);
+	}
+
+	{
+		const response = await client.api.tasks({ id: task.id }).updates.post({ value: 10, note: "This is a test update", time_spent: 30 });
+		expect(response.status).toBe(200);
+	}
+
+	{ // Check that the task has 10 progress and the one update
+		const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+		expect(task_g.progress).toBe(10);
+		const { data: updates } = await client.api.tasks({ id: task.id }).updates.get();
+		expect(updates).toMatchObject([{ note: "This is a test update" }]);
+	}
+
+	{
+		const response = await client.api.tasks({ id: task.id }).updates.post({ value: 30, note: "This is a test update", time_spent: 30 });
+		expect(response.status).toBe(200);
+	}
+
+	{ // Check that the task has the lastest progress and the two updates
+		const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+		expect(task_g.progress).toBe(30);
+		const { data: updates } = await client.api.tasks({ id: task.id }).updates.get();
+		expect(updates).toMatchObject([{ note: "This is a test update" }, { note: "This is a test update" }]);
+	}
+
+	{
+		const response = await client.api.tasks({ id: task.id }).updates.post({ value: 20, note: "This is a test update", time_spent: 30 });
+		expect(response.status).toBe(200);
+	}
+
+	{ // Check that the task has the lastest progress (note that it is smaller) and the three updates
+		const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+		expect(task_g.progress).toBe(20);
+		const { data: updates } = await client.api.tasks({ id: task.id }).updates.get();
+		expect(updates).toMatchObject([{ note: "This is a test update" }, { note: "This is a test update" }, { note: "This is a test update" }]);
+	}
+});
+
 test.todo("Change assignee");
 test.todo("Change status");
 test.todo("Change priority");

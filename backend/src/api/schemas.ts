@@ -128,6 +128,13 @@ export const tTaskUpdatePost = t.Object({
 	note: t.String({ maxLength: 8192 }),
 });
 
+export const tTaskUpdate = t.Object({
+	value: t.Number({ minimum: 0, maximum: 100 }),
+	// The time spent in minutes
+	time_spent: t.Number({ minimum: 0 }),
+	note: t.String({ maxLength: 8192 }),
+});
+
 export const tTask = t.Object({
 	id: tTaskId,
 	title: t.String({ minLength: 3, maxLength: 64 }),
@@ -224,14 +231,6 @@ export const tBug = t.Object({
 	description: t.String({ maxLength: 8192 }),
 	resolved: t.Boolean(),
 	created: t.Date(),
-	impact: t.Object({
-		features: t.Array(t.Object({
-			id: tFeatureId
-		})),
-		applications: t.Array(t.Object({
-			id: tApplicationId
-		})),
-	}),
 	release: t.Nullable(t.Object({
 		id: t.String(),
 	})),
@@ -274,15 +273,19 @@ export const tFeature = t.Object({
 	value: tValues,
 });
 
+export const tComponentTypes = t.Union([t.Literal("Application"), t.Literal("Service"), t.Literal("API"), t.Literal("HTTP Route"), t.Literal("UI Component"), t.Literal("UI Page")]);
+
 export const tComponentPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	type: t.Union([tComponentTypes, t.Literal("Other")], { default: "Other" }),
 });
 
 export const tComponent = t.Object({
 	id: tComponentId,
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	type: t.Union([tComponentTypes, t.Literal("Other")]),
 });
 
 export const tState = t.Object({

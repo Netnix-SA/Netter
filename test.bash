@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-TEST_COMMAND="docker compose run backend bun test"
+TEST_COMMAND="docker compose run backend bun test $@"
 
 # Function to start the database container
 start_db() {

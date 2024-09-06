@@ -135,10 +135,38 @@ export const CLASS_TO_ICON = {
 };
 
 export const CLASSES = {
+	"User": {
+        icon: CLASS_TO_ICON["User"],
+        url: (id?: string) => id ? `/users/${id}` : "/users",
+    },
     "Task": {
         icon: CLASS_TO_ICON["Task"],
-        url: "/tasks",
-    }
+        url: (id?: string) => id ? `/tasks/${id}` : "/tasks",
+    },
+    "Channel": {
+    	icon: CLASS_TO_ICON["Channel"],
+    	url: (id?: string) => id ? `/channels/${id}` : "/channels",
+    },
+    "Project": {
+    	icon: CLASS_TO_ICON["Project"],
+    	url: (id?: string) => id ? `/projects/${id}` : "/projects",
+    },
+    "Product": {
+    	icon: CLASS_TO_ICON["Product"],
+    	url: (id?: string) => id ? `/products/${id}` : "/products",
+    },
+    "View": {
+    	icon: CLASS_TO_ICON["View"],
+    	url: (id?: string) => id ? `/views/${id}` : "/views",
+    },
+	"Team": {
+		icon: CLASS_TO_ICON["Team"],
+		url: (id?: string) => id ? `/teams/${id}` : "/teams",
+	},
+	"Repository": {
+		icon: CLASS_TO_ICON["Repository"],
+		url: (id?: string) => id ? `/repositories/${id}` : "/repositories",
+	},
 };
 
 export const LINKS = [

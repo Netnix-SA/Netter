@@ -3,16 +3,13 @@ import { tApplication, tFeature, tFeatureId, tFeaturePost, tProduct, tProductId,
 import { type Application, type Feature, type Product } from "../db/types";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
-import { map as mapApplication } from "./applications";
 
 export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
 .post("", async ({ body: { name, description } }) => {
-	const products = await db.create<Omit<Product, "id">>("Product", {
+	const product = await db.create<Omit<Product, "id">>("Product", {
 		name, description, applications: [],
 	});
-
-	const product = products[0];
 
 	return { id: product.id.toString() };
 }, {
@@ -54,22 +51,12 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	const product_id = new StringRecordId(id);
 	const product = await db.select<Product>(product_id);
 
-	const [feature] = await db.create<Omit<Feature, "id">>("Feature", { name: body.name, description: body.description, constraints: body.constraints, notes: body.notes, product: product_id, value: body.value });
+	const feature = await db.create<Omit<Feature, "id">>("Feature", { name: body.name, description: body.description, constraints: body.constraints, notes: body.notes, product: product_id, value: body.value });
 
 	return { id: feature.id.toString() };
 }, {
 	body: tFeaturePost,
 	response: t.Object({ id: tFeatureId }),
-})
-
-.get("/:id/applications", async ({ params: { id } }) => {
-	const results = await db.query<[Application[]]>(surql`SELECT * FROM Application where product.id == ${new StringRecordId(id)};`);
-
-	const applications = results[0];
-
-	return applications.map(mapApplication);
-}, {
-	response: t.Array(tApplication),
 });
 
 export const map = ({ id, name, description }: Product) => {

@@ -17,13 +17,27 @@
 	let { channel, messages, users, onSend = async (body, is_inquiry = false) => { await client.api.channels({ id: channel.id }).messages.post({ body, is_inquiry }); } }: { channel: { id: string, }, messages: Promise<Message[]>, users: { id: string, full_name: string }[], onSend: (message: string) => void } = $props();
 
 	let pre_message = $state("");
-	let post_message = $state("");
 	let tokens = $state([]);
 
 	let question: Message | undefined = $state(undefined);
 
 	function tokenize(body: string): ({ prop: string, snip: Snippet<[{ title: string, dodo: (v:string) => void, active: boolean }]> } | { prop: string, snip: Snippet<[{ t: string, dodo: (v:string) => void, active: boolean }]> })[] {
-		const tokens = body.split(" ");
+		// Define regex patterns for mentions, URLs, and text
+		const mentionPattern = /@\w+(:\w+)?/;
+		const urlPattern = /https?:\/\/\S+|www\.\S+/;
+		const textPattern = /[^@\s]+(?:\s+[^@\s]+)*/; // Matches contiguous words including spaces
+
+		// Combine patterns into one regex
+		const combinedPattern = new RegExp(`(${mentionPattern.source})|(${urlPattern.source})|(${textPattern.source})`, 'g');
+
+		// Find all matches
+		const tokens = body.match(combinedPattern);
+
+		// If no matches found, return an empty array
+		if (!tokens) {
+			return [{ prop: "", snip: text, dodo: (v: string) => { pre_message += v; } }];
+		}
+
 		const snippets = [];
 
 		for (let i = 0; i < tokens.length; i++) {
@@ -32,10 +46,14 @@
 			if (token.startsWith("@")) {
 				const oid = token.slice(1, -1);
 
-				snippets.push({ prop: token, snip: mention, dodo: (v: string) => { post_message += v + ' '; pre_message = ""; } });
+				snippets.push({ prop: token, snip: mention, dodo: (v: string) => { pre_message = ""; } });
 			} else {
 				snippets.push({ prop: token, snip: text, dodo: (v: string) => { pre_message += v; } });
 			}
+		}
+
+		if (snippets.length === 0) {
+			snippets.push({ prop: "", snip: text, dodo: (v: string) => { pre_message += v; } });
 		}
 
 		return snippets;
@@ -43,9 +61,7 @@
 </script>
 
 {#snippet text(t: string, dodo: (v: string) => void)}
-	<span>
-		{t}
-	</span>
+	<input bind:value={pre_message}/>
 {/snippet}
 
 {#snippet mention(title: string, dodo: (v: string) => void, active: boolean)}
@@ -170,16 +186,9 @@
 				bind:value={message}
 			>
 			</textarea> -->
-			<input type="text" bind:value={pre_message} class=""/>
-			<div id="message" placeholder="Type your message here..." class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
+			<div id="message" class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
 				{#each tokenize(pre_message) as { snip, prop, dodo }}
 					{@render snip(prop, dodo, true)}
-				{/each}
-			</div>
-			<input type="text" bind:value={post_message} class=""/>
-			<div id="message" placeholder="Type your message here..." class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
-				{#each tokenize(post_message) as { snip, prop, dodo }}
-					{@render snip(prop, dodo, false)}
 				{/each}
 			</div>
 		</div>

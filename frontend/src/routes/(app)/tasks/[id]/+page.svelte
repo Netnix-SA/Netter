@@ -135,8 +135,8 @@
 	<Pin pinned={data.user.pinned} id={data.task.id}/>
 </header>
 <div class="flex-1 flex p-24">
-	<div class="flex flex-col w-[64em]">
-		<div class="gallery">
+	<div class="flex flex-col gap-4 w-[64em]">
+		<div class="gallery gap-8">
 			<div id="left" class="flex-1 gallery gap-2">
 				<Dialog.Root>
 					<Dialog.Trigger><Circle value={data.task.progress} /></Dialog.Trigger>
@@ -223,7 +223,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="flex flex-col w-64 gap-2">
+	<div class="flex flex-col w-96 gap-2 px-12">
 		<UserSelect
 			label="Assignee"
 			values={data.users}

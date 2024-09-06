@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
-import { create_db, create_feature, create_objective, create_project, create_status, log_error } from "./utils";
+import { create_db, create_feature, create_objective, create_project, create_status, create_task, log_error } from "./utils";
 
 test("Create objective succesfully", async () => {
 	const db = await create_db();
@@ -43,5 +43,44 @@ test("Add slated feature", async () => {
 });
 
 test.todo("Get completion stats");
-test.todo("Get tasks");
+
+test("Get tasks", async () => {
+	const db = await create_db();
+
+	const client = treaty(server(db));
+
+	const status = await create_status(client);
+	const project = await create_project(client, status);
+	const objective = await create_objective(client, project);
+
+	{
+		const response = await client.api.objectives({ id: objective.id }).tasks.get();
+	
+		expect(response.status).toBe(200);
+		expect(response.data).toMatchObject([]);
+	}
+
+	const feature = await create_feature(client);
+
+	const task = await create_task(client, status);
+
+	await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+
+	{
+		const response = await client.api.objectives({ id: objective.id }).tasks.get();
+	
+		expect(response.status).toBe(200);
+		expect(response.data).toMatchObject([]);
+	}
+
+	await client.api.objectives({ id: objective.id }).slated.post({ id: feature.id });
+
+	{
+		const response = await client.api.objectives({ id: objective.id }).tasks.get();
+	
+		expect(response.status).toBe(200);
+		expect(response.data).toMatchObject([{ id: task.id }]);
+	}
+});
+
 test.todo("Change active objective");

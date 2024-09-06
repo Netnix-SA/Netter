@@ -1,22 +1,27 @@
 import { type Bug, type Feature } from "../db/types";
 import { Elysia, t } from "elysia";
-import { tBug, tBugPost, tFeature } from "./schemas";
+import { tBug, tBugId, tBugPost, tFeature, tFeatureId } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
 
 export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 
 .post("", async ({ body: { title, description, } }) => {
-	await db.create<Omit<Bug, "id">>("Bug", {
+	const bug = await db.create<Omit<Bug, "id">>("Bug", {
 		title, description,
-		features: [],
-		applications: [],
 		created: new Date(),
 		resolved: false,
 		release: null,
 	});
+
+	if (!bug) {
+		throw new Error("Bug not created");
+	}
+
+	return { id: bug.id.toString() };
 }, {
 	body: tBugPost,
+	response: t.Object({ id: tBugId }),
 	detail: {
 		description: "Creates a bug under the connected user's organization"
 	}
@@ -44,9 +49,7 @@ export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"
 .get("/:id/impact", async ({ params: { id } }) => {
 	const bug_id = new StringRecordId(id);
 
-	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature WHERE id IN (SELECT features FROM Bug WHERE id = ${bug_id})[0].features;`);
-
-	const features = results[0];
+	const [features] = await db.query<[Feature[]]>(surql`${bug_id}->impacts->Feature.*;`);
 
 	return {
 		features: features.map(mapFeature),
@@ -58,16 +61,27 @@ export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"
 	detail: {
 		description: "Returns the items impacted/affected by this bug.",
 	}
-});
+})
 
-export const map = ({ id, title, description, resolved, release, applications, created, features }: Bug) => ({
+.post("/:id/impact", async ({ params: { id }, body }) => {
+	const bug_id = new StringRecordId(id);
+
+	const feature_id = new StringRecordId(body.id);
+
+	await db.query(surql`RELATE ${bug_id}->impacts->${feature_id};`);
+}, {
+	body: t.Object({ id: tFeatureId }),
+	detail: {
+		description: "Adds an impacted item to the bug.",
+	}
+})
+
+;
+
+export const map = ({ id, title, description, resolved, release, created, }: Bug) => ({
 	id: id.toString(),
 	title, description,
 	resolved,
 	release: release ? { id: release.toString() } : null,
 	created,
-	impact: {
-		applications: applications.map((id) => ({ id: id.toString() })),
-		features: features.map((id) => ({ id: id.toString() })),
-	},
 });

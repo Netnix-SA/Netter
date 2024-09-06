@@ -1,5 +1,30 @@
+DEFINE TABLE User;
+DEFINE TABLE ToDo;
+DEFINE TABLE Product;
+DEFINE TABLE Channel;
+DEFINE TABLE Team;
+DEFINE TABLE Message;
+DEFINE TABLE Organization;
+DEFINE TABLE Label;
+DEFINE TABLE Bug;
+DEFINE TABLE Feature;
+DEFINE TABLE Status;
+DEFINE TABLE Project;
+DEFINE TABLE Objective;
+DEFINE TABLE View;
+DEFINE TABLE Task;
+
+DEFINE TABLE impacts TYPE RELATION; -- Bug impacts Feature
+DEFINE TABLE needs TYPE RELATION; -- Feature needs Component
+DEFINE TABLE mentions TYPE RELATION; -- Message mentions *
+DEFINE TABLE slated TYPE RELATION; -- Feature slated for Objective
+DEFINE TABLE tackles TYPE RELATION; -- Task tackles Feature | Bug
+DEFINE TABLE related TYPE RELATION; -- Task is related to *
+DEFINE TABLE requires TYPE RELATION; -- Task requires Task
+DEFINE TABLE blocks TYPE RELATION; -- Task blocks Task
+
 DEFINE ANALYZER organization_analyzer TOKENIZERS blank, class FILTERS lowercase, snowball(english);
-DEFINE ANALYZER title_analyzer TOKENIZERS blank, class FILTERS lowercase, edgengram(2,9);
+DEFINE ANALYZER title_analyzer TOKENIZERS blank, class FILTERS lowercase, edgengram(1,16);
 
 DEFINE INDEX user_name ON User FIELDS full_name SEARCH ANALYZER title_analyzer BM25;
 DEFINE INDEX product_name ON Product FIELDS name SEARCH ANALYZER title_analyzer BM25;

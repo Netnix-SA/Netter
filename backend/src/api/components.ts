@@ -6,7 +6,7 @@ import Surreal, { StringRecordId, surql } from "surrealdb";
 export const components = (db: Surreal) => new Elysia({ prefix: "/components", tags: ["Components"] })
 
 .post("", async ({ body }) => {
-	const [component] = await db.create<Omit<Component, "id">>("Component", { name: body.name, description: body.description });
+	const component = await db.create<Omit<Component, "id">>("Component", { name: body.name, description: body.description, type: body.type });
 
 	return { id: component.id.toString() };
 }, {
@@ -28,7 +28,7 @@ export const components = (db: Surreal) => new Elysia({ prefix: "/components", t
 	response: tComponent,
 });
 
-export const map = ({ id, name, description }: Component) => ({
+export const map = ({ id, type, name, description }: Component) => ({
 	id: id.toString(),
-	name, description,
+	name, description, type,
 });

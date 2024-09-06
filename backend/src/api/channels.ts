@@ -21,9 +21,10 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 })
 
 .post("", async ({ body: { name, } }) => {
-	const [channel] = await db.create<Omit<Channel, "id">>("Channel", {
+	const channel = await db.create<Omit<Channel, "id">>("Channel", {
 		name,
 		subscribers: [],
+		target: [], // Default channels have no target (e.g. users)
 	});
 
 	if (!channel) {
@@ -57,7 +58,7 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 
 	const mentions = parse_mentions(body).map(mid => new StringRecordId(mid));
 
-	const [message] = await db.create<Omit<Message, "id">>("Message", {
+	const message = await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
 		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),

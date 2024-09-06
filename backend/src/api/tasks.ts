@@ -2,7 +2,7 @@ import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, S
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tChannel, tFeature, tFeatureId, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdatePost, tUserId } from "./schemas";
+import { tChannel, tFeature, tFeatureId, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdate, tTaskUpdatePost, tUserId } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
@@ -29,6 +29,8 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}
 
 	const task_id = new StringRecordId(id);
+
+	// TODO: fail is status state is not "Resolved"
 
 	switch (body.close_as) {
 		case "Cancelled": case "Resolved": {
@@ -96,7 +98,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 })
 
 .get("/:id/related", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}->is_related_to->Task, ${new StringRecordId(id)}<-is_related_to<-Task || []);`);
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}->related->Task, ${new StringRecordId(id)}<-related<-Task || []);`);
 
 	const tasks = results[0];
 
@@ -117,7 +119,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 
 	const related_task_id = new StringRecordId(body.id);
 
-	await db.query(surql`RELATE ${task_id}->is_related_to->${related_task_id};`);
+	await db.query(surql`RELATE ${task_id}->related->${related_task_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
@@ -126,7 +128,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 })
 
 .get("/:id/blockers", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}<-is_blocking<-Task;`);
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}<-blocks<-Task;`);
 
 	const tasks = results[0];
 
@@ -147,7 +149,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 
 	const blocker_task_id = new StringRecordId(body.id);
 
-	await db.query(surql`RELATE ${blocker_task_id}->is_blocking->${task_id};`);
+	await db.query(surql`RELATE ${blocker_task_id}->blocks->${task_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
@@ -156,7 +158,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 })
 
 .get("/:id/children", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}->is_parent_of->Task;`);
+	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM ${new StringRecordId(id)}->requires->Task;`);
 
 	const tasks = results[0];
 
@@ -177,7 +179,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 
 	const child_id = new StringRecordId(body.id);
 
-	await db.query(surql`RELATE ${parent_id}->is_parent_of->${child_id};`);
+	await db.query(surql`RELATE ${parent_id}->requires->${child_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
@@ -199,6 +201,23 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	response: t.Array(tFeature),
 	detail: {
 		description: "Gets the items tackled by the task. Tackled items can be features or bugs."
+	}
+})
+
+.get("/:id/updates", async ({ params: { id } }) => {
+	const task_id = new StringRecordId(id);
+
+	const task = await db.select<Task>(task_id);
+
+	if (!task) {
+		throw new NotFoundError("No task under that id found!");
+	}
+
+	return task.updates;
+}, {
+	response: t.Array(tTaskUpdate),
+	detail: {
+		description: "Gets the updates of the task."
 	}
 })
 
@@ -269,9 +288,7 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 });
 
 export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId | undefined, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const tasks = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
-
-	const task = tasks[0];
+	const task = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
 
 	if (!task) {
 		throw new Error("Could not create task");

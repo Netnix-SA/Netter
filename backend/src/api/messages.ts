@@ -1,6 +1,6 @@
-import type { Message } from "../db/types";
+import type { Channel, Message } from "../db/types";
 import { Elysia, t } from "elysia";
-import { tMessage, tMessagePost, tUserId } from "./schemas";
+import { tChannelId, tMessage, tMessagePost, tTaskId, tUserId } from "./schemas";
 import Surreal, { StringRecordId } from "surrealdb";
 
 export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detail: { tags: ["Messages"], description: "Messages make up the content in channels." } })
@@ -40,6 +40,32 @@ export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detai
 		was_mentioned: t.Optional(t.Boolean()),
 	}),
 	response: t.Array(tMessage),
+})
+
+.get("/:id/channel", async ({ params: { id } }) => {
+	const message_id = new StringRecordId(id);
+
+	const message = await db.select<Message>(message_id);
+
+	return { id: message.channel.toString() };
+}, {
+	response: t.Object({ id: tChannelId })
+})
+
+.get("/:id/parent", async ({ params: { id } }) => {
+	const message_id = new StringRecordId(id);
+
+	const message = await db.select<Message>(message_id);
+
+	const channel = await db.select<Channel>(message.channel);
+
+	if (Array.isArray(channel.target)) {
+		return { id: channel.id.toString() };
+	} else {
+		return { id: channel.target.toString() };
+	}
+}, {
+	response: t.Object({ id: t.Union([tChannelId, tTaskId]) })
 })
 
 .post("/:id", async ({ params: { id }, body: { body } }) => {

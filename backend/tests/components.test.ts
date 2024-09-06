@@ -9,7 +9,7 @@ test("Create component succesfully", async () => {
 
 	const api = treaty(server(db));
 
-	const response = await api.api.components.post({ name: "Test Component", description: "This is a test component" });
+	const response = await api.api.components.post({ name: "Test Component", description: "This is a test component", type: "Other" });
 
 	expect(response.status).toBe(200);
 

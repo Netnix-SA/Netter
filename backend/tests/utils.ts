@@ -1,6 +1,4 @@
-import type { Treaty, treaty } from "@elysiajs/eden";
 import { Surreal } from "surrealdb";
-import { server, type App } from "../src/api";
 
 export async function create_db() {
 	const db = new Surreal();
@@ -11,15 +9,12 @@ export async function create_db() {
 			password: "root",
 		},
 		namespace: "testing",
-		database: `${Date.now()}`,
+		database: `${Date.now()}-${Math.floor(Math.random() * 999999)}`,
 	});
 
-	return db;
-}
+	await db.query("DEFINE TABLE Bug; DEFINE TABLE Feature; DEFINE TABLE Status; DEFINE TABLE Project; DEFINE TABLE Task; DEFINE TABLE impacts TYPE RELATION;");
 
-export async function create_task(api: any, status: any) {
-	const { data: task } = await api.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
-	return task;
+	return db;
 }
 
 export async function create_user(api: any) {
@@ -28,30 +23,53 @@ export async function create_user(api: any) {
 	return user;
 }
 
+export async function create_task(api: any, status: any): Promise<{ id: string }> {
+	const { data: task, error } = await api.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
+	log_error(error);
+	return task;
+}
+
 export async function create_status(api: any) {
 	const { data: status, error } = await api.api.statuses.post({ state: "Backlog", name: "Backlog", });
+	log_error(error);
 	return status;
 }
 
 // The backlog status is needed to create a project but not explicitly consumed
 export async function create_project(api: any, backlog_status: any) {
 	const { data: project, error } = await api.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
+	log_error(error);
 	return project;
 }
 
 export async function create_product(api: any) {
-	const { data: product } = await api.api.products.post({ name: "Test Product", description: "This is a test product", });
+	const { data: product, error } = await api.api.products.post({ name: "Test Product", description: "This is a test product", });
+	log_error(error);
 	return product;
 }
 
 export async function create_feature(api: any) {
-	const { data: feature } = await api.api.features.post({ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" });
+	const { data: feature, error } = await api.api.features.post({ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" });
+	log_error(error);
 	return feature;
 }
 
 export async function create_objective(api: any, project: any) {
-	const { data: objective } = await api.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+	const { data: objective, error } = await api.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+	log_error(error);
 	return objective;
+}
+
+export async function create_component(api: any) {
+	const { data: component, error } = await api.api.components.post({ name: "Test Component", description: "This is a test component", type: "Other" });
+	log_error(error);
+	return component;
+}
+
+export async function create_bug(client: any) {
+	const { data: bug, error } = await client.api.bugs.post({ title: "Test Bug", description: "This is a test bug", });
+	log_error(error);
+	return bug;
 }
 
 export function log_error(error: any) {

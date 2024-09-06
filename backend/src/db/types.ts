@@ -243,6 +243,8 @@ export type Channel = {
 
 	// Subscribers are users who wish to be notified about activity under this channel
 	subscribers: { user: UserId }[],
+
+	target: TaskId | UserId[],
 };
 
 export type Message = {
@@ -260,12 +262,6 @@ export type Bug = {
 	id: BugId,
 	title: string,
 	description: string,
-
-	// The features this bug impacts on
-	features: FeatureId[],
-
-	// The application this bug is in
-	applications: ApplicationId[],
 
 	resolved: boolean,
 
@@ -338,8 +334,11 @@ export type Feature = {
 	value: Value,
 };
 
+export type ComponentTypes = "Application" | "Service" | "API" | "HTTP Route" | "UI Component" | "UI Page";
+
 export type Component = {
 	id: ComponentId,
+	type: ComponentTypes | "Other",
 	name: string,
 	description: string,
 };

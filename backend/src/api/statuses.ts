@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
-import { tLabel, tLabelPost, tStatus, tStatusId, tStatusPost } from "./schemas";
-import type { Label, Status } from "../db/types";
-import Surreal, { StringRecordId, surql } from "surrealdb";
+import { tStatus, tStatusId, tStatusPost } from "./schemas";
+import type { Status } from "../db/types";
+import Surreal, { surql } from "surrealdb";
 
 export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags: ["Statuses"] })
 .get("", async () => {
@@ -12,9 +12,7 @@ export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags:
 	response: t.Array(tStatus),
 })
 .post("", async ({ body }) => {
-	const statuses = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
-
-	const status = statuses[0];
+	const status = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
 
 	return { id: status.id.toString() };
 }, {

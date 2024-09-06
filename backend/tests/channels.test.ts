@@ -75,6 +75,4 @@ test("Resolve inquiry", async () => {
 
 test.todo("Send message as non member");
 
-test.todo("Fetch message with filters");
-
 test.todo("Test mentions");
