@@ -37,6 +37,19 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	response: tProduct,
 })
 
+.patch("/:id", async ({ params: { id }, body }) => {
+	const product_id = new StringRecordId(id);
+
+	let product = {};
+
+	if (body.name !== undefined) { product = { ...product, name: body.name }; }
+	if (body.description !== undefined) { product = { ...product, description: body.description }; }
+
+	await db.merge<Product>(product_id, product);
+},{
+	body: t.Object({ name: t.Optional(t.String()), description: t.Optional(t.String()) }),
+})
+
 .get("/:id/features", async ({ params: { id } }) => {
 	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)};`);
 

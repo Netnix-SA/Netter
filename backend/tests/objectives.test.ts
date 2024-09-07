@@ -3,11 +3,12 @@ import { expect, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_feature, create_objective, create_project, create_status, create_task, log_error } from "./utils";
+import { MemoryEvents } from "../src/events";
 
 test("Create objective succesfully", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const client = treaty(server(db));
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);
@@ -23,9 +24,9 @@ test("Create objective succesfully", async () => {
 });
 
 test("Add slated feature", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const client = treaty(server(db));
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);
@@ -45,9 +46,9 @@ test("Add slated feature", async () => {
 test.todo("Get completion stats");
 
 test("Get tasks", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const client = treaty(server(db));
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);

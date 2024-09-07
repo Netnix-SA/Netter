@@ -1,5 +1,6 @@
 import Surreal from "surrealdb";
 import { server } from "./src/api";
+import { LocalEvents } from "./src/events";
 
 console.log("Starting Netter API server!");
 
@@ -14,7 +15,9 @@ await db.connect("http://db:8000/rpc", {
 	database: "dev",
 });
 
-const elysia = server(db);
+const event_queue = new LocalEvents();
+
+const elysia = server(db, event_queue);
 
 // server.listen(80);
 //

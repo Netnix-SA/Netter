@@ -28,9 +28,7 @@ export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detai
 
 	query += ";";
 
-	const results = await db.query<[Message[]]>(query);
-
-	const messages = results[0];
+	const [messages] = await db.query<[Message[]]>(query);
 
 	return messages.map(map);
 }, {

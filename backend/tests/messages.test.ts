@@ -3,9 +3,10 @@ import { expect, describe, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_feature, create_project, create_status, create_task, create_user } from "./utils";
+import { LocalEvents } from "../src/events";
 
 test("Get messages by author", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new LocalEvents();
 
 	const client_a = treaty(server(db));
 	const client_b = treaty(server(db));
@@ -31,8 +32,8 @@ test("Get messages by author", async () => {
 });
 
 test.todo("Get unresolved messages", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
 
@@ -51,8 +52,8 @@ test.todo("Get unresolved messages", async () => {
 });
 
 test.todo("Get messages with mentions", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
 
@@ -71,8 +72,8 @@ test.todo("Get messages with mentions", async () => {
 });
 
 describe("Get parent", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
 

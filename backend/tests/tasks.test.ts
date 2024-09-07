@@ -3,28 +3,32 @@ import { expect, describe, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_feature, create_label, create_project, create_status, create_task, create_user } from "./utils";
+import { MemoryEvents } from "../src/events";
 
 test("Create task", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
+	const client = treaty(server(db, eq));
 
-	const api = treaty(server(db));
+	const user = await create_user(client);
+	const status = await create_status(client);
 
-	const user = await create_user(api);
-	const status = await create_status(api);
-
-	const response = await api.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
+	const response = await client.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
 
 	expect(response.status).toBe(200);
 
-	const { data: task } = await api.api.tasks({ id: response.data.id }).get();
+	const { data: task } = await client.api.tasks({ id: response.data.id }).get();
 
 	expect(task).toMatchObject({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", });
+
+	const task_create_events = await eq.get("task.create");
+
+	expect(task_create_events).toMatchObject([{ id: response.data.id }]);
 });
 
 describe("Close task", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const client = treaty(server(db));
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);
@@ -72,81 +76,81 @@ describe("Close task", async () => {
 });
 
 test("Add related task", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const user = await create_user(api);
-	const status = await create_status(api);
+	const user = await create_user(client);
+	const status = await create_status(client);
 
-	const task = await create_task(api, status);
-	const related_task = await create_task(api, status);
+	const task = await create_task(client, status);
+	const related_task = await create_task(client, status);
 
-	const response = await api.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+	const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
 
 	expect(response.status).toBe(200);
 
-	const { data: tasks } = await api.api.tasks({ id: task.id }).related.get();
+	const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
 
 	expect(tasks).toMatchObject([{ id: related_task.id }]);
 });
 
 test("Add tackled feature", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const user = await create_user(api);
-	const status = await create_status(api);
+	const user = await create_user(client);
+	const status = await create_status(client);
 
-	const task = await create_task(api, status);
-	const feature = await create_feature(api);
+	const task = await create_task(client, status);
+	const feature = await create_feature(client);
 
-	const response = await api.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+	const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
 
 	expect(response.status).toBe(200);
 
-	const { data: features } = await api.api.tasks({ id: task.id }).tackled.get();
+	const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
 
 	expect(features).toMatchObject([{ id: feature.id }]);
 });
 
 test("Add children task", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const user = await create_user(api);
-	const status = await create_status(api);
+	const user = await create_user(client);
+	const status = await create_status(client);
 
-	const task = await create_task(api, status);
-	const child_task = await create_task(api, status);
+	const task = await create_task(client, status);
+	const child_task = await create_task(client, status);
 
-	const response = await api.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+	const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
 
 	expect(response.status).toBe(200);
 
-	const { data: tasks } = await api.api.tasks({ id: task.id }).children.get();
+	const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
 
 	expect(tasks).toMatchObject([{ id: child_task.id }]);
 });
 
 test("Add blockers task", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const user = await create_user(api);
-	const status = await create_status(api);
+	const user = await create_user(client);
+	const status = await create_status(client);
 
-	const task = await create_task(api, status);
-	const blocker_task = await create_task(api, status);
+	const task = await create_task(client, status);
+	const blocker_task = await create_task(client, status);
 
-	const response = await api.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+	const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
 
 	expect(response.status).toBe(200);
 
-	const { data: tasks } = await api.api.tasks({ id: task.id }).blockers.get();
+	const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
 
 	expect(tasks).toMatchObject([{ id: blocker_task.id }]);
 });
@@ -155,8 +159,8 @@ test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");
 
 test("Post update", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new MemoryEvents();
+	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
 	const status = await create_status(client);
@@ -208,8 +212,8 @@ test("Post update", async () => {
 });
 
 describe("Update task", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new MemoryEvents();
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const task = await create_task(client, status);

@@ -3,13 +3,14 @@ import { expect, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_product } from "./utils";
+import { MemoryEvents } from "../src/events";
 
 test("Create component succesfully", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new MemoryEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const response = await api.api.components.post({ name: "Test Component", description: "This is a test component", type: "Other" });
+	const response = await client.api.components.post({ name: "Test Component", description: "This is a test component", type: "Other" });
 
 	expect(response.status).toBe(200);
 

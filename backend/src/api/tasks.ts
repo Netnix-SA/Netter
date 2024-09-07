@@ -4,8 +4,9 @@ import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
 import { tChannel, tEfforts, tFeature, tFeatureId, tPriorities, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdate, tTaskUpdatePost, tUserId, tValues } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
+import type { Events } from "../events";
 
-export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
+export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
 .get("", async ({ query: { assignee } }) => {
 	return await query(db, { assignee, state: undefined, belongs_to: undefined });
@@ -246,6 +247,8 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	}
 
 	const task = await create(db, body.title, body.body, undefined, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
+
+	await event_queue.publish("task.create", map(task));
 
 	return {
 		id: task.id.toString(),

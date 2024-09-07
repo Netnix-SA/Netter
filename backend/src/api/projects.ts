@@ -191,6 +191,24 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	response: t.Object({ id: tObjectiveId }),
 })
 
+.post("/:id/milestones", async ({ params: { id }, body }) => {
+	const project_id = new StringRecordId(id);
+	const project = await db.select<Project>(project_id);
+
+	await db.merge(project_id, { milestones: [...project.milestones, { title: body.title, description: body.description }] });
+}, {
+	body: t.Object({ title: t.String(), description: t.String() }),
+})
+
+.get("/:id/milestones", async ({ params: { id } }) => {
+	const project_id = new StringRecordId(id);
+	const project = await db.select<Project>(project_id);
+
+	return project.milestones;
+}, {
+	response: t.Array(t.Object({ title: t.String(), description: t.String() })),
+})
+
 .post("/:id/updates", async ({ params: { id }, body }) => {
 	const project_id = new StringRecordId(id);
 	const project = await db.select<Project>(project_id);

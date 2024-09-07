@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
-import { tBug, tComponent, tFeature, tFeatureId, tFeaturePost, tTask } from "./schemas";
-import { type Bug, type Component, type Feature, type Task } from "../db/types";
+import { tBug, tComponent, tComponentId, tFeature, tFeatureId, tFeaturePost, tTask } from "./schemas";
+import { type Bug, type Component, type Efforts, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
 import { map as mapComponent } from "./components";
@@ -53,9 +53,7 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 })
 
 .get("/:id/tasks", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
-
-	const tasks = results[0];
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
 
 	return tasks.map(mapTask);
 }, {
@@ -70,6 +68,62 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	return components.map(mapComponent);
 }, {
 	response: t.Array(tComponent),
+})
+
+.post("/:id/needs", async ({ params: { id }, body }) => {
+	const feature_id = new StringRecordId(id);
+
+	await db.query(surql`RELATE ${feature_id}->needs->${new StringRecordId(body.id)};`);
+}, {
+	body: t.Object({ id: tComponentId }),
+})
+
+.get("/:id/statistics", async ({ params: { id } }) => {
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
+
+	const [bugs] = await db.query<[Bug[]]>(surql`${new StringRecordId(id)}<-impacts<-Bug.*;`);
+
+	const effort_to_time = (effort: Efforts) => {
+		switch (effort) {
+			case "Hour": return 1;
+			case "Hours": return 6;
+			case "Day": return 8;
+			case "Days": return 8 * 4;
+			case "Week": return 8 * 5;
+		}
+	};
+
+	const total_time = tasks.reduce((acc, task) => acc + effort_to_time(task.effort), 0);
+	const executed_time = tasks.reduce((acc, task) => acc + ((task.progress || 0) / 100) * effort_to_time(task.effort), 0);
+	const real_time = Math.floor(tasks.reduce((acc, task) => acc + task.updates.reduce((acc, update) => acc + update.time_spent, 0), 0) / 60);
+
+	return {
+		tasks: {
+			total: tasks.length,
+			time: {
+				total: total_time,
+				executed: executed_time,
+				real: real_time,
+			},
+			completion: tasks.length ? Math.floor((executed_time / total_time) * 100) : 0,
+		},
+		bugs: { total: bugs.length },
+	};
+}, {
+	response: t.Object({
+		tasks: t.Object({
+			total: t.Number(),
+			time: t.Object({
+				total: t.Number(),
+				executed: t.Number(),
+				real: t.Number(),
+			}),
+			completion: t.Number(),
+		}),
+		bugs: t.Object({
+			total: t.Number(),
+		}),
+	}),
 })
 
 ;

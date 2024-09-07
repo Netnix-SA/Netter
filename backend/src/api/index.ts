@@ -24,8 +24,9 @@ import { statuses } from "./statuses";
 import { messages } from "./messages";
 import { objectives } from "./objectives";
 import Surreal, { StringRecordId, surql } from "surrealdb";
+import type { Events } from "../events";
 
-export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
+export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
 .use(cors())
 .use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
@@ -33,8 +34,6 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
 	const email = body.email;
-
-	console.log(email);
 
 	const results = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 	const users = results[0];
@@ -121,7 +120,7 @@ export const server = (db: Surreal) => new Elysia({ prefix: "/api" })
 .use(products(db))
 .use(labels(db))
 .use(statuses(db))
-.use(tasks(db))
+.use(tasks(db, event_queue))
 .use(todos(db))
 .use(views(db))
 .use(objectives(db))

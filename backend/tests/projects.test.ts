@@ -3,68 +3,100 @@ import { expect, describe, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_project, create_status, create_user } from "./utils";
+import { LocalEvents } from "../src/events";
 
 test("Create project succesfully", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new LocalEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const { data: status } = await api.api.statuses.post({ state: "Backlog", name: "Backlog", });
-	const response = await api.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
+	const { data: status } = await client.api.statuses.post({ state: "Backlog", name: "Backlog", });
+	const response = await client.api.projects.post({ name: "Test Project", description: "This is a test project", lead: null, members: [], client: null, end: null });
 
 	expect(response.status).toBe(200);
 
-	const project_response = await api.api.projects({ id: response.data.id }).get();
+	const project_response = await client.api.projects({ id: response.data.id }).get();
 
 	expect(project_response.status).toBe(200);
 	expect(project_response.data).toMatchObject({});
 });
 
 describe("Members", async () => {
-	const db = await create_db();
+	const db = await create_db(); const eq = new LocalEvents();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db, eq));
 
-	const status = await create_status(api);
-	const project = await create_project(api, status);
+	const status = await create_status(client);
+	const project = await create_project(client, status);
 
 	test("Add member", async () => {
-		const user = await create_user(api);
+		const user = await create_user(client);
 
-		const response = await api.api.projects({ id: project.id }).members.post({ id: user.id });
+		const response = await client.api.projects({ id: project.id }).members.post({ id: user.id });
 
 		expect(response.status).toBe(200);
 
-		const project_response = await api.api.projects({ id: project.id }).get();
+		const project_response = await client.api.projects({ id: project.id }).get();
 
 		expect(project_response.status).toBe(200);
 		expect(project_response.data.members).toMatchObject([{ id: user.id }]);
 	});
 });
 
-test("Post update succesfully", async () => {
-	const db = await create_db();
-
-	const client = treaty(server(db));
+describe("Project updates", async () => {
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);
 
-	const response = await client.api.projects({ id: project.id }).updates.post({ title: "Test Objective", body: "This is a test objective", });
+	test("post", async () => {
+		const response = await client.api.projects({ id: project.id }).updates.post({ title: "Test Update", body: "This is a test update", });
 
-	expect(response.status).toBe(200);
+		expect(response.status).toBe(200);
 
-	const project_response = await client.api.projects({ id: project.id }).get();
+		const project_response = await client.api.projects({ id: project.id }).get();
 
-	expect(project_response.status).toBe(200);
-	expect(project_response.data.updates).toMatchObject([{ title: "Test Objective", body: "This is a test objective" }]);
+		expect(project_response.status).toBe(200);
+		expect(project_response.data.updates).toMatchObject([{ title: "Test Update", body: "This is a test update" }]);
+	});
 });
 
-test.todo("Add project milestione");
+describe("Project milestones", async () => {
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
+
+	const status = await create_status(client);
+	const project = await create_project(client, status);
+
+	test("create", async () => {
+		const response = await client.api.projects({ id: project.id }).milestones.post({ title: "Test Milestone", description: "This is a test milestone", });
+
+		expect(response.status).toBe(200);
+
+		const project_response = await client.api.projects({ id: project.id }).milestones.get();
+
+		expect(project_response.status).toBe(200);
+		expect(project_response.data).toMatchObject([{ title: "Test Milestone", description: "This is a test milestone" }]);
+	});
+
+	// test("Update milestone", async () => {
+	// 	const milestone = await client.api.projects({ id: project.id }).milestones.post({ title: "Test Milestone", description: "This is a test milestone", });
+
+	// 	const response = await client.api.projects({ id: project.id }).milestones({ id: milestone.data.id }).patch({ title: "New Title" });
+
+	// 	expect(response.status).toBe(200);
+
+	// 	const project_response = await client.api.projects({ id: project.id }).milestones.get();
+
+	// 	expect(project_response.status).toBe(200);
+	// 	expect(project_response.data).toMatchObject([{ title: "New Title", description: "This is a test milestone" }]);
+	// });
+});
 
 describe("Update project", async () => {
-	const db = await create_db();
-	const client = treaty(server(db));
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
 
 	const status = await create_status(client);
 	const project = await create_project(client, status);
