@@ -2,7 +2,7 @@ import { expect, describe, test } from "bun:test";
 
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
-import { create_db, create_feature, create_project, create_status, create_task, create_user } from "./utils";
+import { create_db, create_feature, create_label, create_project, create_status, create_task, create_user } from "./utils";
 
 test("Create task", async () => {
 	const db = await create_db();
@@ -153,8 +153,6 @@ test("Add blockers task", async () => {
 
 test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");
-test.todo("Add and remove labels");
-test.todo("Change task title");
 
 test("Post update", async () => {
 	const db = await create_db();
@@ -209,9 +207,121 @@ test("Post update", async () => {
 	}
 });
 
-test.todo("Change assignee");
-test.todo("Change status");
-test.todo("Change priority");
-test.todo("Change effort");
-test.todo("Change value");
-test.todo("Change task body");
+describe("Update task", async () => {
+	const db = await create_db();
+	const client = treaty(server(db));
+
+	const status = await create_status(client);
+	const task = await create_task(client, status);
+
+	test("title", async () => {
+		const response = await client.api.tasks({ id: task.id }).patch({ title: "New Title" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ title: "New Title" });
+		}
+	});
+
+	test("body", async () => {
+		const response = await client.api.tasks({ id: task.id }).patch({ body: "New Body" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ body: "New Body" });
+		}
+	});
+
+	test("priority", async () => {
+		const response = await client.api.tasks({ id: task.id }).patch({ priority: "High" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ priority: "High" });
+		}
+	});
+
+	test("effort", async () => {
+		const response = await client.api.tasks({ id: task.id }).patch({ effort: "Day" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ effort: "Day" });
+		}
+	});
+
+	test("value", async () => {
+		const response = await client.api.tasks({ id: task.id }).patch({ value: "High" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ value: "High" });
+		}
+	});
+
+	test("assignee", async () => {
+		const user = await create_user(client);
+
+		const response = await client.api.tasks({ id: task.id }).patch({ assignee: user.id });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ assignee: { id: user.id } });
+		}
+	});
+
+	test("status", async () => {
+		const new_status = await create_status(client);
+
+		const response = await client.api.tasks({ id: task.id }).patch({ status: new_status.id });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+			expect(task_g).toMatchObject({ status: { id: new_status.id } });
+		}
+	});
+
+	describe("labels", async () => {
+		test("add", async () => {
+			const label = await create_label(client);
+
+			const response = await client.api.tasks({ id: task.id }).patch({ labels: [{ id: label.id }] });
+
+			expect(response.status).toBe(200);
+
+			{
+				const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+				expect(task_g).toMatchObject({ labels: [{ id: label.id }] });
+			}
+		});
+
+		test("remove", async () => {
+			const label = await create_label(client);
+
+			await client.api.tasks({ id: task.id }).patch({ labels: [{ id: label.id }] });
+
+			const response = await client.api.tasks({ id: task.id }).patch({ labels: [] });
+
+			expect(response.status).toBe(200);
+
+			{
+				const { data: task_g } = await client.api.tasks({ id: task.id }).get();
+				expect(task_g).toMatchObject({ labels: [] });
+			}
+		});
+	});
+});

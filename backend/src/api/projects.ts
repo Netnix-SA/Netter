@@ -38,6 +38,28 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	}
 })
 
+.patch("/:id", async ({ body, params: { id } }) => {
+	const project_id = new StringRecordId(id);
+
+	let project = {};
+
+	if (body.name) { project = { ...project, name: body.name }; }
+	if (body.description) { project = { ...project, description: body.description }; }
+	if (body.lead) { project = { ...project, lead: new StringRecordId(body.lead) as unknown as UserId }; }
+	if (body.end) { project = { ...project, end: body.end }; }
+	if (body.status) { project = { ...project, status: new StringRecordId(body.status.id) as unknown as StatusId }; }
+
+	await db.merge(project_id, project);
+}, {
+	body: t.Object({
+		name: t.Optional(t.String()),
+		description: t.Optional(t.String()),
+		lead: t.Optional(tUserId),
+		end: t.Optional(t.Date()),
+		status: t.Optional(t.Object({ id: tStatusId })),
+	}),
+})
+
 .post("/:id/members", async ({ body, params: { id } }) => {
 	const project_id = new StringRecordId(id);
 

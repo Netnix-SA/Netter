@@ -45,20 +45,87 @@ describe("Members", async () => {
 test("Post update succesfully", async () => {
 	const db = await create_db();
 
-	const api = treaty(server(db));
+	const client = treaty(server(db));
 
-	const status = await create_status(api);
-	const project = await create_project(api, status);
+	const status = await create_status(client);
+	const project = await create_project(client, status);
 
-	const response = await api.api.projects({ id: project.id }).updates.post({ title: "Test Objective", body: "This is a test objective", });
+	const response = await client.api.projects({ id: project.id }).updates.post({ title: "Test Objective", body: "This is a test objective", });
 
 	expect(response.status).toBe(200);
 
-	const project_response = await api.api.projects({ id: project.id }).get();
+	const project_response = await client.api.projects({ id: project.id }).get();
 
 	expect(project_response.status).toBe(200);
 	expect(project_response.data.updates).toMatchObject([{ title: "Test Objective", body: "This is a test objective" }]);
 });
 
 test.todo("Add project milestione");
-test.todo("Update project lead and status");
+
+describe("Update project", async () => {
+	const db = await create_db();
+	const client = treaty(server(db));
+
+	const status = await create_status(client);
+	const project = await create_project(client, status);
+
+	test("name", async () => {
+		const response = await client.api.projects({ id: project.id }).patch({ name: "New Name" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: project_g } = await client.api.projects({ id: project.id }).get();
+			expect(project_g.name).toBe("New Name");
+		}
+	});
+
+	test("description", async () => {
+		const response = await client.api.projects({ id: project.id }).patch({ description: "New Description" });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: project_g } = await client.api.projects({ id: project.id }).get();
+			expect(project_g.description).toBe("New Description");
+		}
+	});
+
+	test("lead", async () => {
+		const user = await create_user(client);
+
+		const response = await client.api.projects({ id: project.id }).patch({ lead: user.id });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: project_g } = await client.api.projects({ id: project.id }).get();
+			expect(project_g.lead).toMatchObject({ id: user.id });
+		}
+	});
+
+	test("end", async () => {
+		const end = new Date();
+		const response = await client.api.projects({ id: project.id }).patch({ end });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: project_g } = await client.api.projects({ id: project.id }).get();
+			expect(project_g.end).toBe(end.toISOString());
+		}
+	});
+
+	test("status", async () => {
+		const status = await create_status(client);
+
+		const response = await client.api.projects({ id: project.id }).patch({ status: { id: status.id } });
+
+		expect(response.status).toBe(200);
+
+		{
+			const { data: project_g } = await client.api.projects({ id: project.id }).get();
+			expect(project_g.status).toMatchObject({ id: status.id });
+		}
+	});
+});

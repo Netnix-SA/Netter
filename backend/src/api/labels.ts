@@ -1,19 +1,22 @@
 import { Elysia, t } from "elysia";
-import { tLabel, tLabelPost } from "./schemas";
+import { tLabel, tLabelId, tLabelPost } from "./schemas";
 import type { Label } from "../db/types";
 import Surreal, { surql } from "surrealdb";
 
 export const labels = (db: Surreal) => new Elysia({ prefix: "/labels", tags: ["Labels"] })
 
 .post("", async ({ body }) => {
-	await db.create<Omit<Label, "id">>("Label", {
+	const label = await db.create<Omit<Label, "id">>("Label", {
 		title: body.title,
 		description: "",
 		color: body.color,
 		icon: body.icon,
-	})
+	});
+
+	return { id: label.id.toString(), };
 }, {
 	body: tLabelPost,
+	response: t.Object({ id: tLabelId }),
 	detail: {
 		description: "Creates a label under the querying user's organization.",
 	},

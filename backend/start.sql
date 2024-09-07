@@ -23,8 +23,8 @@ DEFINE TABLE related TYPE RELATION; -- Task is related to *
 DEFINE TABLE requires TYPE RELATION; -- Task requires Task
 DEFINE TABLE blocks TYPE RELATION; -- Task blocks Task
 
-DEFINE ANALYZER organization_analyzer TOKENIZERS blank, class FILTERS lowercase, snowball(english);
 DEFINE ANALYZER title_analyzer TOKENIZERS blank, class FILTERS lowercase, edgengram(1,16);
+DEFINE ANALYZER body_analyzer TOKENIZERS blank, class FILTERS lowercase, snowball(english);
 
 DEFINE INDEX user_name ON User FIELDS full_name SEARCH ANALYZER title_analyzer BM25;
 DEFINE INDEX product_name ON Product FIELDS name SEARCH ANALYZER title_analyzer BM25;
@@ -33,9 +33,11 @@ DEFINE INDEX channel_name ON Channel FIELDS name SEARCH ANALYZER title_analyzer 
 DEFINE INDEX team_name ON Team FIELDS name SEARCH ANALYZER title_analyzer BM25;
 DEFINE INDEX task_title ON Task FIELDS title SEARCH ANALYZER title_analyzer BM25;
 DEFINE INDEX bug_title ON Bug FIELDS title SEARCH ANALYZER title_analyzer BM25;
-DEFINE INDEX bug_description ON Bug FIELDS description SEARCH ANALYZER organization_analyzer BM25;
+DEFINE INDEX bug_description ON Bug FIELDS description SEARCH ANALYZER body_analyzer BM25;
 DEFINE INDEX feature_title ON Feature FIELDS name SEARCH ANALYZER title_analyzer BM25;
-DEFINE INDEX feature_description ON Feature FIELDS description SEARCH ANALYZER organization_analyzer BM25;
+DEFINE INDEX feature_description ON Feature FIELDS description SEARCH ANALYZER body_analyzer BM25;
+DEFINE INDEX component_name ON Component FIELDS name SEARCH ANALYZER title_analyzer BM25;
+DEFINE INDEX component_description ON Component FIELDS description SEARCH ANALYZER body_analyzer BM25;
 
 DEFINE INDEX user_handle ON TABLE User COLUMNS handle;
 DEFINE INDEX message_author ON TABLE Message COLUMNS author;

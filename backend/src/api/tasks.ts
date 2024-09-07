@@ -2,7 +2,7 @@ import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, S
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
-import { tChannel, tFeature, tFeatureId, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdate, tTaskUpdatePost, tUserId } from "./schemas";
+import { tChannel, tEfforts, tFeature, tFeatureId, tPriorities, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdate, tTaskUpdatePost, tUserId, tValues } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 
 export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
@@ -255,6 +255,42 @@ export const tasks = (db: Surreal) => new Elysia({ prefix: "/tasks", tags: ["Tas
 	response: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Creates a task.",
+	}
+})
+
+.patch("/:id", async ({ params: { id }, body }) => {
+	const task_id = new StringRecordId(id);
+
+	let task = {};
+
+	if (body.title) { task = { ...task, title: body.title }; }
+
+	if (body.body) { task = { ...task, body: body.body }; }
+
+	if (body.value) { task = { ...task, value: body.value }; }
+	if (body.effort) { task = { ...task, effort: body.effort }; }
+	if (body.priority) { task = { ...task, priority: body.priority }; }
+
+	if (body.assignee) { task = { ...task, assignee: body.assignee }; }
+
+	if (body.status) { task = { ...task, status: { id: body.status } }; }
+
+	if (body.labels) { task = { ...task, labels: body.labels.map(({ id }) => new StringRecordId(id)) }; }
+
+	await db.merge<Task>(task_id, task);
+}, {
+	body: t.Object({
+		title: t.Optional(t.String()),
+		body: t.Optional(t.String()),
+		value: t.Optional(tValues),
+		effort: t.Optional(tEfforts),
+		priority: t.Optional(tPriorities),
+		assignee: t.Optional(tUserId),
+		status: t.Optional(tStatusId),
+		labels: t.Optional(t.Array(t.Object({ id: t.String() }))),
+	}),
+	detail: {
+		description: "Edits a task."
 	}
 })
 

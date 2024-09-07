@@ -72,6 +72,12 @@ export async function create_bug(client: any) {
 	return bug;
 }
 
+export async function create_label(client: any) {
+	const { data: label, error } = await client.api.labels.post({ title: "My Test Label", color: "Green/Light", icon: '🐛' });
+	log_error(error);
+	return label;
+}
+
 export function log_error(error: any) {
 	if (error && error.value) {
 		console.error(error.value);
