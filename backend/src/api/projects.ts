@@ -20,6 +20,9 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 
 	const project = await db.create<Omit<Project, "id">>("Project", {
 		name: body.name, description: body.description,
+
+		created: new Date(),
+
 		lead: body.lead ? new StringRecordId(body.lead) as unknown as UserId : null,
 		members: [], milestones: [],
 		end: null,
@@ -242,7 +245,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 		query += ` WHERE ${pieces.join(" AND ")}`;
 	}
 
-	query += ";";
+	query += " ORDER BY created ASC;";
 
 	const results = await db.query<[(Project & { objectives: Objective[] })[]]>(query);
 

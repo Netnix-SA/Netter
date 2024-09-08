@@ -282,6 +282,9 @@ export type Project = {
 	id: ProjectId,
 	name: string,
 	description: string,
+
+	created: Date,
+
 	lead: UserId | null,
 
 	members: { id: UserId }[],
