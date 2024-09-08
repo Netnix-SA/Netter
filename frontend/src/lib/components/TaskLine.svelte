@@ -6,11 +6,27 @@
 	import UserAvatar from "./UserAvatar.svelte";
 	import { addPinned, addToDo } from "@/actions";
     import LabelChip from "./LabelChip.svelte";
+    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+    import { client } from "@/state";
+    import { toast } from "svelte-sonner";
+    import { todo } from "@/all.svelte";
 
 	type Task = { id: string, title: string, labels: { id: string, }[], progress: number, priority: "Low" | "Medium" | "High" | "Urgent", effort: string };
 	type Label = { id: string, title: string, icon: string, color: string };
 
 	let { task, user, labels }: { task: Task, labels: Label[], user: { id: string, full_name: string } | undefined/* | ((id: string) => Promise<{ id: string, full_name: string }>)*/ } = $props();
+
+	const queryClient = useQueryClient();
+
+	let pinCreate = createMutation(() => ({
+		mutationFn: ({ id }: { id: string }) => {
+			return client.api.users.me.pins.post({ id });
+		},
+		onSuccess: () => {
+			toast.success("Pinned");
+			queryClient.invalidateQueries({ queryKey: ['pins'] });
+		},
+	}));
 </script>
 
 <ContextMenu.Root>
@@ -70,7 +86,7 @@
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
-		<ContextMenu.Item onclick={async () => await addPinned(task.id)}>Pin</ContextMenu.Item>
-		<ContextMenu.Item onclick={async () => await addToDo(task.title)}>Add to ToDo's</ContextMenu.Item>
+		<ContextMenu.Item onclick={() => pinCreate.mutate({ id: task.id })}>Pin</ContextMenu.Item>
+		<ContextMenu.Item onclick={() => todo.value = { related: { id: task.id, title: task.title } }}>Add to ToDo's</ContextMenu.Item>
 	</ContextMenu.Content>
 </ContextMenu.Root>

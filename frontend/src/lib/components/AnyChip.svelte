@@ -8,6 +8,8 @@
     import { client } from "@/state";
     import type { Classes } from "@/types";
     import { task, todo } from "@/all.svelte.ts";
+    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+    import { toast } from "svelte-sonner";
 
 	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
 
@@ -35,6 +37,28 @@
 	let clss = $derived(id.split(':')[0] as Classes | undefined);
 	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
+
+	const queryClient = useQueryClient();
+
+	let pinCreate = createMutation(() => ({
+		mutationFn: ({ id }: { id: string }) => {
+			return client.api.users.me.pins.post({ id });
+		},
+		onSuccess: () => {
+			toast.success("Pinned");
+			queryClient.invalidateQueries({ queryKey: ['pins'] });
+		},
+	}));
+
+	let pinDelete = createMutation(() => ({
+		mutationFn: ({ id }: { id: string }) => {
+			return client.api.users.me.pins({ id }).delete();
+		},
+		onSuccess: () => {
+			toast.success("Unpinned");
+			queryClient.invalidateQueries({ queryKey: ['pins'] });
+		},
+	}));
 </script>
 
 <div class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all">
@@ -51,11 +75,11 @@
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
 			{#if pinned.includes(id)}
-				<ContextMenu.Item onclick={async () => await removePinned(id)}>Unpin '{name}'</ContextMenu.Item>
+				<ContextMenu.Item onclick={() => pinDelete.mutate({ id })}>Unpin '{name}'</ContextMenu.Item>
 			{:else}
-				<ContextMenu.Item onclick={async () => await addPinned(id)}>Pin '{name}'</ContextMenu.Item>
+				<ContextMenu.Item onclick={() => pinCreate.mutate({ id })}>Pin '{name}'</ContextMenu.Item>
 			{/if}
-			<ContextMenu.Item onclick={() => todo.value = { title: "", related: { id, title: name } }}>
+			<ContextMenu.Item onclick={() => todo.value = { title: "", related: { id, title: name ?? "" } }}>
 				Add ToDo
 			</ContextMenu.Item>
 			{#if clss === "Feature"}

@@ -13,6 +13,10 @@
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
     import Pin from "@/components/Pin.svelte";
+    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+    import { client } from "@/state";
+    import { toast } from "svelte-sonner";
+    import { goto } from "$app/navigation";
 
 	const { data }: { data: PageData } = $props();
 
@@ -23,6 +27,32 @@
 	});
 
 	let lead = $state(data.users.find(u => u.id === data.project.lead?.id) || null);
+
+	const queryClient = useQueryClient();
+
+	let objectiveCreate = createMutation(() => ({
+		mutateFn: async () => {
+			console.log("Creating objective");
+			const response = await client.api.projects({ id: project.id }).objectives.post({ title: "New objective", description: "Objective description" });
+			if (response.data) {
+				return response.data;
+			} else {
+				console.error(response.error);
+				throw new Error("Failed to create objective");
+			}
+		},
+		onSuccess: (response) => {
+			toast.success("Created new objective!", {
+				action: {
+					label: "Open",
+					onClick: () => {
+						goto(`/objectives/${response.id}`);
+					},
+				}
+			});
+			queryClient.invalidateQueries({ queryKey: ["project", project.id, "objectives"] });
+		},
+	}));
 </script>
 
 <svelte:head>
@@ -117,7 +147,7 @@
 									<textarea placeholder="Description" class="border px-2 py-1"/>
 								</div>
 								<Dialog.Footer>
-									<Button>Create</Button>
+									<Button on:click={() => objectiveCreate.mutate()}>Create</Button>
 								</Dialog.Footer>
 							</Dialog.Content>
 						</Dialog.Root>

@@ -2,7 +2,7 @@
     import { ChevronDown, Plus } from "lucide-svelte";
 
     import TaskLine from "./TaskLine.svelte";
-    import type { Efforts, Priorities, Value } from "@/types";
+    import type { Efforts, Priorities, Value, Status } from "@/types";
     import { STATES } from "@/global";
 
 	type Task = {
@@ -16,12 +16,11 @@
 		related: { id: string }[],
 	};
 
-	let { groups, statuses, labels, users, draft_task = $bindable() }: { groups: [string, Task[]][], statuses: any[], labels: any[], users: any[], draft_task?: Omit<Task, "id"> | null } = $props();
+	let { groups, statuses, labels, users, draft_task = $bindable() }: { groups: [Status, Task[]][], statuses: any[], labels: any[], users: any[], draft_task?: Omit<Task, "id"> | null } = $props();
 </script>
 
-{#each groups as [grouper, tasks]}
-{@const status = statuses.find(s => s.id === grouper)}
-{@const state_entry = STATES.find(s => s.value === status?.state)}
+{#each groups as [status, tasks]}
+{@const state_entry = STATES.find(s => s.value === status.state)}
 {@const Icon = state_entry?.icon}
 	<details open={status.state !== "Resolved"}>
 		<summary class="bg-primary-foreground flex items-center pl-4 py-2 border-y mt-2 cursor-pointer group-[summary]">
@@ -48,7 +47,7 @@
 				<TaskLine {labels} {task} user={users.find(u => u.id === task.assignee?.id)}/>
 			</li>
 		{:else}
-			<div class="frame size-full">
+			<div class="frame size-full border-b">
 				<span class="text-sm italic text-muted-foreground/50">
 					No tasks
 				</span>

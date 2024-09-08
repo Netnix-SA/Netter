@@ -17,12 +17,11 @@ await db.connect("http://db:8000/rpc", {
 
 const event_queue = new LocalEvents();
 
-const elysia = server(db, event_queue);
+const app = server(db, event_queue);
 
-// server.listen(80);
-//
+// app.listen(80);
 
 Bun.serve({
     port: 80,
-    fetch: elysia.fetch,
+    fetch: app.fetch,
 });

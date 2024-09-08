@@ -11,11 +11,24 @@
 
 	let filters: ((StateFilter | StatusFilter | TextFilter | LabelFilter) & { display: string })[] = $state([]);
 
-	let groups = $derived(groupBy(data.tasks.filter(t => {
-		return filters.every(filter => filterTask(t, filter, data.statuses));
-	}), ({ status }) => status.id));
+	let tasksGet = createQuery(() => ({
+		queryKey: ['tasks'],
+		queryFn: async () => {
+			const response = await client.api.projects({ id: data.project.id }).tasks.get();
 
-	import { commands } from "@/state";
+			if (response.data) {
+				return response.data;
+			} else {
+				throw new Error();
+			}
+		},
+	}));
+
+	let tasks = $derived(tasksGet.data ?? []);
+
+	let groups = $derived(data.statuses.map(s => [s, tasks.filter(t => filters.every(filter => filterTask(t, filter, data.statuses)))]));
+
+	import { client, commands } from "@/state";
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import UserSearch from "@/components/UserSearch.svelte";
@@ -51,6 +64,7 @@
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
     import { task } from "@/all.svelte";
+    import { createQuery } from "@tanstack/svelte-query";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -59,14 +73,14 @@
 	const edges: Writable<Edge[]> = writable([]);
 
 	$effect(() => {
-		const nds = data.tasks.map(task => ({
-			id: task.id,
-			type: 'default',
-			data: { label: task.title },
-			position: { x: 0, y: 0 }
-		}));
+		// const nds = data.tasks.map(task => ({
+		// 	id: task.id,
+		// 	type: 'default',
+		// 	data: { label: task.title },
+		// 	position: { x: 0, y: 0 }
+		// }));
 
-		nodes.set(nds);
+		// nodes.set(nds);
 
 		// const edgs = data.tasks.map(task => {
 		// 	return task.relatives.children.map(child => {
@@ -161,7 +175,7 @@
 		</div>
 	</div>
 	{#if view === "list"}
-		<TaskList groups={groups.entries()} labels={data.labels} users={data.users} statuses={data.statuses} bind:draft_task={task.value}/>
+		<TaskList groups={groups} labels={data.labels} users={data.users} statuses={data.statuses} bind:draft_task={task.value}/>
 	{:else if view === "kanban"}
 		<div id="arena" class="p-2 flex gap-4 flex-1">
 			{#each groups as [grouper, tasks]}
