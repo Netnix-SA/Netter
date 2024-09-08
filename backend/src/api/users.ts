@@ -88,9 +88,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 })
 
 .get("/me", async ({ id }) => {
-	const results = await db.query<[User[]]>("SELECT * FROM User WHERE id == $id;", { id: new StringRecordId(id) });
-
-	const user = results[0][0];
+	const user = await db.select<User>(new StringRecordId(id));
 
 	if (!user) {
 		throw new NotFoundError("User not found.");

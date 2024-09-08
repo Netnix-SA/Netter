@@ -22,6 +22,9 @@
     import UserSelect from "@/components/UserSelect.svelte";
     import Search from "@/components/Search.svelte";
 
+    import { createMutation, createQuery, QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/svelte-query';
+    import { on } from "svelte/events";
+
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
 	let open = $state(false);
@@ -132,6 +135,26 @@
 			task.value.status = task.value.status ?? data.statuses[0];
 		}
 	});
+
+	const queryClient = useQueryClient();
+
+	const pinnedGet = createQuery(() => ({
+		queryKey: ['pins'],
+		queryFn: () => {
+			return client.api.users.me.pins.get();
+		},
+	}));
+
+	const todoCreate = createMutation(() => ({
+		mutationFn: ({ title }: { title: string }) => {
+			return client.api.users.me.todos.post({ title });
+		},
+		onSuccess: () => {
+			toast.success("Created ToDo");
+			queryClient.invalidateQueries({ queryKey: ['todos'] });
+			todo.value = null;
+		},
+	}));
 </script>
 
 <Toaster/>
@@ -182,9 +205,15 @@
 							Pinned
 						</span>
 						<div class="column flex-1 gap-2 overflow-scroll">
-							{#each data.user.pinned as pinned}
-								<AnyChip id={pinned} pinned={data.user.pinned}/>
-							{/each}
+							{#if pinnedGet.isLoading}
+								Loading pins...
+							{:else if pinnedGet.isError}
+								{pinnedGet.error.message}
+							{:else if pinnedGet.isSuccess}
+								{#each pinnedGet.data.data ?? [] as pinned}
+									<AnyChip id={pinned.id} pinned={data.user.pinned}/>
+								{/each}
+							{/if}
 						</div>
 					</section>
 				</div>
@@ -193,7 +222,7 @@
 				</a>
 			</div>
 		</nav>
-		<div class="flex-1 border rounded-lg h-full flex flex-col items-center justify-center overflow-hidden page-backdrop">
+		<div class="flex-1 border rounded-lg h-full flex flex-col overflow-hidden page-backdrop">
 			{@render children()}
 		</div>
 	</div>
@@ -241,14 +270,14 @@
 	</Command.List>
 </Command.Dialog>
 
-<Dialog.Root open={todo.value !== null} onOpenChange={(o) => { if (!o) { todo.value = null; }}}>
+<Dialog.Root open={todo.value !== null} onOpenChange={(o) => { if (o) { todo.value = {} } else { todo.value = null; }}}>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>Create ToDo</Dialog.Title>
 		</Dialog.Header>
 		<div class="gallery gap-2 h-10">
 			<input type="text" placeholder="Tag" class="px-2 py-1 w-20 border text-sm h-full"/>
-			<input type="text" placeholder="Title" class="px-2 py-1 flex-1 border text-sm h-full"/>
+			<input type="text" placeholder="Title" class="px-2 py-1 flex-1 border text-sm h-full" oninput={(e) => todo.value.title = e.currentTarget.value}/> <!-- todo is not null because of onOpenChange -->
 		</div>
 		<section class="column gap-1">
 			<label class="text-muted-foreground text-sm">Related to</label>
@@ -258,7 +287,7 @@
 			<Search />
 		</section>
 		<Dialog.Footer>
-			<Button onclick={async () => await addToDo(todo.value?.title ?? "")}>Create</Button>
+			<Button onclick={() => todoCreate.mutate({ title: todo.value?.title ?? "" })}>Create</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

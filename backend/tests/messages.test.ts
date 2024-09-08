@@ -8,8 +8,8 @@ import { LocalEvents } from "../src/events";
 test("Get messages by author", async () => {
 	const db = await create_db(); const eq = new LocalEvents();
 
-	const client_a = treaty(server(db));
-	const client_b = treaty(server(db));
+	const client_a = treaty(server(db, eq));
+	const client_b = treaty(server(db, eq));
 
 	const user_a = await create_user(client_a);
 	const user_b = await create_user(client_b);

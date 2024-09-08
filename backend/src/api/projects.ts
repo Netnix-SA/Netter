@@ -86,7 +86,7 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	const project = projects[0];
 
 	if (!project) {
-		throw new Error("No project under that id found!");
+		throw new NotFoundError("No project under that id found!");
 	}
 
 	return project;
@@ -216,7 +216,18 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 	await db.merge(project_id, { updates: [...project.updates, { title: body.title, body: body.body }] });
 }, {
 	body: tProjectUpdatePost,
-});
+})
+
+.delete("/:id", async ({ params: { id } }) => {
+	await db.delete(new StringRecordId(id));
+}, {
+	params: t.Object({ id: tProjectId }),
+	detail: {
+		description: "Deletes a project by its ID.",
+	}
+})
+
+;
 
 export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	let query = `SELECT * FROM Project`;

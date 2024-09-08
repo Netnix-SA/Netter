@@ -4,7 +4,7 @@
 
 	import { Confetti } from "svelte-confetti";
 
-	let { todo }: { todo: { id: string, title: string, done: boolean } } = $props();
+	let { todo, ondelete }: { todo: { id: string, title: string, done: boolean }, ondelete: any } = $props();
 </script>
 
 {#if todo.done}
@@ -36,6 +36,6 @@
 	</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
-		<ContextMenu.Item class="text-red-400" onclick={async () => { await client.api.todos({ id: todo.id }).delete(); }}>Delete</ContextMenu.Item>
+		<ContextMenu.Item class="text-red-400" onclick={ondelete}>Delete</ContextMenu.Item>
 	</ContextMenu.Content>
 </ContextMenu.Root>

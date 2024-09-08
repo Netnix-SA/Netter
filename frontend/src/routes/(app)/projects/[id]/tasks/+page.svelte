@@ -5,7 +5,7 @@
     import Label from "@/components/LabelChip.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Tabs from "$lib/components/ui/tabs";
-    import { Kanban, List, Plus, Share2 } from "lucide-svelte";
+    import { Filter, Kanban, List, Plus, Share2 } from "lucide-svelte";
 
 	let { data }: { data: PageData } = $props();
 
@@ -95,7 +95,7 @@
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					<div class="frame rounded size-6 hover:w-fit border border-dashed hover:bg-primary-foreground group transition-all gap-1 hover:px-2">
-						<Plus class="size-4 group-hover:green-light"/>
+						<Filter class="size-4 group-hover:green-light"/>
 						<span class="hidden group-hover:block w-0 tactile-text group-hover:w-min text-sm text-clip text-nowrap">
 							Add filter
 						</span>
@@ -147,13 +147,17 @@
 			<Filters bind:filters/>
 		</div>
 		<div id="right" class="gallery gap-4">
-			<Tabs.Root class="" bind:value={view}>
-				<Tabs.List class="p-1 h-8">
-				  <Tabs.Trigger value="list"><List class="size-4"/></Tabs.Trigger>
-				  <Tabs.Trigger value="kanban"><Kanban class="size-4"/></Tabs.Trigger>
-				  <Tabs.Trigger value="graph"><Share2 class="size-4"/></Tabs.Trigger>
-				</Tabs.List>
-			</Tabs.Root>
+			<div class="h-7 gallery border rounded-md">
+				<button class="h-full w-9 border-r frame hover:bg-primary-foreground" onclick={() => view = "list"} class:bg-primary-foreground={view === "list"}>
+					<List class="size-4"/>
+				</button>
+				<button class="h-full w-9 frame hover:bg-primary-foreground" onclick={() => view = "kanban"} class:bg-primary-foreground={view === "kanban"}>
+					<Kanban class="size-4"/>
+				</button>
+				<button class="h-full w-9 border-l frame hover:bg-primary-foreground" onclick={() => view = "graph"} class:bg-primary-foreground={view === "graph"}>
+					<Share2 class="size-3"/>
+				</button>
+			</div>
 		</div>
 	</div>
 	{#if view === "list"}

@@ -161,3 +161,21 @@ describe("Update project", async () => {
 		}
 	});
 });
+
+describe("Delete", async () => {
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
+
+	const status = await create_status(client);
+	
+	test("empty project", async () => {
+		const project = await create_project(client, status);
+		const response = await client.api.projects({ id: project.id }).delete();
+
+		expect(response.status).toBe(200);
+
+		const project_response = await client.api.projects({ id: project.id }).get();
+
+		expect(project_response.status).toBe(404);
+	});
+});

@@ -47,6 +47,18 @@
 			<li class="flex items-center border-b h-10 w-full">
 				<TaskLine {labels} {task} user={users.find(u => u.id === task.assignee?.id)}/>
 			</li>
+		{:else}
+			<div class="frame size-full">
+				<span class="text-sm italic text-muted-foreground/50">
+					No tasks
+				</span>
+			</div>
 		{/each}
 	</details>
+{:else}
+	<div class="frame size-full">
+		<span class="text-sm italic text-muted-foreground/50">
+			No tasks
+		</span>
+	</div>
 {/each}
