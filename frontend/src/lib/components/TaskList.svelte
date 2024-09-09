@@ -43,9 +43,7 @@
 			</div>
 		</summary>
 		{#each tasks as task}
-			<li class="flex items-center border-b h-10 w-full">
-				<TaskLine {labels} {task} user={users.find(u => u.id === task.assignee?.id)}/>
-			</li>
+			<TaskLine {labels} {task} user={users.find(u => u.id === task.assignee?.id)}/>
 		{:else}
 			<div class="frame size-full border-b">
 				<span class="text-sm italic text-muted-foreground/50">

@@ -2,7 +2,7 @@ import type { PageLoad } from './$types';
 import { client } from '@/state';
 import { error } from '@sveltejs/kit';
 
-export const load: PageLoad = async ({ params: { id }, fetch }) => {
+export const load: PageLoad = async ({ params: { id }, fetch, depends }) => {
     const { data: project, error: e } = await client.api.projects({ id }).get();
 
 	if (project === null) {
@@ -21,6 +21,8 @@ export const load: PageLoad = async ({ params: { id }, fetch }) => {
 	if (statuses === null) {
 		throw error(404, "Could not load statuses!");
 	}
+
+	depends('project:get');
 
 	return {
 		project,

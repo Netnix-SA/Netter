@@ -27,10 +27,17 @@ export const load: PageLoad = async ({ params: { id } }) => {
 		throw error(404, "Could not load components!");
 	}
 
+	const { data: stats } = await client.api.features({ id }).statistics.get();
+
+	if (!stats) {
+		error(404, "Could not load statistics!");
+	}
+
 	return {
 		feature,
 		bugs,
 		tasks,
 		components,
+		stats,
 	};
 };

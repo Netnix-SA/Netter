@@ -88,3 +88,35 @@ test("Get product features", async () => {
 		expect(response.data).toMatchObject([{ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" }]);
 	}
 });
+
+describe("Delete", async () => {
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
+	
+	test("product", async () => {
+		const product = await create_product(client);
+		const response = await client.api.products({ id: product.id }).delete();
+
+		expect(response.status).toBe(200);
+
+		{
+			const response = await client.api.products({ id: product.id }).get();
+			expect(response.status).toBe(404);
+		}
+	});
+
+	test("non-existent product", async () => {
+		const response = await client.api.products({ id: "Product:2a6s7w8e9b1x3a4k9e2p" }).delete();
+
+		expect(response.status).toBe(404);
+	});
+
+	test("already deleted product", async () => {
+		const product = await create_product(client);
+		await client.api.products({ id: product.id }).delete();
+
+		const response = await client.api.products({ id: product.id }).delete();
+
+		expect(response.status).toBeOneOf([200, 404]);
+	});
+});

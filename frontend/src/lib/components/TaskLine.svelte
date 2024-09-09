@@ -10,6 +10,7 @@
     import { client } from "@/state";
     import { toast } from "svelte-sonner";
     import { todo } from "@/all.svelte";
+    import { blur } from "svelte/transition";
 
 	type Task = { id: string, title: string, labels: { id: string, }[], progress: number, priority: "Low" | "Medium" | "High" | "Urgent", effort: string };
 	type Label = { id: string, title: string, icon: string, color: string };
@@ -30,7 +31,9 @@
 </script>
 
 <ContextMenu.Root>
-	<ContextMenu.Trigger class="flex-1 px-2 gallery">
+	<ContextMenu.Trigger class="w-full">
+		{#key task.id}
+		<li class="flex-1 px-2 gallery border-b" transition:blur>
 		<div id="left" class="gallery flex-1 gap-2">
 			<Circle value={task.progress}/>
 			<a href={`/tasks/${task.id}`} class="flex items-center min-w-32">
@@ -84,6 +87,8 @@
 				{/each}
 			</div> -->
 		</div>
+		</li>
+		{/key}
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
 		<ContextMenu.Item onclick={() => pinCreate.mutate({ id: task.id })}>Pin</ContextMenu.Item>

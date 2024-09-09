@@ -2,8 +2,11 @@
 	import Separator from "@/components/ui/separator/separator.svelte";
 	import type { PageData, } from "./$types";
     import { page } from "$app/stores";
+
 	import * as Sheet from "$lib/components/ui/sheet";
 	import * as Dialog from "$lib/components/ui/dialog";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+
 	import { blur } from 'svelte/transition';
 	import { onMount } from "svelte";
 	import { task } from "@/all.svelte";
@@ -16,7 +19,8 @@
     import { createMutation, useQueryClient } from "@tanstack/svelte-query";
     import { client } from "@/state";
     import { toast } from "svelte-sonner";
-    import { goto } from "$app/navigation";
+    import { goto, invalidate } from "$app/navigation";
+    import { DotsHorizontal } from "svelte-radix";
 
 	const { data }: { data: PageData } = $props();
 
@@ -30,8 +34,8 @@
 
 	const queryClient = useQueryClient();
 
-	let objectiveCreate = createMutation(() => ({
-		mutateFn: async () => {
+	const objectiveCreate = createMutation(() => ({
+		mutationFn: async () => {
 			console.log("Creating objective");
 			const response = await client.api.projects({ id: project.id }).objectives.post({ title: "New objective", description: "Objective description" });
 			if (response.data) {
@@ -51,6 +55,24 @@
 				}
 			});
 			queryClient.invalidateQueries({ queryKey: ["project", project.id, "objectives"] });
+			invalidate('project:get');
+		},
+	}));
+
+	const projectDelete = createMutation(() => ({
+		mutationFn: async () => {
+			const response = await client.api.projects({ id: project.id }).delete();
+			if (response.error) {
+				throw new Error("Failed to delete project");
+			}
+		},
+		onSuccess: () => {
+			toast.success("Deleted project!");
+			invalidate('projects:get');
+			goto("/projects");
+		},
+		onError: (e) => {
+			toast.error("Failed to delete project");
 		},
 	}));
 </script>
@@ -65,15 +87,26 @@
 			{project.name}
 		</h1>
 		<div class="gallery gap-2">
-			<div class="rounded item-background h-6 w-12 frame">
-				<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
-			</div>
-			<div class="rounded item-background h-6 w-fit px-2 frame">
-				<a href={`${$page.url}/applications`} class="text-xs text-center tactile-text">Applications</a>
-			</div>
+			<a href={`${$page.url}/tasks`} class="rounded item-background h-6 w-12 frame">
+				<span  class="text-xs text-center tactile-text">Tasks</span>
+			</a>
 		</div>
 	</div>
-	<Pin pinned={data.user.pinned} id={data.project.id}/>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="rounded border frame size-6">
+			<DotsHorizontal class="size-4"/>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			<DropdownMenu.Group>
+				<DropdownMenu.Item>Pin</DropdownMenu.Item>
+				<DropdownMenu.Separator/>
+				<DropdownMenu.Item class="text-red-500" onclick={() => projectDelete.mutate()}>
+					Delete
+				</DropdownMenu.Item>
+			</DropdownMenu.Group>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
+	<!-- <Pin pinned={data.user.pinned} id={data.project.id}/> -->
 </header>
 <div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex items-center justify-center page-backdrop px-48 py-32">
@@ -152,8 +185,9 @@
 							</Dialog.Content>
 						</Dialog.Root>
 					</div>
+					<div class="column h-32 overflow-scroll">
 					{#each data.objectives as objective}
-						<div class="flex flex-col gap-1 h-16">
+						<div class="flex flex-col gap-1 h-16 shrink-0">
 							<div class="gallery gap-2">
 								<div class="gallery flex-1 gap-2">
 									<span class="border rounded-full text-[0.7rem] w-5 h-5 flex items-center justify-center">🎯</span>
@@ -173,6 +207,7 @@
 							<span class="text-muted-foreground/50 text-xs select-none">No objectives</span>
 						</div>
 					{/each}
+					</div>
 				</section>
 				<section class="w-full">
 					<div class="gallery">

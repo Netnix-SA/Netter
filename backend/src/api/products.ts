@@ -23,6 +23,17 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	}
 })
 
+.delete("/:id", async ({ params: { id } }) => {
+	const product_id = new StringRecordId(id);
+
+	await db.delete<Product>(product_id);
+}, {
+	params: t.Object({ id: tProductId }),
+	detail: {
+		description: "Deletes a product by its ID"
+	}
+})
+
 .get("", async () => {
 	const [products] = await db.query<[Product[]]>(surql`SELECT * FROM Product ORDER BY created DESC;`);
 
@@ -53,13 +64,16 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 })
 
 .get("/:id/features", async ({ params: { id } }) => {
-	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)};`);
+	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)} ORDER BY name ASC;`);
 
 	const features = results[0];
 
 	return features.map(mapFeature);
 }, {
 	response: t.Array(tFeature),
+	detail: {
+		description: "Retrieves all features for a product. Features are sorted by name."
+	}
 })
 
 .post("/:id/features", async ({ params: { id }, body }) => {

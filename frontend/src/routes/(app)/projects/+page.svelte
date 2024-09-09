@@ -59,7 +59,7 @@
 </header>
 <main class="w-full h-full flex-1 flex flex-col shadow-inner">
 	{#if projectsGet.isLoading}
-	Loading pins...
+	Loading project...
 	{:else if projectsGet.isError}
 	{projectsGet.error.message}
 	{:else if projectsGet.isSuccess}

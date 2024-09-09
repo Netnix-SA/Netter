@@ -44,7 +44,6 @@ function createTask() {
 		get value(): Task | null { return value },
 		// Using this custom setter we can let users of this API set only the fields they are interested in and we fill the rest with defaults
 		set value(v: { title?: string, body?: string, status?: { id: string, }, priority?: Priorities, effort?: Efforts, value?: Value, assignee?: { id: string } | null, labels?: { id: string }[], related?: { id: string }[], } | null) {
-			console.log("Setting value", v);
 			if (v === null) { value = null; return; }
 			value = {
 				title: v.title || DEFAULT_TASK.title,
@@ -57,7 +56,6 @@ function createTask() {
 				labels: v.labels || DEFAULT_TASK.labels,
 				related: v.related || DEFAULT_TASK.related,
 			};
-			console.log("Value is now", value);
 		},
 		get project() { return project },
 		set project(v) { project = v; },

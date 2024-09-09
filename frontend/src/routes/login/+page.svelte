@@ -7,16 +7,6 @@
     import Button from '@/components/ui/button/button.svelte';
     import { Github, GithubIcon, Key } from 'lucide-svelte';
 
-	const websocket = new WebSocket("ws://localhost:3000");
-
-	websocket.onopen = (ws) => {
-		console.log("Opened WebSocket connection!");
-	};
-
-	websocket.onmessage = (message) => {
-		console.log(message);
-	};
-
 	let email = $state("fvilla@netnix.net");
 
 	onMount(async () => {

@@ -164,6 +164,8 @@
 			}
 		},
 		onSuccess: (response) => {
+			queryClient.invalidateQueries({ queryKey: ['tasks'] });
+			task.value = null;
 			toast.success("Created Task", {
 				action: {
 					label: "Open",
@@ -172,8 +174,6 @@
 					},
 				}
 			});
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			task.value = null;
 		},
 	}));
 </script>

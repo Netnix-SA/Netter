@@ -13,6 +13,16 @@
 	<title>{data.feature.name}</title>
 </svelte:head>
 
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+	<div class="gallery flex-1 gap-4">
+		<h1 class="tactile-text text-sm">
+			{data.feature.name}
+		</h1>
+	</div>
+	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md">
+		+
+	</button>
+</header>
 <div class="flex-1 w-full flex px-12 py-12">
 	<div class="column flex-1 gap-4">
 		<input type="text" class="tactile-text text-4xl font-bold" bind:value={data.feature.name}/>
@@ -42,13 +52,13 @@
 				<div class="column">
 					<span class="text-sm text-muted-foreground">Tasks</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.tasks.length} / {data.tasks.length}
+						{data.stats.tasks.completion} / {data.stats.tasks.total}
 					</span>
 				</div>
 				<div class="column">
 					<span class="text-sm text-muted-foreground">Bugs</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.bugs.length}
+						{data.stats.bugs.total}
 					</span>
 				</div>
 			</div>

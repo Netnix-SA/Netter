@@ -22,6 +22,6 @@ const app = server(db, event_queue);
 // app.listen(80);
 
 Bun.serve({
-    port: 80,
-    fetch: app.fetch,
+	port: 80,
+	fetch: app.fetch,
 });
