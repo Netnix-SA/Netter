@@ -245,7 +245,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 		query += ` WHERE ${pieces.join(" AND ")}`;
 	}
 
-	query += " ORDER BY created ASC;";
+	query += " ORDER BY created DESC;";
 
 	const results = await db.query<[(Project & { objectives: Objective[] })[]]>(query);
 

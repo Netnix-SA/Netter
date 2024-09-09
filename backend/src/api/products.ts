@@ -8,7 +8,9 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 
 .post("", async ({ body: { name, description } }) => {
 	const product = await db.create<Omit<Product, "id">>("Product", {
-		name, description, applications: [],
+		name, description,
+		created: new Date(),
+		applications: [],
 	});
 
 	return { id: product.id.toString() };
@@ -22,7 +24,7 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 })
 
 .get("", async () => {
-	const products = await db.select<Product>("Product");
+	const [products] = await db.query<[Product[]]>(surql`SELECT * FROM Product ORDER BY created DESC;`);
 
 	return products.map(map);
 }, {

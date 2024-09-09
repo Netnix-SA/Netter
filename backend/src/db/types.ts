@@ -325,6 +325,8 @@ export type Product = {
 	name: string,
 	description: string,
 
+	created: Date,
+
 	applications: {
 		id: ApplicationId,
 	}[],
