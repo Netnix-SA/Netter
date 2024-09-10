@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CLASS_TO_ICON } from "@/global";
+	import { CLASS_TO_ICON, CLASSES } from "@/global";
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -74,48 +74,14 @@
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
-			{#if pinned.includes(id)}
-				<ContextMenu.Item onclick={() => pinDelete.mutate({ id })}>Unpin '{name}'</ContextMenu.Item>
-			{:else}
-				<ContextMenu.Item onclick={() => pinCreate.mutate({ id })}>Pin '{name}'</ContextMenu.Item>
-			{/if}
-			<ContextMenu.Item onclick={() => todo.value = { title: "", related: { id, title: name ?? "" } }}>
-				Add ToDo
-			</ContextMenu.Item>
-			{#if clss === "Feature"}
-				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
-				<ContextMenu.Separator/>
-				<ContextMenu.Label>Feature</ContextMenu.Label>
-				<ContextMenu.Separator/>
-			{/if}
-			{#if clss === "Project"}
-				<ContextMenu.Item onclick={() => { task.project = id; task.value = {}; }}>Create task</ContextMenu.Item>
-				<ContextMenu.Separator/>
-				<ContextMenu.Label>Project</ContextMenu.Label>
-				<ContextMenu.Separator/>
-				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/tasks`)}>Tasks</ContextMenu.Item>
-				<ContextMenu.Item onclick={async () => await goto(`/projects/${id}/objectives/active`)}>Objective</ContextMenu.Item>
-			{/if}
-			{#if clss === "Component"}
-				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
-				<!-- <ContextMenu.Separator/>
-				<ContextMenu.Label>Objective</ContextMenu.Label>
-				<ContextMenu.Separator/>
-				<ContextMenu.Item onclick={async () => await goto(`/objectives/${id}/tasks`)}>Tasks</ContextMenu.Item> -->
-			{/if}
-			{#if clss === "Objective"}
-				<ContextMenu.Item onclick={async () => task.value = { related: [{ id }] }}>Create related task</ContextMenu.Item>
-				<ContextMenu.Separator/>
-				<ContextMenu.Label>Objective</ContextMenu.Label>
-				<ContextMenu.Separator/>
-				<ContextMenu.Item onclick={async () => await goto(`/objectives/${id}/tasks`)}>Tasks</ContextMenu.Item>
-			{/if}
-			{#if clss === "Product"}
-				<ContextMenu.Separator/>
-				<ContextMenu.Label>Product</ContextMenu.Label>
-				<ContextMenu.Separator/>
-				<ContextMenu.Item onclick={async () => await goto(`/products/${id}/features`)}>Features</ContextMenu.Item>
-			{/if}
+			{#each CLASSES["Task"].actions as { label, icon: Icon, action }}
+				{#if label === "Delete"}
+					<ContextMenu.Separator/>
+				{/if}
+				<ContextMenu.Item onclick={() => action(queryClient)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+					<Icon class="size-4 mr-2"/> {label}
+				</ContextMenu.Item>
+			{/each}
 		</ContextMenu.Content>
 	</ContextMenu.Root>
 </div>

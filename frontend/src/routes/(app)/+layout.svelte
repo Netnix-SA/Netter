@@ -9,7 +9,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
     import { goto, onNavigate } from "$app/navigation";
 	import { Separator } from "$lib/components/ui/separator";
-    import { client, commands } from "@/state";
+    import { client, commands, taskCreate } from "@/state";
     import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/global";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
@@ -124,56 +124,6 @@
 			toast.success("Created ToDo");
 			queryClient.invalidateQueries({ queryKey: ['todos'] });
 			todo.value = null;
-		},
-	}));
-
-	const taskCreate = createMutation(() => ({
-		mutationFn: async () => {
-			const t = task.value;
-			if (t === null) { throw new Error("Task is null"); }
-			if (task.project === undefined) {
-				const response = await client.api.tasks.post({
-					title: t.title,
-					body: t.body,
-					status: t.status?.id || null,
-					priority: t.priority,
-					effort: t.effort,
-					value: t.value,
-					assignee: t.assignee?.id || null,
-				});
-				if (response.error) {
-					throw new Error();
-				} else {
-					return response.data;
-				}
-			} else {
-				const response = await client.api.projects({ id: task.project }).tasks.post({
-					title: t.title,
-					body: t.body,
-					status: t.status?.id || null,
-					priority: t.priority,
-					effort: t.effort,
-					value: t.value,
-					assignee: t.assignee?.id || null,
-				});
-				if (response.error) {
-					throw new Error();
-				} else {
-					return response.data;
-				}
-			}
-		},
-		onSuccess: (response) => {
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			task.value = null;
-			toast.success("Created Task", {
-				action: {
-					label: "Open",
-					onClick: () => {
-						goto(`/tasks/${response.id}`);
-					},
-				}
-			});
 		},
 	}));
 </script>
@@ -360,7 +310,7 @@
 			</div>
 		</section>
 		<Dialog.Footer>
-			<Button onclick={() => taskCreate.mutate()}>Create</Button>
+			<Button onclick={() => taskCreate(queryClient).mutate()}>Create</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

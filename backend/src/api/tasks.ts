@@ -20,7 +20,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	}
 })
 
-.delete("/:id", async ({ params: { id }, body }) => {
+.put("/:id", async ({ params: { id }, body }) => {
 	const results = await db.query<[Task[]]>(surql`SELECT * FROM Task WHERE id == ${new StringRecordId(id)};`);
 
 	const task = results[0][0];
@@ -258,6 +258,15 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	response: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Creates a task.",
+	}
+})
+
+.delete("/:id", async ({ params: { id } }) => {
+	await db.delete(new StringRecordId(id));
+}, {
+	params: t.Object({ id: tTaskId }),
+	detail: {
+		description: "Deletes a task."
 	}
 })
 

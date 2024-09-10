@@ -18,16 +18,6 @@
 	}));
 
 	const queryClient = useQueryClient();
-
-	const todoDelete = createMutation(() => ({
-		mutationFn: ({ id }: { id: string }) => {
-			return client.api.todos({ id }).delete();
-		},
-		onSuccess: () => {
-			toast.success("Deleted ToDo");
-			queryClient.invalidateQueries({ queryKey: ['todos'] });
-		},
-	}));
 </script>
 
 <svelte:head>
@@ -73,7 +63,7 @@
 		<ul class="flex-1">
 			{#each todosGet.data.data ?? [] as todo}
 				<li class="border-b h-10">
-					<ToDoLine {todo} ondelete={() => todoDelete.mutate({ id: todo.id })}/>
+					<ToDoLine {todo}/>
 				</li>
 			{:else}
 				<div class="frame size-full">

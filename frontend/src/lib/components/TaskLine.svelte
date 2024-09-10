@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import { EFFORTS, EFFORTS_ICONS, PRIORITIES, PRIORITIES_ICONS } from "@/global";
+	import { CLASSES, EFFORTS, EFFORTS_ICONS, PRIORITIES, PRIORITIES_ICONS } from "@/global";
 	import Circle from "./Circle.svelte";
 	import UserAvatar from "./UserAvatar.svelte";
 	import { addPinned, addToDo } from "@/actions";
@@ -91,7 +91,15 @@
 		{/key}
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
-		<ContextMenu.Item onclick={() => pinCreate.mutate({ id: task.id })}>Pin</ContextMenu.Item>
-		<ContextMenu.Item onclick={() => todo.value = { related: { id: task.id, title: task.title } }}>Add to ToDo's</ContextMenu.Item>
+		{#each CLASSES["Task"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
+				<ContextMenu.Separator/>
+			{/if}
+			<ContextMenu.Item onclick={async () => await action(queryClient, task.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</ContextMenu.Item>
+		{/each}
+		<!-- <ContextMenu.Item onclick={() => pinCreate.mutate({ id: task.id })}>Pin</ContextMenu.Item>
+		<ContextMenu.Item onclick={() => todo.value = { related: { id: task.id, title: task.title } }}>Add to ToDo's</ContextMenu.Item> -->
 	</ContextMenu.Content>
 </ContextMenu.Root>

@@ -1,6 +1,9 @@
-import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, SignalHigh, SignalLow, SignalMedium, SquareCheckBig, SquareX, Sunset, Timer, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
+import { deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
+import type { QueryClient } from "@tanstack/svelte-query";
+import { todo } from "./all.svelte";
 
 export type SelectEntry<T> = {
     label: string;
@@ -123,6 +126,7 @@ export const CLASS_TO_ICON = {
     "Project": Notebook,
     "Product": Gift,
     "View": View,
+	"ToDo": SquareCheckBig,
     "Team": Users,
     "Task": Circle,
     "Repository": GitBranch,
@@ -138,11 +142,66 @@ export const CLASSES = {
 	"User": {
         icon: CLASS_TO_ICON["User"],
         url: (id?: string) => id ? `/users/${id}` : "/users",
+		actions: [
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient) => deleteTaskMutation(queryClient),
+			}
+		]
     },
     "Task": {
         icon: CLASS_TO_ICON["Task"],
         url: (id?: string) => id ? `/tasks/${id}` : "/tasks",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient, id: string) => deleteTaskMutation(queryClient)(id),
+			}
+		],
     },
+	"ToDo": {
+		icon: CLASS_TO_ICON["ToDo"],
+		url: (id?: string) => id ? `/todos/${id}` : "/todos",
+		actions: [
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient, id: string) => deleteToDoMutation(queryClient)({ id }),
+			}
+		],
+	},
+	"Feature": {
+		icon: CLASS_TO_ICON["Feature"],
+		url: (id?: string) => id ? `/features/${id}` : "/features",
+	},
+	"Application": {
+		icon: CLASS_TO_ICON["Application"],
+		url: (id?: string) => id ? `/applications/${id}` : "/applications",
+	},
+	"Objective": {
+		icon: CLASS_TO_ICON["Objective"],
+		url: (id?: string) => id ? `/objectives/${id}` : "/objectives",
+	},
+	"Component": {
+		icon: CLASS_TO_ICON["Component"],
+		url: (id?: string) => id ? `/components/${id}` : "/components",
+	},
+	"Bug": {
+		icon: CLASS_TO_ICON["Bug"],
+		url: (id?: string) => id ? `/bugs/${id}` : "/bugs",
+	},
     "Channel": {
     	icon: CLASS_TO_ICON["Channel"],
     	url: (id?: string) => id ? `/channels/${id}` : "/channels",

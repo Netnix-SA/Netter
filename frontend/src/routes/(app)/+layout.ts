@@ -6,7 +6,7 @@ import type { App } from "../../../../backend/src/api";
 
 export const ssr = false;
 
-export const load: LayoutLoad = async ({ fetch }) => {
+export const load: LayoutLoad = async ({ fetch, depends }) => {
 	const client = treaty<App>('localhost', { fetcher: fetch, fetch: { credentials: "include" } });
 
     const { data: user, error: e } = await client.api.users.me.get();
@@ -33,6 +33,8 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	if (statuses === null) {
 		throw error(404, "Could not load labels!");
 	}
+
+	depends('pins:get');
 
     return {
         user,

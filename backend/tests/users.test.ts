@@ -81,3 +81,5 @@ describe("Pins", async () => {
 		});
 	});
 });
+
+test.todo("Delete pinned item");
