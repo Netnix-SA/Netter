@@ -9,7 +9,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
     import { goto, onNavigate } from "$app/navigation";
 	import { Separator } from "$lib/components/ui/separator";
-    import { client, commands, taskCreate } from "@/state";
+    import { client, commands, createTaskMutation, createToDoMutation, } from "@/state";
     import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/global";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
@@ -17,13 +17,9 @@
     import { toast } from "svelte-sonner";
     import { task, todo } from "@/all.svelte";
     import { Button } from "@/components/ui/button";
-    import { addToDo } from "@/actions";
     import Select from "@/components/Select.svelte";
     import UserSelect from "@/components/UserSelect.svelte";
     import Search from "@/components/Search.svelte";
-
-    import { createMutation, createQuery, QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/svelte-query';
-    import { on } from "svelte/events";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -106,26 +102,6 @@
 			task.value.status = task.value.status ?? data.statuses[0];
 		}
 	});
-
-	const queryClient = useQueryClient();
-
-	const pinnedGet = createQuery(() => ({
-		queryKey: ['pins'],
-		queryFn: () => {
-			return client.api.users.me.pins.get();
-		},
-	}));
-
-	const todoCreate = createMutation(() => ({
-		mutationFn: ({ title }: { title: string }) => {
-			return client.api.users.me.todos.post({ title });
-		},
-		onSuccess: () => {
-			toast.success("Created ToDo");
-			queryClient.invalidateQueries({ queryKey: ['todos'] });
-			todo.value = null;
-		},
-	}));
 </script>
 
 <Toaster/>
@@ -176,15 +152,9 @@
 							Pinned
 						</span>
 						<div class="column flex-1 gap-2 overflow-scroll">
-							{#if pinnedGet.isLoading}
-								Loading pins...
-							{:else if pinnedGet.isError}
-								{pinnedGet.error.message}
-							{:else if pinnedGet.isSuccess}
-								{#each pinnedGet.data.data ?? [] as pinned}
-									<AnyChip id={pinned.id} pinned={pinnedGet.data.data?.map(p => p.id)}/>
-								{/each}
-							{/if}
+							{#each data.user.pinned as pinned}
+								<AnyChip id={pinned} pinned={data.user.pinned}/>
+							{/each}
 						</div>
 					</section>
 				</div>
@@ -228,8 +198,8 @@
 		{/if}
 		<Command.Separator />
 		<Command.Group heading="Sections">
-			{#each LINKS as { icon: Icon, label }}
-				<Command.Item class="h-8" onSelect={async () => await goto(link.href)}><Icon class="mr-2 size-4"/> {label}</Command.Item>
+			{#each LINKS as { icon: Icon, label, href }}
+				<Command.Item class="h-8" onSelect={async () => await goto(href)}><Icon class="mr-2 size-4"/> {label}</Command.Item>
 			{/each}
 		</Command.Group>
 		<Command.Separator />
@@ -243,6 +213,7 @@
 
 <Dialog.Root open={todo.value !== null} onOpenChange={(o) => { if (o) { todo.value = {} } else { todo.value = null; }}}>
 	<Dialog.Content>
+		{#if todo.value !== null}
 		<Dialog.Header>
 			<Dialog.Title>Create ToDo</Dialog.Title>
 		</Dialog.Header>
@@ -258,13 +229,15 @@
 			<Search />
 		</section>
 		<Dialog.Footer>
-			<Button onclick={() => todoCreate.mutate({ title: todo.value?.title ?? "" })}>Create</Button>
+			<Button onclick={async () => await createToDoMutation({})({ title: todo.value?.title ?? "" })}>Create</Button>
 		</Dialog.Footer>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 
 <Dialog.Root open={task.value !== null} onOpenChange={(o) => { if (!o) { task.value = null; }}}>
 	<Dialog.Content>
+		{#if task.value !== null}
 		<Dialog.Header>
 			<Dialog.Title class="gallery gap-2">
 				Create task
@@ -310,7 +283,8 @@
 			</div>
 		</section>
 		<Dialog.Footer>
-			<Button onclick={() => taskCreate(queryClient).mutate()}>Create</Button>
+			<Button onclick={async () => await createTaskMutation({})()}>Create</Button>
 		</Dialog.Footer>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

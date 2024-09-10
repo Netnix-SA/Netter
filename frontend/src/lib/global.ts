@@ -1,9 +1,9 @@
 import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
-import { deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
+import { createProductFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
 import type { QueryClient } from "@tanstack/svelte-query";
-import { todo } from "./all.svelte";
+import { task, todo } from "./all.svelte";
 
 export type SelectEntry<T> = {
     label: string;
@@ -190,13 +190,26 @@ export const CLASSES = {
 		icon: CLASS_TO_ICON["Application"],
 		url: (id?: string) => id ? `/applications/${id}` : "/applications",
 	},
-	"Objective": {
-		icon: CLASS_TO_ICON["Objective"],
-		url: (id?: string) => id ? `/objectives/${id}` : "/objectives",
-	},
 	"Component": {
 		icon: CLASS_TO_ICON["Component"],
 		url: (id?: string) => id ? `/components/${id}` : "/components",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			// {
+			// 	label: "Delete",
+			// 	icon: Trash,
+			// 	action: (queryClient: QueryClient, id: string) => deleteObjectiveMutation(queryClient)(id),
+			// }
+		],
 	},
 	"Bug": {
 		icon: CLASS_TO_ICON["Bug"],
@@ -242,6 +255,11 @@ export const CLASSES = {
 				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
 			},
 			{
+				label: "Create related Feature",
+				icon: CLASS_TO_ICON["Feature"],
+				action: (queryClient: QueryClient, id: string) => { createProductFeatureMutation(queryClient)({ id }) },
+			},
+			{
 				label: "Delete",
 				icon: Trash,
 				action: (queryClient: QueryClient, id: string) => deleteProductMutation(queryClient)(id),
@@ -259,6 +277,32 @@ export const CLASSES = {
 	"Repository": {
 		icon: CLASS_TO_ICON["Repository"],
 		url: (id?: string) => id ? `/repositories/${id}` : "/repositories",
+	},
+	"Objective": {
+		icon: CLASS_TO_ICON["Objective"],
+		url: (id?: string) => id ? `/objectives/${id}` : "/objectives",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			{
+				label: "Create related Task",
+				icon: CLASS_TO_ICON["Task"],
+				action: (queryClient: QueryClient, id: string) => { task.value = { related: [{ id, }] } },
+			}
+			// {
+			// 	label: "Delete",
+			// 	icon: Trash,
+			// 	action: (queryClient: QueryClient, id: string) => deleteObjectiveMutation(queryClient)(id),
+			// }
+		],
 	},
 };
 

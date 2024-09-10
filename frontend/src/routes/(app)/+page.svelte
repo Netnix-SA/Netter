@@ -6,18 +6,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
     import { client } from "@/state";
-    import { toast } from "svelte-sonner";
-
-	const todosGet = createQuery(() => ({
-	    queryKey: ['todos'],
-	    queryFn: () => {
-			return client.api.users.me.todos.get({ query: { resolved: false } });
-		},
-	}));
-
-	const queryClient = useQueryClient();
 </script>
 
 <svelte:head>
@@ -55,13 +44,8 @@
 				ToDo's
 			</span>
 		</div>
-		{#if todosGet.isLoading}
-			Loading todos...
-		{:else if todosGet.isError}
-			{todosGet.error.message}
-		{:else if todosGet.isSuccess}
 		<ul class="flex-1">
-			{#each todosGet.data.data ?? [] as todo}
+			{#each data.todos as todo}
 				<li class="border-b h-10">
 					<ToDoLine {todo}/>
 				</li>
@@ -73,7 +57,6 @@
 				</div>
 			{/each}
 		</ul>
-		{/if}
 	</div>
 	<div id="merge-requests" class="flex flex-col col-span-2 row-span-3 divide-y border-r">
 		<div class="flex w-full px-6 h-10 items-center text-sm bg-primary-foreground">

@@ -2,7 +2,7 @@ import { treaty } from "@elysiajs/eden";
 import { writable } from "svelte/store";
 import type { App } from "../../../backend/src/api";
 // import { createMutation, QueryClient } from "@tanstack/svelte-query";
-import { task } from "./all.svelte";
+import { task, todo } from "./all.svelte";
 import { toast } from "svelte-sonner";
 import { goto, invalidate } from "$app/navigation";
 import { createMutation } from "./query";
@@ -16,7 +16,7 @@ export const onError = (message: string) => () => {
 	toast.error(message);
 };
 
-export const taskCreate = createMutation({
+export const createTaskMutation = createMutation({
 	mutationFn: async () => {
 		const t = task.value;
 		if (t === null) { throw new Error("Task is null"); }
@@ -53,7 +53,6 @@ export const taskCreate = createMutation({
 		}
 	},
 	onSuccess: (response) => {
-		// queryClient.invalidateQueries({ queryKey: ['tasks'] });
 		task.value = null;
 		toast.success("Created Task", {
 			action: {
@@ -63,6 +62,7 @@ export const taskCreate = createMutation({
 				},
 			}
 		});
+		invalidate('tasks:get');
 	},
 	onError: onError("Failed to create task"),
 });
@@ -75,9 +75,8 @@ export const pinItemMutation = createMutation({
 		}
 	},
 	onSuccess: () => {
-		// queryClient.invalidateQueries({ queryKey: ['pins'] });
-		invalidate('pins:get');
 		toast.success("Pinned item");
+		invalidate('pins:get');
 	},
 	onError: onError("Failed to pin item"),
 });
@@ -92,9 +91,8 @@ export const deleteTaskMutation = createMutation({
 		}
 	},
 	onSuccess: () => {
-		// queryClient.invalidateQueries({ queryKey: ['tasks'] });
-		invalidate('tasks:get');
 		toast.success("Deleted Task");
+		invalidate('tasks:get');
 	},
 	onError: onError("Failed to delete task"),
 });
@@ -105,7 +103,7 @@ export const deleteToDoMutation = createMutation({
 	},
 	onSuccess: () => {
 		toast.success("Deleted ToDo");
-		// queryClient.invalidateQueries({ queryKey: ['todos'] });
+		invalidate('todos:get');
 	},
 	onError: onError("Failed to delete ToDo"),
 });
@@ -119,7 +117,6 @@ export const updateFeatureMutation = createMutation({
 	},
 	onSuccess: () => {
 		toast.success("Updated Feature");
-		// queryClient.invalidateQueries({ queryKey: ['features'] });
 		invalidate('features:get');
 	},
 	onError: onError("Failed to update feature"),
@@ -134,10 +131,76 @@ export const deleteProjectMutation = createMutation({
 	},
 	onSuccess: () => {
 		toast.success("Deleted Project");
-		// queryClient.invalidateQueries({ queryKey: ['projects'] });
 		invalidate('projects:get');
 	},
 	onError: onError("Failed to delete project"),
+});
+
+export const createProductMutation = createMutation({
+	mutationFn: async () => {
+		const response = await client.api.products.post({ name: "New Product", description: "Product description", });
+		if (response.data) {
+			return response.data;
+		} else {
+			throw new Error("Failed to create product");
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Created product", {
+			action: {
+				label: "Open",
+				onClick: () => goto(`/products/${response.id}`),
+			},
+		});
+		invalidate('products:get');
+	},
+	onError: onError("Failed to create product"),
+});
+
+export const createProductFeatureMutation = createMutation({
+	mutationFn: async ({ id }: { id: string }) => {
+		const response = await client.api.products({ id }).features.post({ name: "New Feature", description: "Feature description", constraints: "", notes: "", value: "Low" });
+		if (response.data) {
+			return response.data;
+		} else {
+			throw new Error();
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Added feature to product", {
+			action: {
+				label: "Open",
+				onClick: () => goto(`/features/${response.id}`),
+			},
+		});
+		invalidate('features:get');
+	},
+	onError: onError("Failed to add feature to product"),
+});
+
+export const createObjectiveMutation = createMutation({
+	mutationFn: async () => {
+		console.log("Creating objective");
+		const response = await client.api.projects({ id: project.id }).objectives.post({ title: "New objective", description: "Objective description" });
+		if (response.data) {
+			return response.data;
+		} else {
+			console.error(response.error);
+			throw new Error("Failed to create objective");
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Created new objective!", {
+			action: {
+				label: "Open",
+				onClick: () => {
+					goto(`/objectives/${response.id}`);
+				},
+			}
+		});
+		invalidate('project:get');
+	},
+	onError: onError("Failed to create objective"),
 });
 
 export const deleteProductMutation = createMutation({
@@ -149,10 +212,41 @@ export const deleteProductMutation = createMutation({
 	},
 	onSuccess: () => {
 		toast.success("Deleted Product");
-		// queryClient.invalidateQueries({ queryKey: ['products'] });
 		invalidate('products:get');
 	},
 	onError: onError("Failed to delete product"),
+});
+
+export const createProjectMutation = createMutation({
+	mutationFn: async () => {
+		const response = await client.api.projects.post({ name: "New Project", description: "Project description", lead: null, members: [], client: null, end: null });
+		if (response.data) {
+			return response.data;
+		} else {
+			throw new Error("Failed to create project");
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Created project", {
+			action: {
+				label: "Open",
+				onClick: () => goto(`/projects/${response.id}`),
+			},
+		});
+		invalidate('projects:get');
+	},
+	onError: onError("Failed to create project"),
+});
+
+export const createToDoMutation = createMutation({
+	mutationFn: async ({ title }: { title: string }) => {
+		return client.api.users.me.todos.post({ title });
+	},
+	onSuccess: () => {
+		toast.success("Created ToDo");
+		todo.value = null;
+	},
+	onError: onError("Failed to create ToDo"),
 });
 
 export const updateProductMutation = createMutation({
@@ -164,7 +258,6 @@ export const updateProductMutation = createMutation({
 	},
 	onSuccess: () => {
 		toast.success("Updated Product");
-		// queryClient.invalidateQueries({ queryKey: ['products'] });
 		invalidate('products:get');
 	},
 	onError: onError("Failed to update product"),

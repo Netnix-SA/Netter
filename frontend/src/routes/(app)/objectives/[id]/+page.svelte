@@ -2,9 +2,12 @@
 	import type { PageData } from "./$types";
 	import AnyChip from "@/components/AnyChip.svelte";
 	import Button from "@/components/ui/button/button.svelte";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+    import { DotsHorizontal } from "svelte-radix";
 	import { page } from "$app/stores";
 	import { addPinned } from "@/actions";
 	import Pin from "@/components/Pin.svelte";
+    import { CLASSES } from "@/global";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -18,7 +21,21 @@
 			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
 		</div>
 	</div>
-	<Pin pinned={data.user.pinned} id={data.objective.id}/>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="rounded border frame size-6">
+			<DotsHorizontal class="size-4"/>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			{#each CLASSES["Objective"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
+				<DropdownMenu.Separator/>
+			{/if}
+			<DropdownMenu.Item onclick={async () => await action({}, data.objective.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</DropdownMenu.Item>
+			{/each}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </header>
 <main class="flex flex-col p-24 gap-4 flex-1 w-full">
 	<header class="gallery">

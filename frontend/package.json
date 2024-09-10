@@ -27,7 +27,6 @@
   "type": "module",
   "dependencies": {
     "@elysiajs/eden": "^1.1.3",
-    "@tanstack/svelte-query": "https://pkg.pr.new/@tanstack/svelte-query@59098d7133ae6892b937acf139052f39b5e2db72",
     "@xyflow/svelte": "^0.1.18",
     "bits-ui": "^0.21.13",
     "carta-md": "^4.4.5",

@@ -16,8 +16,7 @@
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
     import Pin from "@/components/Pin.svelte";
-    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-    import { client } from "@/state";
+    import { client, createObjectiveMutation } from "@/state";
     import { toast } from "svelte-sonner";
     import { goto, invalidate } from "$app/navigation";
     import { DotsHorizontal } from "svelte-radix";
@@ -31,50 +30,6 @@
 	});
 
 	let lead = $state(data.users.find(u => u.id === data.project.lead?.id) || null);
-
-	const queryClient = useQueryClient();
-
-	const objectiveCreate = createMutation(() => ({
-		mutationFn: async () => {
-			console.log("Creating objective");
-			const response = await client.api.projects({ id: project.id }).objectives.post({ title: "New objective", description: "Objective description" });
-			if (response.data) {
-				return response.data;
-			} else {
-				console.error(response.error);
-				throw new Error("Failed to create objective");
-			}
-		},
-		onSuccess: (response) => {
-			toast.success("Created new objective!", {
-				action: {
-					label: "Open",
-					onClick: () => {
-						goto(`/objectives/${response.id}`);
-					},
-				}
-			});
-			queryClient.invalidateQueries({ queryKey: ["project", project.id, "objectives"] });
-			invalidate('project:get');
-		},
-	}));
-
-	const projectDelete = createMutation(() => ({
-		mutationFn: async () => {
-			const response = await client.api.projects({ id: project.id }).delete();
-			if (response.error) {
-				throw new Error("Failed to delete project");
-			}
-		},
-		onSuccess: () => {
-			toast.success("Deleted project!");
-			invalidate('projects:get');
-			goto("/projects");
-		},
-		onError: (e) => {
-			toast.error("Failed to delete project");
-		},
-	}));
 </script>
 
 <svelte:head>
@@ -101,7 +56,7 @@
 			{#if label === "Delete"}
 				<DropdownMenu.Separator/>
 			{/if}
-			<DropdownMenu.Item onclick={async () => await action(queryClient, project.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+			<DropdownMenu.Item onclick={async () => await action({}, project.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
 				<Icon class="size-4 mr-2"/> {label}
 			</DropdownMenu.Item>
 			{/each}
@@ -181,7 +136,7 @@
 									<textarea placeholder="Description" class="border px-2 py-1"/>
 								</div>
 								<Dialog.Footer>
-									<Button on:click={() => objectiveCreate.mutate()}>Create</Button>
+									<Button onclick={async () => await createObjectiveMutation({})()}>Create</Button>
 								</Dialog.Footer>
 							</Dialog.Content>
 						</Dialog.Root>

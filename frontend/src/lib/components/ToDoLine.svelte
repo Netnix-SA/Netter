@@ -2,11 +2,8 @@
 	import * as ContextMenu from "$lib/components/ui/context-menu";
     import { CLASSES } from "@/global";
     import { client } from "@/state";
-    import { useQueryClient } from "@tanstack/svelte-query";
 
 	import { Confetti } from "svelte-confetti";
-
-	const queryClient = useQueryClient();
 
 	let { todo, }: { todo: { id: string, title: string, done: boolean } } = $props();
 </script>
@@ -44,7 +41,7 @@
 			{#if label === "Delete"}
 				<ContextMenu.Separator/>
 			{/if}
-			<ContextMenu.Item onclick={async () => await action(queryClient, todo.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+			<ContextMenu.Item onclick={async () => await action({}, todo.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
 				<Icon class="size-4 mr-2"/> {label}
 			</ContextMenu.Item>
 		{/each}

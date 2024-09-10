@@ -8,7 +8,6 @@
     import { client } from "@/state";
     import type { Classes } from "@/types";
     import { task, todo } from "@/all.svelte.ts";
-    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
     import { toast } from "svelte-sonner";
 
 	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
@@ -37,28 +36,6 @@
 	let clss = $derived(id.split(':')[0] as Classes | undefined);
 	let name = $state(id.split(':')[1]);
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
-
-	const queryClient = useQueryClient();
-
-	let pinCreate = createMutation(() => ({
-		mutationFn: ({ id }: { id: string }) => {
-			return client.api.users.me.pins.post({ id });
-		},
-		onSuccess: () => {
-			toast.success("Pinned");
-			queryClient.invalidateQueries({ queryKey: ['pins'] });
-		},
-	}));
-
-	let pinDelete = createMutation(() => ({
-		mutationFn: ({ id }: { id: string }) => {
-			return client.api.users.me.pins({ id }).delete();
-		},
-		onSuccess: () => {
-			toast.success("Unpinned");
-			queryClient.invalidateQueries({ queryKey: ['pins'] });
-		},
-	}));
 </script>
 
 <div class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all">
@@ -74,11 +51,11 @@
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
-			{#each CLASSES["Task"].actions as { label, icon: Icon, action }}
+			{#each CLASSES[clss].actions as { label, icon: Icon, action }}
 				{#if label === "Delete"}
 					<ContextMenu.Separator/>
 				{/if}
-				<ContextMenu.Item onclick={() => action(queryClient)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
 					<Icon class="size-4 mr-2"/> {label}
 				</ContextMenu.Item>
 			{/each}

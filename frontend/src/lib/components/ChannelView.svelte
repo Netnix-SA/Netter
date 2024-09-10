@@ -11,6 +11,7 @@
     import type { Snippet } from "svelte";
 
     import MessageBody from "@/components/MessageBody.svelte";
+    import { flyAndScale } from "@/utils";
 
 	type Message = { id: string, author: { id: string }; body: string, resolved?: boolean, question?: string, replies: Message[] };
 
@@ -67,11 +68,7 @@
 {#snippet mention(title: string, dodo: (v: string) => void, active: boolean)}
 {@const results = client.api.get({ query: { text: title.replace("@", "") } })}
 <div class="relative">
-	{#if active}
-	<div class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow">
-		<div class="text-md border-b px-2 h-8 gallery">
-			{title}
-		</div>
+	<div class:hidden={!active} class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow" transition:flyAndScale>
 		{#await results}
 			Loading...
 		{:then re}
@@ -90,10 +87,7 @@
 			{/each}
 		{/await}
 	</div>
-	{/if}
-	<span class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1">
-		{title}
-	</span>
+	<input class="text-sm font-semibold text-red-400 rounded bg-primary-foreground p-1" bind:value={pre_message}/>
 </div>
 {/snippet}
 
@@ -181,11 +175,6 @@
 					<button class="rounded size-5 border frame" onclick={() => { question = undefined; }}><X class="size-4"/></button>
 				</div>
 			{/if}
-			<!-- <textarea id="message" placeholder="Type your message here..."
-				class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg"
-				bind:value={message}
-			>
-			</textarea> -->
 			<div id="message" class="appearance-none text-sm px-2 py-1 outline-none bg-black/50 text-foreground focus:outline-none border resize-y w-full focus-visible:ring-0 rounded-lg">
 				{#each tokenize(pre_message) as { snip, prop, dodo }}
 					{@render snip(prop, dodo, true)}

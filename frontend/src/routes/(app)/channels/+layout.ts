@@ -1,6 +1,5 @@
 import { client } from '@/state.js';
 import { error } from '@sveltejs/kit';
-import { StringRecordId } from 'surrealdb';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = async ({ fetch }) => {

@@ -3,8 +3,6 @@
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 
-	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
-
     import { addPinned } from "@/actions";
     import { client } from "@/state";
     import { toast } from "svelte-sonner";
@@ -13,61 +11,6 @@
     import Separator from "@/components/ui/separator/separator.svelte";
 
     let { data }: { data: PageData } = $props();
-
-	const queryClient = useQueryClient();
-
-	const productsGet = createQuery(() => ({
-		queryKey: ['products'],
-		queryFn: async () => {
-			const response = await client.api.products.get();
-			if (response.data) {
-				return response.data;
-			} else {
-				throw new Error("Failed to fetch products");
-			}
-		},
-	}));
-
-	const productCreate = createMutation(() => ({
-		mutationFn: async () => {
-			const response = await client.api.products.post({ name: "New Product", description: "Product description", });
-			if (response.data) {
-				return response.data;
-			} else {
-				throw new Error("Failed to create product");
-			}
-		},
-		onSuccess: (response) => {
-			if (response.id) {
-				queryClient.invalidateQueries({ queryKey: ['products'] });
-				toast.success("Created product", {
-					action: {
-						label: "Open",
-						onClick: () => goto(`/products/${response.id}`),
-					},
-				});
-			}
-		},
-		onError: (error) => {
-			toast.error(error.message);
-		},
-	}));
-
-	const productDelete = createMutation(() => ({
-		mutationFn: async ({ id }: { id: string }) => {
-			const response = await client.api.products({ id }).delete();
-			if (response.error) {
-				throw new Error("Failed to delete product");
-			}
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['products'] });
-			toast.success("Deleted product");
-		},
-		onError: (error) => {
-			toast.error(error.message);
-		},
-	}));
 </script>
 
 <svelte:head>
@@ -88,17 +31,8 @@
 	</button>
 </header>
 <main class="size-full flex-1 flex flex-col">
-	{#if productsGet.isLoading}
-	<div class="frame size-full">
-		<span class="text-sm animate-pulse italic text-muted-foreground/50">
-			Loading products...
-		</span>
-	</div>
-	{:else if productsGet.isError}
-	{productsGet.error.message}
-	{:else if productsGet.isSuccess}
 	<ul class="">
-		{#each productsGet.data as product(product.id)}
+		{#each data.products as product(product.id)}
 			<li class="px-6 py-2 flex items-center border-b h-10 group" transition:blur>
 				<ContextMenu.Root>
 					<ContextMenu.Trigger class="flex-1 gallery gap-4">
@@ -114,13 +48,17 @@
 						</div>
 					</ContextMenu.Trigger>
 					<ContextMenu.Content>
-						<ContextMenu.Item onclick={async () => await addPinned(product.id)}>Pin '{product.name}' product</ContextMenu.Item>
-						<ContextMenu.Separator/>
-						<ContextMenu.Item class="text-red-500" onclick={() => productDelete.mutate({ id: product.id })}>Delete</ContextMenu.Item>
+						{#each CLASSES["Product"].actions as { label, icon: Icon, action }}
+							{#if label === "Delete"}
+								<ContextMenu.Separator/>
+							{/if}
+							<ContextMenu.Item onclick={async () => await action({}, product.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+								<Icon class="size-4 mr-2"/> {label}
+							</ContextMenu.Item>
+						{/each}
 					</ContextMenu.Content>
 				</ContextMenu.Root>
 			</li>
 		{/each}
 	</ul>
-	{/if}
 </main>

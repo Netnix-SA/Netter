@@ -1,6 +1,5 @@
 import { client } from '@/state';
 import type { PageLoad } from './$types';
-import { StringRecordId } from 'surrealdb';
 import { error } from '@sveltejs/kit';
 
 export const load: PageLoad = async ({ params: { id }, fetch }) => {

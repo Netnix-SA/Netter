@@ -6,7 +6,7 @@
 
 	import "carta-md/default.css";
 	import Label from "@/components/ui/label/label.svelte";
-	import { EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
+	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
 	import UserSelect from "@/components/UserSelect.svelte";
 	import Pin from "@/components/Pin.svelte";
 
@@ -18,6 +18,7 @@
     import Button from "@/components/ui/button/button.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Dialog from "$lib/components/ui/dialog";
+    import { DotsHorizontal } from "svelte-radix";
 
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
@@ -132,7 +133,21 @@
 			{data.task.title}
 		</h1>
 	</div>
-	<Pin pinned={data.user.pinned} id={data.task.id}/>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="rounded border frame size-6">
+			<DotsHorizontal class="size-4"/>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			{#each CLASSES["Task"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
+				<DropdownMenu.Separator/>
+			{/if}
+			<DropdownMenu.Item onclick={async () => await action({}, data.task.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</DropdownMenu.Item>
+			{/each}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </header>
 <div class="flex-1 flex p-24">
 	<div class="flex flex-col gap-4 w-[64em]">

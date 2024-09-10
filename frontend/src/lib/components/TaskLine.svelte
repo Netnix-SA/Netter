@@ -6,7 +6,6 @@
 	import UserAvatar from "./UserAvatar.svelte";
 	import { addPinned, addToDo } from "@/actions";
     import LabelChip from "./LabelChip.svelte";
-    import { createMutation, useQueryClient } from "@tanstack/svelte-query";
     import { client } from "@/state";
     import { toast } from "svelte-sonner";
     import { todo } from "@/all.svelte";
@@ -16,18 +15,6 @@
 	type Label = { id: string, title: string, icon: string, color: string };
 
 	let { task, user, labels }: { task: Task, labels: Label[], user: { id: string, full_name: string } | undefined/* | ((id: string) => Promise<{ id: string, full_name: string }>)*/ } = $props();
-
-	const queryClient = useQueryClient();
-
-	let pinCreate = createMutation(() => ({
-		mutationFn: ({ id }: { id: string }) => {
-			return client.api.users.me.pins.post({ id });
-		},
-		onSuccess: () => {
-			toast.success("Pinned");
-			queryClient.invalidateQueries({ queryKey: ['pins'] });
-		},
-	}));
 </script>
 
 <ContextMenu.Root>
@@ -95,7 +82,7 @@
 			{#if label === "Delete"}
 				<ContextMenu.Separator/>
 			{/if}
-			<ContextMenu.Item onclick={async () => await action(queryClient, task.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+			<ContextMenu.Item onclick={async () => await action({}, task.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
 				<Icon class="size-4 mr-2"/> {label}
 			</ContextMenu.Item>
 		{/each}
