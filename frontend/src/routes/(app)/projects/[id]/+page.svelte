@@ -12,7 +12,7 @@
 	import { task } from "@/all.svelte";
     import { CalendarArrowUp, Check, Clock9, Star } from "lucide-svelte";
     import UserSelect from "@/components/UserSelect.svelte";
-    import { STATES } from "@/global";
+    import { CLASSES, STATES } from "@/global";
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
     import Pin from "@/components/Pin.svelte";
@@ -97,13 +97,14 @@
 			<DotsHorizontal class="size-4"/>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
-			<DropdownMenu.Group>
-				<DropdownMenu.Item>Pin</DropdownMenu.Item>
+			{#each CLASSES["Project"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
 				<DropdownMenu.Separator/>
-				<DropdownMenu.Item class="text-red-500" onclick={() => projectDelete.mutate()}>
-					Delete
-				</DropdownMenu.Item>
-			</DropdownMenu.Group>
+			{/if}
+			<DropdownMenu.Item onclick={async () => await action(queryClient, project.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</DropdownMenu.Item>
+			{/each}
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 	<!-- <Pin pinned={data.user.pinned} id={data.project.id}/> -->

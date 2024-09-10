@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, test, describe } from "bun:test";
 
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
@@ -142,5 +142,17 @@ test("Get related bugs", async () => {
 		const response = await client.api.features({ id: feature.id }).bugs.get();
 		expect(response.status).toBe(200);
 		expect(response.data).toMatchObject([{ id: bug.id }]);
+	}
+});
+
+describe("Update feature", async () => {
+	const db = await create_db(); const eq = new MemoryEvents();
+	const client = treaty(server(db, eq));
+
+	const feature = await create_feature(client);
+
+	{
+		const response = await client.api.features({ id: feature.id }).patch({ name: "Updated Test Feature", description: "This is an updated test feature", constraints: "", notes: "", value: "Low" });
+		expect(response.status).toBe(200);
 	}
 });

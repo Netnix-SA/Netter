@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { tBug, tComponent, tComponentId, tFeature, tFeatureId, tFeaturePost, tTask } from "./schemas";
+import { tBug, tComponent, tComponentId, tFeature, tFeatureId, tFeaturePost, tTask, tValues } from "./schemas";
 import { type Bug, type Component, type Efforts, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
@@ -23,6 +23,24 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	response: t.Object({ id: tFeatureId }),
 	detail: {
 		description: "Creates a feature under the connected user's organization"
+	}
+})
+
+.patch("/:id", async ({ params: { id }, body }) => {
+	const feature_id = new StringRecordId(id);
+	let feature = {};
+	
+	if (body.name) feature = { ...feature, name: body.name };
+	if (body.description) feature = { ...feature, description: body.description };
+	if (body.constraints) feature = { ...feature, constraints: body.constraints };
+	if (body.notes) feature = { ...feature, notes: body.notes };
+	if (body.value) feature = { ...feature, value: body.value };
+
+	await db.merge<Feature>(feature_id, feature);
+}, {
+	body: t.Object({ name: t.Optional(t.String()), description: t.Optional(t.String()), constraints: t.Optional(t.String()), notes: t.Optional(t.String()), value: t.Optional(tValues) }),
+	detail: {
+		description: "Updates a feature"
 	}
 })
 

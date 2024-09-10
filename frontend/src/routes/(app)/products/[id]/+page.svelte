@@ -3,8 +3,19 @@
     import { page } from "$app/stores";
     import { blur } from "svelte/transition";
     import Pin from "@/components/Pin.svelte";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+    import { DotsHorizontal } from "svelte-radix";
+    import { CLASSES } from "@/global";
+    import { onNavigate } from "$app/navigation";
+    import { updateProductMutation } from "@/state";
 
     let { data }: { data: PageData } = $props();
+
+	let product = $state(data.product);
+
+	onNavigate(async () => {
+		await updateProductMutation({})(product);
+	});
 </script>
 
 <svelte:head>
@@ -20,15 +31,28 @@
 			<a href={`${$page.url}/features`} class="text-xs text-center tactile-text">Features</a>
 		</div>
 	</div>
-	<Pin pinned={data.user.pinned} id={data.product.id}/>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="rounded border frame size-6">
+			<DotsHorizontal class="size-4"/>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			{#each CLASSES["Product"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
+				<DropdownMenu.Separator/>
+			{/if}
+			<DropdownMenu.Item onclick={async () => await action({}, data.product.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</DropdownMenu.Item>
+			{/each}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </header>
 <div class="flex-1 flex flex-col w-full divide-y">
 	<main class="flex-1 flex p-24">
 		<div class="flex-1">
-			<h1 class="text-5xl font-semibold bg-gradient-to-b from-popover-foreground to-muted-foreground bg-clip-text text-transparent" in:blur>{data.product.name}</h1>
-			<p class="text-muted-foreground h-[8lh]">
-				{data.product.description}
-			</p>
+			<input class="text-5xl font-semibold bg-gradient-to-b from-popover-foreground to-muted-foreground bg-clip-text text-transparent" transition:blur bind:value={product.name}/>
+			<textarea class="text-muted-foreground h-[8lh]" bind:value={product.description}>
+			</textarea>
 		</div>
 		<div class="column gap-4">
 			<div class="w-96 column">

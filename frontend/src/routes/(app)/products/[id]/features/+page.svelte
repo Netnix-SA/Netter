@@ -64,9 +64,12 @@
 		<ul class="">
 			{#each data.features as feature(feature.id)}
 			<li class="gallery px-4 h-10 border-b" transition:blur>
-				<a href={`/features/${feature.id}`} class="text-sm tactile-text">
+				<a href={`/features/${feature.id}`} class="text-sm tactile-text flex-1">
 					{feature.name}
 				</a>
+				<span class="text-muted-foreground/50 text-xs">
+					{feature.value}
+				</span>
 			</li>
 			{/each}
 		</ul>

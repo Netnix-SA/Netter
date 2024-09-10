@@ -1,7 +1,7 @@
 import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
-import { deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
+import { deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
 import type { QueryClient } from "@tanstack/svelte-query";
 import { todo } from "./all.svelte";
 
@@ -209,10 +209,44 @@ export const CLASSES = {
     "Project": {
     	icon: CLASS_TO_ICON["Project"],
     	url: (id?: string) => id ? `/projects/${id}` : "/projects",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient, id: string) => deleteProjectMutation(queryClient)(id),
+			}
+		],
     },
     "Product": {
     	icon: CLASS_TO_ICON["Product"],
     	url: (id?: string) => id ? `/products/${id}` : "/products",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient, id: string) => deleteProductMutation(queryClient)(id),
+			}
+		],
     },
     "View": {
     	icon: CLASS_TO_ICON["View"],

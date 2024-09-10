@@ -5,8 +5,18 @@
     import Select from "@/components/Select.svelte";
     import { VALUES } from "@/global";
     import AnyChip from "@/components/AnyChip.svelte";
+    import { onNavigate } from "$app/navigation";
+    import { updateFeatureMutation } from "@/state";
 
 	let { data }: { data: PageData } = $props();
+
+	let feature = $state(data.feature);
+
+	onNavigate(async () => {
+		updateFeatureMutation({})(feature);
+	});
+
+	$inspect(feature);
 </script>
 
 <svelte:head>
@@ -25,19 +35,19 @@
 </header>
 <div class="flex-1 w-full flex px-12 py-12">
 	<div class="column flex-1 gap-4">
-		<input type="text" class="tactile-text text-4xl font-bold" bind:value={data.feature.name}/>
+		<input type="text" class="tactile-text text-4xl font-bold" bind:value={feature.name}/>
 		<section class="column">
 			<span class="text-sm text-muted-foreground">Description</span>
-			<textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea>
+			<textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.description}></textarea>
 		</section>
 		<div class="gallery gap-4">
 			<section class="flex flex-col flex-1">
 				<span class="text-sm text-muted-foreground">Constraints</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.constraints}</textarea>
+				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.constraints}></textarea>
 			</section>
 			<section class="flex flex-col flex-1">
 				<span class="text-sm text-muted-foreground">Notes</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.notes}</textarea>
+				<textarea class="flex-1 w-full p-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.notes}></textarea>
 			</section>
 		</div>
 		<section>
@@ -66,7 +76,7 @@
 		<Separator/>
 		<section>
 			<!-- <span class="text-sm text-muted-foreground">Value</span> -->
-			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={data.feature.value}/>
+			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={feature.value}/>
 		</section>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Components</span>
