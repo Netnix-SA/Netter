@@ -156,3 +156,15 @@ describe("Update feature", async () => {
 		expect(response.status).toBe(200);
 	}
 });
+
+describe("Delete feature", async () => {
+	const db = await create_db(); const eq = new MemoryEvents();
+	const client = treaty(server(db, eq));
+
+	const feature = await create_feature(client);
+
+	{
+		const response = await client.api.features({ id: feature.id }).delete();
+		expect(response.status).toBe(200);
+	}
+});

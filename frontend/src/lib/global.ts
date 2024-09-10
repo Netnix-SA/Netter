@@ -1,9 +1,10 @@
 import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, Component, Copy, DiamondPlus, Flag, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
-import { createProductFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
+import { createProductFeatureMutation, deleteFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
 import type { QueryClient } from "@tanstack/svelte-query";
 import { task, todo } from "./all.svelte";
+import { goto } from "$app/navigation";
 
 export type SelectEntry<T> = {
     label: string;
@@ -185,6 +186,23 @@ export const CLASSES = {
 	"Feature": {
 		icon: CLASS_TO_ICON["Feature"],
 		url: (id?: string) => id ? `/features/${id}` : "/features",
+		actions: [
+			{
+				label: "Create related ToDo",
+				icon: CLASS_TO_ICON["ToDo"],
+				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Pin",
+				icon: Pin,
+				action: (queryClient: QueryClient, id: string) => pinItemMutation(queryClient)(id),
+			},
+			{
+				label: "Delete",
+				icon: Trash,
+				action: (queryClient: QueryClient, id: string) => deleteFeatureMutation(queryClient)(id),
+			}
+		],
 	},
 	"Application": {
 		icon: CLASS_TO_ICON["Application"],
@@ -223,6 +241,16 @@ export const CLASSES = {
     	icon: CLASS_TO_ICON["Project"],
     	url: (id?: string) => id ? `/projects/${id}` : "/projects",
 		actions: [
+			{
+				label: "Tasks",
+				icon: CLASS_TO_ICON["Task"],
+				action: (queryClient: QueryClient, id: string) => goto(`/projects/${id}/tasks`),
+			},
+			{
+				label: "Objective",
+				icon: CLASS_TO_ICON["Objective"],
+				action: (queryClient: QueryClient, id: string) => goto(`/projects/${id}/objectives/active`),
+			},
 			{
 				label: "Create related ToDo",
 				icon: CLASS_TO_ICON["ToDo"],

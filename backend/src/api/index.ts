@@ -25,6 +25,7 @@ import { messages } from "./messages";
 import { objectives } from "./objectives";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import type { Events } from "../events";
+import { tClasses } from "./schemas";
 
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
@@ -77,6 +78,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	response: t.Array(t.Object({ id: t.String(), title: t.String() })),
 	query: t.Object({
 		text: t.Optional(t.String({ maxLength: 128 })),
+		class: t.Optional(tClasses),
 	}),
 	detail: {
 		description: "Allows searching across the querying user's whole organization",

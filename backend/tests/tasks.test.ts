@@ -39,7 +39,7 @@ describe("Close task", async () => {
 	test("as resolved", async () => {
 		const task = await create_task(client, status);
 
-		const response = await client.api.tasks({ id: task.id }).delete({ id: resolved_status.id, close_as: "Resolved", note: "This task was completed!" });
+		const response = await client.api.tasks({ id: task.id }).put({ id: resolved_status.id, close_as: "Resolved", note: "This task was completed!" });
 
 		expect(response.status).toBe(200);
 
@@ -53,7 +53,7 @@ describe("Close task", async () => {
 		const task = await create_task(client, status);
 		const duplicate_task = await create_task(client, status);
 
-		const response = await client.api.tasks({ id: duplicate_task.id }).delete({ id: resolved_status.id, close_as: "Duplicate", original: task.id });
+		const response = await client.api.tasks({ id: duplicate_task.id }).put({ id: resolved_status.id, close_as: "Duplicate", original: task.id });
 
 		const closed_task = await client.api.tasks({ id: duplicate_task.id }).get();
 
@@ -64,7 +64,7 @@ describe("Close task", async () => {
 	test("as canceled", async () => {
 		const task = await create_task(client, status);
 
-		const response = await client.api.tasks({ id: task.id }).delete({ id: resolved_status.id, close_as: "Cancelled", note: "This task was canceled!" });
+		const response = await client.api.tasks({ id: task.id }).put({ id: resolved_status.id, close_as: "Cancelled", note: "This task was canceled!" });
 
 		expect(response.status).toBe(200);
 

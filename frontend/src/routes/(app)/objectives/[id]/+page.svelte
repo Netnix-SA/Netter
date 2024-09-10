@@ -3,11 +3,13 @@
 	import AnyChip from "@/components/AnyChip.svelte";
 	import Button from "@/components/ui/button/button.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import * as Dialog from "$lib/components/ui/dialog";
     import { DotsHorizontal } from "svelte-radix";
 	import { page } from "$app/stores";
 	import { addPinned } from "@/actions";
 	import Pin from "@/components/Pin.svelte";
     import { CLASSES } from "@/global";
+    import Search from "@/components/Search.svelte";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -57,6 +59,16 @@
 					<AnyChip id={feature.id} pinned={data.user.pinned}/>
 				{/each}
 			</section>
+			<Dialog.Root>
+				<Dialog.Trigger>Add</Dialog.Trigger>
+				<Dialog.Content>
+					<Dialog.Header>
+						<Dialog.Title>Select the Feature to add to this Objective</Dialog.Title>
+						<Dialog.Description></Dialog.Description>
+					</Dialog.Header>
+					<Search/>
+				</Dialog.Content>
+			</Dialog.Root>
 		</div>
 		<side>
 			<section class="column gap-2">

@@ -339,7 +339,7 @@ export type Feature = {
 	value: Value,
 };
 
-export type ComponentTypes = "Application" | "Service" | "API" | "HTTP Route" | "UI Component" | "UI Page";
+export type ComponentTypes = "Application" | "Service" | "API" | "HTTP Route" | "UI Component" | "UI Page" | "Database Table" | "Database";
 
 export type Component = {
 	id: ComponentId,

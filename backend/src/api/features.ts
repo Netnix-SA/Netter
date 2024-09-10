@@ -44,6 +44,15 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	}
 })
 
+.delete("/:id", async ({ params: { id } }) => {
+	await db.delete(new StringRecordId(id));
+}, {
+	params: t.Object({ id: tFeatureId }),
+	detail: {
+		description: "Deletes a feature"
+	}
+})
+
 .get("", async () => {
 	const features = await db.select<Feature>("Feature");
 

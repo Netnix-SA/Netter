@@ -24,6 +24,8 @@ export const tPriorities = t.Union([t.Literal("Low"), t.Literal("Medium"), t.Lit
 export const tColors = t.Union([t.Literal("Orange/Light"), t.Literal("Green/Light"), t.Literal("Purple/Light"), t.Literal("Red/Light")], { default: "Green/Light" });
 export const tEfforts = t.Union([t.Literal("Hour"), t.Literal("Hours"), t.Literal("Day"), t.Literal("Days"), t.Literal("Week")], { default: "White" });
 
+export const tClasses = t.Union([t.Literal("Task"), t.Literal("Project"), t.Literal("Team"), t.Literal("Channel"), t.Literal("Product"), t.Literal("Bug"), t.Literal("Feature"), t.Literal("Label"), t.Literal("Message"), t.Literal("Repository"), t.Literal("MergeRequest"), t.Literal("User"), t.Literal("ToDo")]);
+
 export const tCompany = t.Any();
 
 export const tUserPost = t.Object({

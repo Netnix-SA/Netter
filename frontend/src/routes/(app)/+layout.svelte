@@ -152,7 +152,7 @@
 							Pinned
 						</span>
 						<div class="column flex-1 gap-2 overflow-scroll">
-							{#each data.user.pinned as pinned}
+							{#each data.user.pinned as pinned(Math.random())}
 								<AnyChip id={pinned} pinned={data.user.pinned}/>
 							{/each}
 						</div>

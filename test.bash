@@ -7,7 +7,7 @@ TEST_COMMAND="docker compose run backend bun test $@"
 start_db() {
   echo "Starting database container..."
   docker compose up --remove-orphans -d db
-  sleep 1
+  sleep 2
 }
 
 # Function to stop the database container

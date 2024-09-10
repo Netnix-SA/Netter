@@ -8,7 +8,6 @@
 	import Label from "@/components/ui/label/label.svelte";
 	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
 	import UserSelect from "@/components/UserSelect.svelte";
-	import Pin from "@/components/Pin.svelte";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
@@ -22,12 +21,13 @@
 
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
-    import { client, commands } from "@/state";
+    import { client, commands, updateTaskMutation } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
     import ComboBox from "@/components/ComboBox.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
+    import { onNavigate } from "$app/navigation";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -44,39 +44,39 @@
 		const entry = {
 			name: "Task",
 			commands: [
-				{ name: "Add to ToDo's", do: () => {} },
-				{
-					name: "Add blocker",
-					do: () => {
-						add_blocker = true;
-					}
-				},
-				{
-					name: "Add child",
-					do: () => {
-						add_child = true;
-					}
-				},
-				{
-					name: "Add relative",
-					do: () => {
-						add_relative = true;
-					}
-				},
-				{
-					name: "Add update",
-					key: 'u',
-					do: () => {
-						add_update = true;
-					}
-				},
-				{
-					name: "Resolve task",
-					key: 'r',
-					do: () => {
-						show_resolve_menu = true;
-					}
-				},
+				// { name: "Add to ToDo's", do: () => {} },
+				// {
+				// 	name: "Add blocker",
+				// 	do: () => {
+				// 		add_blocker = true;
+				// 	}
+				// },
+				// {
+				// 	name: "Add child",
+				// 	do: () => {
+				// 		add_child = true;
+				// 	}
+				// },
+				// {
+				// 	name: "Add relative",
+				// 	do: () => {
+				// 		add_relative = true;
+				// 	}
+				// },
+				// {
+				// 	name: "Add update",
+				// 	key: 'u',
+				// 	do: () => {
+				// 		add_update = true;
+				// 	}
+				// },
+				// {
+				// 	name: "Resolve task",
+				// 	key: 'r',
+				// 	do: () => {
+				// 		show_resolve_menu = true;
+				// 	}
+				// },
 			]
 		};
 
@@ -100,6 +100,7 @@
 
 	const { data }: { data: PageData } = $props();
 
+	let title: string = $state(data.task.title);
 	let body: string = $state(data.task.body);
 	let status: { id: string, state: State } | null = $state(data.statuses.find(s => s.id === data.task.status.id) || null);
 	let priority: Priorities | null = $state(data.task.priority);
@@ -120,7 +121,9 @@
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
 	);
 
-	$inspect(data.task);
+	onNavigate(async () => {
+		await updateTaskMutation({})({ id: data.task.id, title, body, priority, effort, value });
+	});
 </script>
 
 <svelte:head>
@@ -176,7 +179,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
-				<input class="text-4xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={data.task.title}/>
+				<input class="text-4xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={title}/>
 				<!-- TODO: link to merge request -->
 			</div>
 			<Dialog.Root bind:open={show_resolve_menu}>

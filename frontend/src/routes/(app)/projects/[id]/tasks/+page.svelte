@@ -11,20 +11,7 @@
 
 	let filters: ((StateFilter | StatusFilter | TextFilter | LabelFilter) & { display: string })[] = $state([]);
 
-	let tasksGet = createQuery(() => ({
-		queryKey: ['tasks'],
-		queryFn: async () => {
-			const response = await client.api.projects({ id: data.project.id }).tasks.get();
-
-			if (response.data) {
-				return response.data;
-			} else {
-				throw new Error();
-			}
-		},
-	}));
-
-	let tasks = $derived(tasksGet.data ?? []);
+	let tasks = $derived(data.tasks);
 
 	let groups = $derived(data.statuses.map(s => [s, tasks.filter(t => filters.every(filter => filterTask(t, filter, data.statuses)))]));
 
@@ -64,7 +51,6 @@
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
     import { task } from "@/all.svelte";
-    import { createQuery } from "@tanstack/svelte-query";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);

@@ -11,3 +11,5 @@ test("Parse valid mentions", () => {
 test("Parse invalid mentions", () => {
 	expect(parse_mentions("Hello di@na!")).toEqual([]);
 });
+
+test.todo("Test full-text search");

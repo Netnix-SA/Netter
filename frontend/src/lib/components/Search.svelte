@@ -1,34 +1,55 @@
 <script lang="ts">
-	import { Command, CommandList, CommandEmpty, CommandItem, CommandSeparator, } from "$lib/components/ui/command";
+	import * as Popover from "$lib/components/ui/popover";
+	import { Command, CommandList, CommandEmpty, CommandItem, CommandInput, CommandGroup } from "$lib/components/ui/command";
     import { client } from "@/state";
+    import { tick } from "svelte";
+    import { Button } from "./ui/button";
+    import { Check, ChevronsUpDown } from "lucide-svelte";
+    import { cn } from "@/utils";
+
+	let open = $state(false);
+   
+	let selectedEntry: { label: string, value: string } | undefined = $state(undefined);
+   
+	// We want to refocus the trigger button when the user selects
+	// an item from the list so users can continue navigating the
+	// rest of the form with the keyboard.
+	function closeAndFocusTrigger(triggerId: string) {
+		open = false;
+		tick().then(() => {
+			document.getElementById(triggerId)?.focus();
+		});
+	}
 
 	let search = $state("");
-	let entries: any[] = $state([]);
+	let results: { id: string, title: string }[] = $state([]);
+	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id })));
 
 	async function handleInput(e: Event) {
 		const { data } = await client.api.get({ query: { text: search } });
-		entries = data;
+		results = data || [];
 	}
 </script>
-
-<div class="relative min-h-10 w-64 group">
-	<input type="search" placeholder={"Search"} class="border px-2 py-1" bind:value={search} oninput={handleInput}/>
-	<div class="absolute shadow-2xl top-10 left-0 border rounded-md w-64 hidden group-focus-within:block">
-		{#key search}
+   
+<Popover.Root bind:open let:ids>
+	<Popover.Trigger asChild let:builder>
+		<Button builders={[builder]} variant="outline" role="combobox" aria-expanded={open} class="w-[200px] justify-between">
+			{selectedEntry?.label || "Select an item"}
+			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+		</Button>
+	</Popover.Trigger>
+	<Popover.Content class="w-[200px] p-0">
 		<Command>
-			<CommandList>
-				{#if search === ""}
-					<CommandEmpty>Start typing to search.</CommandEmpty>
-				{:else}
-					<CommandEmpty>No results found.</CommandEmpty>
-				{/if}
-				{#if entries.length > 0}
-					{#each entries as { id, title }(id)}
-						<CommandItem class="h-8" onSelect={async () => {}}>{title}</CommandItem>
-					{/each}
-				{/if}
-			</CommandList>
+			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; await handleInput(e) }}/>
+			<CommandEmpty>No results found.</CommandEmpty>
+			<CommandGroup>
+				{#each entries as entry(entry.value)}
+					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(ids.trigger); }}>
+						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>
+						{entry.label}
+					</CommandItem>
+				{/each}
+			</CommandGroup>
 		</Command>
-		{/key}
-	</div>
-</div>
+	</Popover.Content>
+</Popover.Root>

@@ -7,6 +7,7 @@
 	let { data }: { data: PageData } = $props();
 
     import { client } from "@/state";
+    import { blur } from "svelte/transition";
 </script>
 
 <svelte:head>
@@ -46,7 +47,7 @@
 		</div>
 		<ul class="flex-1">
 			{#each data.todos as todo}
-				<li class="border-b h-10">
+				<li class="border-b h-10" transition:blur>
 					<ToDoLine {todo}/>
 				</li>
 			{:else}

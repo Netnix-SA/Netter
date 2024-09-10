@@ -6,7 +6,7 @@ import { task, todo } from "./all.svelte";
 import { toast } from "svelte-sonner";
 import { goto, invalidate } from "$app/navigation";
 import { createMutation } from "./query";
-import type { Value } from "./types";
+import type { Efforts, Value } from "./types";
 
 export const client = treaty<App>('localhost', { fetch: { credentials: 'include' } });
 
@@ -86,24 +86,27 @@ export const deleteTaskMutation = createMutation({
 		const response = await client.api.tasks({ id }).delete();
 		if (response.error) {
 			throw new Error();
-		} else {
-			return response.data;
 		}
+
+		return { id };
 	},
-	onSuccess: () => {
+	onSuccess: (data) => {
 		toast.success("Deleted Task");
 		invalidate('tasks:get');
+		invalidate(data.id);
 	},
 	onError: onError("Failed to delete task"),
 });
 
 export const deleteToDoMutation = createMutation({
-	mutationFn: ({ id }: { id: string }) => {
-		return client.api.todos({ id }).delete();
+	mutationFn: async ({ id }: { id: string }) => {
+		await client.api.todos({ id }).delete();
+		return { id };
 	},
-	onSuccess: () => {
+	onSuccess: (data) => {
 		toast.success("Deleted ToDo");
 		invalidate('todos:get');
+		invalidate(data.id);
 	},
 	onError: onError("Failed to delete ToDo"),
 });
@@ -114,10 +117,12 @@ export const updateFeatureMutation = createMutation({
 		if (response.error) {
 			throw new Error();
 		}
+		return { id };
 	},
-	onSuccess: () => {
+	onSuccess: (data) => {
 		toast.success("Updated Feature");
 		invalidate('features:get');
+		invalidate(data.id);
 	},
 	onError: onError("Failed to update feature"),
 });
@@ -128,10 +133,12 @@ export const deleteProjectMutation = createMutation({
 		if (response.error) {
 			throw new Error();
 		}
+		return { id };
 	},
-	onSuccess: () => {
+	onSuccess: (data) => {
 		toast.success("Deleted Project");
 		invalidate('projects:get');
+		invalidate(data.id);
 	},
 	onError: onError("Failed to delete project"),
 });
@@ -176,6 +183,38 @@ export const createProductFeatureMutation = createMutation({
 		invalidate('features:get');
 	},
 	onError: onError("Failed to add feature to product"),
+});
+
+export const updateTaskMutation = createMutation({
+	mutationFn: async ({ id, title, body, priority, effort, value, }: { id: string, title: string, body: string, priority?: "Low" | "Medium" | "High", effort: Efforts, value: Value }) => {
+		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Updated Task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update task"),
+});
+
+export const deleteFeatureMutation = createMutation({
+	mutationFn: async (id: string) => {
+		const response = await client.api.features({ id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Deleted Feature");
+		invalidate('features:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to delete feature"),
 });
 
 export const createObjectiveMutation = createMutation({
@@ -255,10 +294,12 @@ export const updateProductMutation = createMutation({
 		if (response.error) {
 			throw new Error();
 		}
+		return { id };
 	},
-	onSuccess: () => {
+	onSuccess: (data) => {
 		toast.success("Updated Product");
 		invalidate('products:get');
+		invalidate(data.id);
 	},
 	onError: onError("Failed to update product"),
 });

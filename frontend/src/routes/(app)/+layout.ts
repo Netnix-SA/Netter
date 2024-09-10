@@ -36,6 +36,12 @@ export const load: LayoutLoad = async ({ fetch, depends }) => {
 
 	depends('pins:get');
 
+	for (const pin of user.pinned) {
+		depends(pin);
+	}
+
+	console.log("Loaded layout");
+
     return {
         user,
         users,
