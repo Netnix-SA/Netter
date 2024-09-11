@@ -430,3 +430,13 @@ export type KimaiIntegration = {
 export type SharePointIntegration = {
 	type: "SharePoint",
 };
+
+export type Transaction = {
+	id: RecordId,
+	action: "CREATE" | "UPDATE" | "DELETE",
+	class: Tables,
+	oid: RecordId,
+	path: string | null,
+	user: UserId,
+	timestamp: Date,
+};

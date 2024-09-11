@@ -1,4 +1,4 @@
-import type { Channel, Efforts, Feature, Priorities, ProjectId, State, Status, StatusId, Task, UserId, Value } from "../db/types";
+import { Transaction, type Channel, type Efforts, type Feature, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type UserId, type Value } from "../db/types";
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
@@ -247,6 +247,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	const task = await create(db, body.title, body.body, undefined, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
 
 	await event_queue.publish("task.create", map(task));
+	await db.create<Omit<Transaction, "id">>("Transaction", { class: "Task", oid: task.id, action: "CREATE", timestamp: new Date(), user: "", path: null });
 
 	return {
 		id: task.id.toString(),

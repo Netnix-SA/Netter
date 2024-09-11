@@ -12,7 +12,7 @@ export async function create_db() {
 		database: `${Date.now()}-${Math.floor(Math.random() * 999999)}`,
 	});
 
-	await db.query("DEFINE TABLE Bug; DEFINE TABLE Feature; DEFINE TABLE Status; DEFINE TABLE Project; DEFINE TABLE Task; DEFINE TABLE impacts TYPE RELATION;");
+	await db.query(await Bun.file("/app/start.sql").text());
 
 	return db;
 }

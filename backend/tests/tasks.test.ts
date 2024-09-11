@@ -4,6 +4,8 @@ import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_feature, create_label, create_project, create_status, create_task, create_user } from "./utils";
 import { MemoryEvents } from "../src/events";
+import type { Transaction } from "../src/db/types";
+import { RecordId, StringRecordId, surql } from "surrealdb";
 
 test("Create task", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
@@ -18,11 +20,16 @@ test("Create task", async () => {
 
 	const { data: task } = await client.api.tasks({ id: response.data.id }).get();
 
+	if (task === null) { throw new Error("Task is null"); }
+
 	expect(task).toMatchObject({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", });
 
 	const task_create_events = await eq.get("task.create");
 
 	expect(task_create_events).toMatchObject([{ id: response.data.id }]);
+
+	const [[task_create_transaction]] = await db.query<[Transaction[]]>(surql`SELECT * FROM Transaction WHERE oid = ${new StringRecordId(task.id)};`);
+	expect(task_create_transaction).toMatchObject({ oid: new RecordId(task.id.split(':')[0], task.id.split(':')[1]), action: "CREATE", class: "Task", path: null });
 });
 
 describe("Close task", async () => {
