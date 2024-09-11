@@ -222,11 +222,21 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .delete("/:id", async ({ params: { id } }) => {
-	await db.delete(new StringRecordId(id));
+	const project_id = new StringRecordId(id);
+
+	await db.query(surql`
+		BEGIN TRANSACTION;
+
+		DELETE FROM Task WHERE belongs_to == ${project_id};
+		DELETE FROM Objective WHERE id IN ${project_id}.objectives.id;
+		DELETE FROM Project WHERE id == ${project_id};
+
+		COMMIT TRANSACTION;
+	`);
 }, {
 	params: t.Object({ id: tProjectId }),
 	detail: {
-		description: "Deletes a project by its ID.",
+		description: "Deletes a project by its ID. This will also delete all tasks and objectives associated with the project.",
 	}
 })
 

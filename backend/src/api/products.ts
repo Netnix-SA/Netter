@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import { tApplication, tFeature, tFeatureId, tFeaturePost, tProduct, tProductId, tProductPost } from "./schemas";
 import { type Application, type Feature, type Product } from "../db/types";
 import Surreal, { StringRecordId, surql } from "surrealdb";
@@ -26,11 +26,16 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 .delete("/:id", async ({ params: { id } }) => {
 	const product_id = new StringRecordId(id);
 
-	await db.delete<Product>(product_id);
+	await db.query(surql`
+		BEGIN TRANSACTION;
+		DELETE FROM Feature WHERE product == ${product_id};
+		DELETE FROM Product WHERE id == ${product_id};
+		COMMIT TRANSACTION;
+	`);
 }, {
 	params: t.Object({ id: tProductId }),
 	detail: {
-		description: "Deletes a product by its ID"
+		description: "Deletes a product by its ID. All features associated with the product are also deleted."
 	}
 })
 
@@ -44,6 +49,10 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 
 .get("/:id", async ({ params: { id } }) => {
 	const product = await db.select<Product>(new StringRecordId(id));
+
+	if (!product) {
+		throw new NotFoundError("No Product with that ID exists.");
+	}
 
 	return map(product);
 }, {

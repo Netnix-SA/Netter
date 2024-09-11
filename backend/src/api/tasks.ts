@@ -63,11 +63,9 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 })
 
 .get("/:id", async ({ params: { id } }) => {
-	const tasks = await query(db, { id, assignee: undefined, state: undefined, belongs_to: undefined });
+	const [task] = await query(db, { id, assignee: undefined, state: undefined, belongs_to: undefined });
 
-	const task = tasks[0];
-
-	if(task === undefined) {
+	if(!task) {
 		throw new NotFoundError("No task under that id found!");
 	}
 
@@ -377,9 +375,7 @@ export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { 
 
 	query += ';';
 
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>(query);
-
-	const tasks = results[0];
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>(query);
 
 	return tasks.map(map);
 };

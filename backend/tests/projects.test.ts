@@ -178,4 +178,36 @@ describe("Delete", async () => {
 
 		expect(project_response.status).toBe(404);
 	});
+
+	test("project with tasks", async () => {
+		const project = await create_project(client, status);
+		const { data: task } = await client.api.projects({ id: project.id }).tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
+
+		const response = await client.api.projects({ id: project.id }).delete();
+
+		expect(response.status).toBe(200);
+
+		const project_response = await client.api.projects({ id: project.id }).get();
+		expect(project_response.status).toBe(404);
+
+		const task_response = await client.api.tasks({ id: task.id }).get();
+		expect(task_response.status).toBe(404);
+	});
+
+	test("project with objectives", async () => {
+		const project = await create_project(client, status);
+		const { data: objective } = await client.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+
+		const response = await client.api.projects({ id: project.id }).delete();
+
+		expect(response.status).toBe(200);
+
+		const project_response = await client.api.projects({ id: project.id }).get();
+		expect(project_response.status).toBe(404);
+
+		const objective_response = await client.api.objectives({ id: objective.id }).get();
+		expect(objective_response.status).toBe(404);
+	});
+
+	test.todo("project related to tasks");
 });

@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import type { Feature, Objective, Task } from "../db/types";
 import { tFeature, tFeatureId, tFeatureId, tObjective, tTask } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
@@ -9,6 +9,10 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 
 .get("/:id", async ({ params: { id } }) => {
     const objective = await db.select<Objective>(new StringRecordId(id));
+
+	if (!objective) {
+		throw new NotFoundError("No Objective with that ID exists.");
+	}
 
     return map(objective);
 }, {

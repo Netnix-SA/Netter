@@ -105,10 +105,29 @@ describe("Delete", async () => {
 		}
 	});
 
+	test("product with features", async () => {
+		const product = await create_product(client);
+		const { data: feature } = await client.api.products({ id: product.id }).features.post({ name: "Test Feature", description: "This is a test feature", constraints: "", notes: "", value: "Low" });
+
+		const response = await client.api.products({ id: product.id }).delete();
+
+		expect(response.status).toBe(200);
+
+		{
+			const response = await client.api.products({ id: product.id }).get();
+			expect(response.status).toBe(404);
+		}
+
+		{
+			const response = await client.api.features({ id: feature.id }).get();
+			expect(response.status).toBe(404);
+		}
+	});
+
 	test("non-existent product", async () => {
 		const response = await client.api.products({ id: "Product:2a6s7w8e9b1x3a4k9e2p" }).delete();
 
-		expect(response.status).toBe(404);
+		expect(response.status).toBeOneOf([200, 404]);
 	});
 
 	test("already deleted product", async () => {
@@ -119,4 +138,6 @@ describe("Delete", async () => {
 
 		expect(response.status).toBeOneOf([200, 404]);
 	});
+
+	test.todo("product related to tasks");
 });

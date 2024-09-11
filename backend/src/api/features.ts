@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import { tBug, tComponent, tComponentId, tFeature, tFeatureId, tFeaturePost, tTask, tValues } from "./schemas";
 import { type Bug, type Component, type Efforts, type Feature, type Task } from "../db/types";
 import { map as mapBug } from "./bugs";
@@ -63,6 +63,10 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 
 .get("/:id", async ({ params: { id } }) => {
 	const feature = await db.select<Feature>(new StringRecordId(id));
+
+	if (!feature) {
+		throw new NotFoundError("No Feature with that ID exists.");
+	}
 
 	return map(feature);
 }, {

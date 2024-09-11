@@ -31,7 +31,7 @@ services:
       - 8000
     ports:
       - 8000:8000
-    command: start --user root --pass root surrealkv://data/database.db
+    command: start --user root --pass root rocksdb://data/database.db
     volumes:
       - db:/data
 
