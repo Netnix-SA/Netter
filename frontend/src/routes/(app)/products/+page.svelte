@@ -3,12 +3,8 @@
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 
-    import { addPinned } from "@/actions";
-    import { client } from "@/state";
-    import { toast } from "svelte-sonner";
-    import { goto } from "$app/navigation";
     import { blur } from "svelte/transition";
-    import Separator from "@/components/ui/separator/separator.svelte";
+    import { createProductMutation } from "@/state";
 
     let { data }: { data: PageData } = $props();
 </script>
@@ -20,13 +16,13 @@
 <header class="gallery bg-primary-foreground w-full border-b px-4 h-10 shrink-0">
 	<div class="gallery flex-1 gap-4">
 		<h1 class="tactile-text text-sm">
-			My products
+			Products
 		</h1>
 		<!-- <div class="rounded item-background h-6 w-12 frame">
 			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
 		</div> -->
 	</div>
-	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={() => productCreate.mutate()}>
+	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={() => createProductMutation({})()}>
 		+
 	</button>
 </header>

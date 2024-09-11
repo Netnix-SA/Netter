@@ -14,7 +14,7 @@
 <header class="gallery bg-primary-foreground w-full border-b px-4 h-10 shrink-0">
 	<div class="gallery flex-1 gap-4">
 		<h1 class="tactile-text text-sm">
-			My projects
+			Projects
 		</h1>
 	</div>
 	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-primary-foreground rounded-md" onclick={async () => await createProjectMutation({})()}>

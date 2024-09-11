@@ -68,12 +68,12 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	},
 })
 
-.get("", async ({ query: { text } }) => {
+.get("", async ({ query: { text, class: clss } }) => {
 	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>("SELECT id, full_name as title FROM User WHERE full_name @@ $text; SELECT id, name as title FROM Project WHERE name @@ $text; SELECT id, name as title FROM Team WHERE name @@ $text; SELECT id, title FROM Task WHERE title @@ $text; SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text; SELECT id, name as title FROM Channel WHERE name @@ $text; SELECT id, name as title FROM Product WHERE name @@ $text; SELECT id, name as title FROM Feature WHERE name @@ $text;", { text });
 
-	const ids = results.flat();
+	const ids = results.flat().map(({ id, title }) => ({ id: id.toString(), title })).filter(({ id }) => id.startsWith(clss));
 
-	return ids.map(({ id, title }) => ({ id: id.toString(), title }));
+	return ids.map(({ id, title }) => ({ id, title }));
 }, {
 	response: t.Array(t.Object({ id: t.String(), title: t.String() })),
 	query: t.Object({

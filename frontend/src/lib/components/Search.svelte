@@ -7,6 +7,8 @@
     import { Check, ChevronsUpDown } from "lucide-svelte";
     import { cn } from "@/utils";
 
+	let { filter = undefined, value = $bindable() }: { filter?: string, value: string | undefined } = $props();
+
 	let open = $state(false);
    
 	let selectedEntry: { label: string, value: string } | undefined = $state(undefined);
@@ -26,9 +28,15 @@
 	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id })));
 
 	async function handleInput(e: Event) {
-		const { data } = await client.api.get({ query: { text: search } });
+		const { data } = await client.api.get({ query: { text: search, class: filter } });
 		results = data || [];
 	}
+
+	$inspect(entries);
+
+	$effect(() => {
+		value = selectedEntry?.value;
+	});
 </script>
    
 <Popover.Root bind:open let:ids>
@@ -39,7 +47,7 @@
 		</Button>
 	</Popover.Trigger>
 	<Popover.Content class="w-[200px] p-0">
-		<Command>
+		<Command shouldFilter={false}>
 			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; await handleInput(e) }}/>
 			<CommandEmpty>No results found.</CommandEmpty>
 			<CommandGroup>

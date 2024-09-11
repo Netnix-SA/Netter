@@ -18,7 +18,6 @@
 	import { client, commands } from "@/state";
     import { onMount } from "svelte";
     import { page } from "$app/stores";
-    import UserSearch from "@/components/UserSearch.svelte";
     import UserAvatar from "@/components/UserAvatar.svelte";
     import Input from "@/components/ui/input/input.svelte";
 
@@ -51,6 +50,7 @@
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
     import { task } from "@/all.svelte";
+    import Search from "@/components/Search.svelte";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -116,7 +116,7 @@
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>Assignee</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent class="w-fit">
-								<UserSearch values={data.users}/>
+								<Search filter="User"/>
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
 						<DropdownMenu.Sub>

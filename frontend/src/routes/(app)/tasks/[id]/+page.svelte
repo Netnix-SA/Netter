@@ -7,7 +7,6 @@
 	import "carta-md/default.css";
 	import Label from "@/components/ui/label/label.svelte";
 	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
-	import UserSelect from "@/components/UserSelect.svelte";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
@@ -28,6 +27,7 @@
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
     import { onNavigate } from "$app/navigation";
+    import Search from "@/components/Search.svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -242,7 +242,8 @@
 		</div>
 	</div>
 	<div class="flex flex-col w-96 gap-2 px-12">
-		<UserSelect
+		<Search
+			filter="User"
 			label="Assignee"
 			values={data.users}
 			bind:value={assignee}

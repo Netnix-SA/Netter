@@ -11,7 +11,6 @@
 	import { onMount } from "svelte";
 	import { task } from "@/all.svelte";
     import { CalendarArrowUp, Check, Clock9, Star } from "lucide-svelte";
-    import UserSelect from "@/components/UserSelect.svelte";
     import { CLASSES, STATES } from "@/global";
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@
     import { toast } from "svelte-sonner";
     import { goto, invalidate } from "$app/navigation";
     import { DotsHorizontal } from "svelte-radix";
+    import Search from "@/components/Search.svelte";
 
 	const { data }: { data: PageData } = $props();
 
@@ -202,7 +202,7 @@
 					{/each}
 				</section>
 				<section class="column gap-2">
-					<UserSelect label="Lead" values={data.users} bind:value={lead}/>
+					<Search label="Lead" filter="User" bind:value={lead}/>
 					<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
 				</section>
 			</div>

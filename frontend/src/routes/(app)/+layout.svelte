@@ -18,7 +18,6 @@
     import { task, todo } from "@/all.svelte";
     import { Button } from "@/components/ui/button";
     import Select from "@/components/Select.svelte";
-    import UserSelect from "@/components/UserSelect.svelte";
     import Search from "@/components/Search.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
@@ -268,7 +267,7 @@
 		<textarea class="bg-transparent text-sm min-h-[2lh]" placeholder="Description" bind:value={task.value.body}>
 		</textarea>
 		<div class="w-full flex flex-wrap gap-2">
-			<UserSelect values={data.users} bind:value={task.value.assignee}/>
+			<Search filter="User" bind:value={task.value.assignee}/>
 			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status}/>
 			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority}/>
 			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort}/>
