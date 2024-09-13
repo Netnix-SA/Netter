@@ -20,14 +20,17 @@
 
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
-    import { client, commands, updateTaskMutation } from "@/state";
+    import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, client, commands, updateTaskMutation } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
     import ComboBox from "@/components/ComboBox.svelte";
+    import DialogSelect from "@/components/DialogSelect.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
     import { onNavigate } from "$app/navigation";
     import Search from "@/components/Search.svelte";
+    import { task } from "@/all.svelte";
+    import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -242,12 +245,7 @@
 		</div>
 	</div>
 	<div class="flex flex-col w-96 gap-2 px-12">
-		<Search
-			filter="User"
-			label="Assignee"
-			values={data.users}
-			bind:value={assignee}
-		/>
+		<Search filter="User" label="Assignee" values={data.users} bind:value={assignee}/>
 		<div class="gallery gap-2 w-full">
 			<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
 			<Select label="Priority" comparator={(a, b) => a === b} values={PRIORITIES} bind:value={priority}/>
@@ -256,97 +254,86 @@
 			<Select label="Effort" comparator={(a, b) => a === b} values={EFFORTS} bind:value={effort}/>
 			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={value}/>
 		</div>
+		<div class="gallery">
+			<span class="text-muted-foreground text-sm flex-1">
+				Related
+			</span>
+			<DialogSelect onselect={(id) => addTaskRelativeMutation({})({ id: data.task.id, relative_id: id })} filter={{ class: "Task" }}>
+				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+			</DialogSelect>
+		</div>
 		{#await data.related}
 			Loading related tasks...
 		{:then related}
-		{#if related.length > 0}
-			<Label>Related</Label>
 			<div class="column h-24 overflow-scroll">
 				{#each related as relative}
-					<AnyChip id={relative.id}/>
+					<AnyChip id={relative.id} context={{ name: "Relative", actions: [{ label: "Remove relative", icon: Link2, action: (ctx, id) => {} }] }}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No relatives</span>
+					</div>
 				{/each}
 			</div>
-		{:else}
-			<Label>Related</Label>
-			<Dialog.Root bind:open={add_relative}>
-				<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-					+ Add relative
-				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-[425px]">
-					<Dialog.Header>
-						<Dialog.Title>Add relative to {data.task.title}</Dialog.Title>
-					</Dialog.Header>
-					<ComboBox placeholder="Select the related task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
-					<Dialog.Footer>
-						<Button type="submit" disabled={close_as === undefined}>Add related task</Button>
-					</Dialog.Footer>
-				</Dialog.Content>
-			</Dialog.Root>
-		{/if}
 		{/await}
+		<div class="gallery">
+			<span class="text-muted-foreground text-sm flex-1">
+				Tackles
+			</span>
+			<DialogSelect onselect={(id) => addTaskTackledMutation({})({ id: data.task.id, tackled_id: id })} filter={{ class: "Feature" }}>
+				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+			</DialogSelect>
+		</div>
 		{#await data.tackled}
 			Loading tackled tasks...
 		{:then tackled}
-			{#if tackled.length > 0}
-				<Label>Tackles</Label>
-				<div class="column h-24 overflow-scroll">
-					{#each tackled as item}
-						<AnyChip id={item.id}/>
-					{/each}
-				</div>
-			{:else}
-				<Label>Tackles</Label>
-			{/if}
+			<div class="column h-24 overflow-scroll">
+				{#each tackled as item}
+					<AnyChip id={item.id} context={{ name: "Tackled", actions: [{ label: "Remove tackled", icon: Hammer, action: (ctx, id) => {} }] }}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No tackled</span>
+					</div>
+				{/each}
+			</div>
 		{/await}
+		<div class="gallery">
+			<span class="text-muted-foreground text-sm flex-1">
+				Children
+			</span>
+			<DialogSelect onselect={(id) => addTaskChildMutation({})({ id: data.task.id, child_id: id })} filter={{ class: "Task" }}>
+				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+			</DialogSelect>
+		</div>
 		<div class="column">
 			{#await data.children}
 				Loading children...
 			{:then children}
-				{#if children.length > 0}
-					<div class="gallery">
-						<span class="text-muted-foreground text-xs flex-1">
-							Children
-						</span>
-						<button onclick={() => add_child = true} class="tactile-text frame text-lg pr-1 font-bold">
-							+
-						</button>
-					</div>
-					{#each children as child(child.id)}
-						<AnyChip id={child.id}/>
-					{/each}
+				{#each children as child(child.id)}
+					<AnyChip id={child.id} context={{ name: "Child", actions: [{ label: "Remove child", icon: ListTree, action: (ctx, id) => {} }] }}/>
 				{:else}
-					<div class="column gap-2">
-						<span class="text-muted-foreground text-xs flex-1">
-							Children
-						</span>
-						<button onclick={() => add_child = true} class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-							+ Add child
-						</button>
-					</div>
-				{/if}
+						<div class="frame h-10">
+							<span class="text-muted-foreground/50 text-sm italic">No children</span>
+						</div>
+				{/each}	
 			{/await}
 		</div>
-		<Label>Blocked by</Label>
+		<div class="gallery">
+			<span class="text-muted-foreground text-sm flex-1">
+				Blockers
+			</span>
+			<DialogSelect onselect={(id) => addTaskBlockerMutation({})({ id: data.task.id, blocker_id: id })} filter={{ class: "Task" }}>
+				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+			</DialogSelect>
+		</div>
 		{#await data.blockers}
 			Loading blocking tasks...
 		{:then blockers}
 			{#each blockers as blocker}
-				<AnyChip id={blocker.id}/>
+				<AnyChip id={blocker.id} context={{ name: "Blocker", actions: [{ label: "Remove blocker", icon: OctagonX, action: (ctx, id) => {} }] }}/>
 			{:else}
-				<Dialog.Root bind:open={add_blocker}>
-					<Dialog.Trigger class="rounded-lg border border-dashed text-muted-foreground frame text-sm h-10 hover:text-base transition-all">
-						+ Add blocker
-					</Dialog.Trigger>
-					<Dialog.Content class="sm:max-w-[425px]">
-						<Dialog.Header>
-							<Dialog.Title>Add blocker to {data.task.title}</Dialog.Title>
-						</Dialog.Header>
-						<ComboBox placeholder="Select the blocker task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
-						<Dialog.Footer>
-							<Button type="submit" disabled={close_as === undefined}>Add blocker task</Button>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root>
+				<div class="frame h-10">
+					<span class="text-muted-foreground/50 text-sm italic">No blockers</span>
+				</div>
 			{/each}
 		{/await}
 	</div>

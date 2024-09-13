@@ -10,7 +10,7 @@
     import { task, todo } from "@/all.svelte.ts";
     import { toast } from "svelte-sonner";
 
-	let { id, pinned = [] }: { id: string, pinned: string[] } = $props();
+	let { id, pinned = [], context }: { id: string, pinned: string[], context?: { name: string, actions: { label: string, icon: Component, action: any }[] } } = $props();
 
 	function buildUrl(clss: Classes, id: string) {
 		switch (clss) {
@@ -51,6 +51,25 @@
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
+			{#if context && context.actions.length > 0}
+				<ContextMenu.Label>
+					{context.name}
+				</ContextMenu.Label>
+				<ContextMenu.Separator/>
+				{#each context.actions as { label, icon: Icon, action }}
+					{#if label === "Delete"}
+						<ContextMenu.Separator/>
+					{/if}
+					<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+						<Icon class="size-4 mr-2"/> {label}
+					</ContextMenu.Item>
+				{/each}
+				<ContextMenu.Separator/>
+			{/if}
+			<ContextMenu.Label>
+				{clss}
+			</ContextMenu.Label>
+			<ContextMenu.Separator/>
 			{#each CLASSES[clss].actions as { label, icon: Icon, action }}
 				{#if label === "Delete"}
 					<ContextMenu.Separator/>

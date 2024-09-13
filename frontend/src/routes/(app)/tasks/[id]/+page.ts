@@ -2,7 +2,7 @@ import { client } from '@/state';
 import type { PageLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
-export const load: PageLoad = async ({ params: { id }, fetch }) => {
+export const load: PageLoad = async ({ params: { id }, fetch, depends }) => {
 	const { data: task } = await client.api.tasks({ id }).get();
 	const { data: tasks } = await client.api.tasks.get();
 	const { data: statuses } = await client.api.statuses.get();
@@ -29,6 +29,8 @@ export const load: PageLoad = async ({ params: { id }, fetch }) => {
 	if (!channel) {
 		throw error(404, "Failed to get channel!");
 	}
+
+	depends(task.id);
 
 	return {
 		task,

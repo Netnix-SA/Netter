@@ -102,6 +102,11 @@ test("Add related task", async () => {
 	expect(tasks).toMatchObject([{ id: related_task.id }]);
 });
 
+test.todo("Double add related task");
+test.todo("Add self as related task");
+test.todo("Delete related task");
+test.todo("Remove related task");
+
 test("Add tackled feature", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 
@@ -121,6 +126,11 @@ test("Add tackled feature", async () => {
 
 	expect(features).toMatchObject([{ id: feature.id }]);
 });
+
+test.todo("Double add tackled feature");
+test.todo("Add self as tackled feature");
+test.todo("Delete tackled feature");
+test.todo("Remove tackled feature");
 
 test("Add children task", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
@@ -142,6 +152,11 @@ test("Add children task", async () => {
 	expect(tasks).toMatchObject([{ id: child_task.id }]);
 });
 
+test.todo("Double add children task");
+test.todo("Add self as children task");
+test.todo("Delete children task");
+test.todo("Remove children task");
+
 test("Add blockers task", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 
@@ -161,6 +176,11 @@ test("Add blockers task", async () => {
 
 	expect(tasks).toMatchObject([{ id: blocker_task.id }]);
 });
+
+test.todo("Double add blockers task");
+test.todo("Add self as blockers task");
+test.todo("Delete blockers task");
+test.todo("Remove blockers task");
 
 test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");

@@ -303,3 +303,67 @@ export const updateProductMutation = createMutation({
 	},
 	onError: onError("Failed to update product"),
 });
+
+export const addTaskBlockerMutation = createMutation({
+	mutationFn: async ({ id, blocker_id }: { id: string, blocker_id: string }) => {
+		const response = await client.api.tasks({ id }).blockers.post({ id: blocker_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Added blocker to task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to add blocker to task"),
+});
+
+export const addTaskRelativeMutation = createMutation({
+	mutationFn: async ({ id, relative_id }: { id: string, relative_id: string }) => {
+		const response = await client.api.tasks({ id }).related.post({ id: relative_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Added relative to task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to add relative to task"),
+});
+
+export const addTaskChildMutation = createMutation({
+	mutationFn: async ({ id, child_id }: { id: string, child_id: string }) => {
+		const response = await client.api.tasks({ id }).children.post({ id: child_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Added child to task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to add child to task"),
+});
+
+export const addTaskTackledMutation = createMutation({
+	mutationFn: async ({ id, tackled_id }: { id: string, tackled_id: string }) => {
+		const response = await client.api.tasks({ id }).tackled.post({ id: tackled_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Added tackled to task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to add tackled to task"),
+});
