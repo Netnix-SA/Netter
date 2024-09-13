@@ -136,7 +136,7 @@
 									<textarea placeholder="Description" class="border px-2 py-1"/>
 								</div>
 								<Dialog.Footer>
-									<Button onclick={async () => await createObjectiveMutation({})()}>Create</Button>
+									<Button onclick={async () => await createObjectiveMutation({})({ project_id: data.project.id })}>Create</Button>
 								</Dialog.Footer>
 							</Dialog.Content>
 						</Dialog.Root>
@@ -202,7 +202,7 @@
 					{/each}
 				</section>
 				<section class="column gap-2">
-					<Search label="Lead" filter="User" bind:value={lead}/>
+					<Search label="Lead" filter={{ class: "User" }} bind:value={lead}/>
 					<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
 				</section>
 			</div>

@@ -218,9 +218,9 @@ export const deleteFeatureMutation = createMutation({
 });
 
 export const createObjectiveMutation = createMutation({
-	mutationFn: async () => {
+	mutationFn: async ({ project_id }: { project_id: string }) => {
 		console.log("Creating objective");
-		const response = await client.api.projects({ id: project.id }).objectives.post({ title: "New objective", description: "Objective description" });
+		const response = await client.api.projects({ id: project_id }).objectives.post({ title: "New objective", description: "Objective description" });
 		if (response.data) {
 			return response.data;
 		} else {
@@ -366,4 +366,68 @@ export const addTaskTackledMutation = createMutation({
 		invalidate(data.id);
 	},
 	onError: onError("Failed to add tackled to task"),
+});
+
+export const removeChildTaskMutation = createMutation({
+	mutationFn: async ({ id, child_id }: { id: string, child_id: string }) => {
+		const response = await client.api.tasks({ id }).children({ cid: child_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed child from task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to remove child from task"),
+});
+
+export const removeBlockerTaskMutation = createMutation({
+	mutationFn: async ({ id, blocker_id }: { id: string, blocker_id: string }) => {
+		const response = await client.api.tasks({ id }).blockers({ bid: blocker_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed blocker from task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to remove blocker from task"),
+});
+
+export const removeRelativeTaskMutation = createMutation({
+	mutationFn: async ({ id, relative_id }: { id: string, relative_id: string }) => {
+		const response = await client.api.tasks({ id }).related({ rid: relative_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed relative from task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to remove relative from task"),
+});
+
+export const removeTackledMutation = createMutation({
+	mutationFn: async ({ id, tackled_id }: { id: string, tackled_id: string }) => {
+		const response = await client.api.tasks({ id }).tackled({ tid: tackled_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed tackled from task");
+		invalidate('tasks:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to remove tackled from task"),
 });

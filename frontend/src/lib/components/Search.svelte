@@ -7,7 +7,7 @@
     import { Check, ChevronsUpDown } from "lucide-svelte";
     import { cn } from "@/utils";
 
-	let { filter = undefined, value = $bindable() }: { filter?: string, value: string | undefined } = $props();
+	let { filter = undefined, value = $bindable() }: { filter?: { class?: string, exclude?: string[] }, value: string | undefined } = $props();
 
 	let open = $state(false);
    
@@ -28,7 +28,10 @@
 	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id })));
 
 	async function handleInput(e: Event) {
-		const { data } = await client.api.get({ query: { text: search, class: filter } });
+		let query = { text: search };
+		if (filter?.class) query.class = filter.class;
+		if (filter?.exclude) query.exclude = filter.exclude;
+		const { data } = await client.api.get({ query });
 		results = data || [];
 	}
 

@@ -20,9 +20,8 @@
 
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
-    import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, client, commands, updateTaskMutation } from "@/state";
+    import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, client, commands, removeBlockerTaskMutation, removeChildTaskMutation, removeRelativeTaskMutation, removeTackledMutation, updateTaskMutation } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
-    import ComboBox from "@/components/ComboBox.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
@@ -37,9 +36,6 @@
 		rendererDebounce: 10,
 	});
 
-	let add_child: boolean | undefined = $state(undefined);
-	let add_relative: boolean | undefined = $state(undefined);
-	let add_blocker: boolean | undefined = $state(undefined);
 	let add_update: boolean | undefined = $state(undefined);
 	let show_resolve_menu: boolean | undefined = $state(undefined);
 
@@ -195,7 +191,7 @@
 						</Dialog.Description>
 					</Dialog.Header>
 					{#if close_as === "Duplicate"}
-						<ComboBox placeholder="Select the original task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))} onSelect={(e) => close_payload = e}/>
+						<Search placeholder="Select the original task" filter={{ class: "Task", exclude: [data.task.id] }} onSelect={(e) => close_payload = e}/>
 					{:else if close_as === "Resolved"}
 						<div class="flex gap-2">
 							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Resolution" bind:value={close_payload}/>
@@ -245,7 +241,7 @@
 		</div>
 	</div>
 	<div class="flex flex-col w-96 gap-2 px-12">
-		<Search filter="User" label="Assignee" values={data.users} bind:value={assignee}/>
+		<Search filter={{ class: "User" }} label="Assignee" bind:value={assignee}/>
 		<div class="gallery gap-2 w-full">
 			<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
 			<Select label="Priority" comparator={(a, b) => a === b} values={PRIORITIES} bind:value={priority}/>
@@ -258,7 +254,7 @@
 			<span class="text-muted-foreground text-sm flex-1">
 				Related
 			</span>
-			<DialogSelect onselect={(id) => addTaskRelativeMutation({})({ id: data.task.id, relative_id: id })} filter={{ class: "Task" }}>
+			<DialogSelect onselect={(id) => addTaskRelativeMutation({})({ id: data.task.id, relative_id: id })} filter={{ class: "Task", exclude: [data.task.id] }}>
 				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
 			</DialogSelect>
 		</div>
@@ -267,7 +263,7 @@
 		{:then related}
 			<div class="column h-24 overflow-scroll">
 				{#each related as relative}
-					<AnyChip id={relative.id} context={{ name: "Relative", actions: [{ label: "Remove relative", icon: Link2, action: (ctx, id) => {} }] }}/>
+					<AnyChip id={relative.id} context={{ name: "Relative", actions: [{ label: "Remove relative", icon: Link2, action: (ctx, id) => removeRelativeTaskMutation(ctx)({ id: data.task.id, relative_id: id }) }] }}/>
 				{:else}
 					<div class="frame h-10">
 						<span class="text-muted-foreground/50 text-sm italic">No relatives</span>
@@ -288,7 +284,7 @@
 		{:then tackled}
 			<div class="column h-24 overflow-scroll">
 				{#each tackled as item}
-					<AnyChip id={item.id} context={{ name: "Tackled", actions: [{ label: "Remove tackled", icon: Hammer, action: (ctx, id) => {} }] }}/>
+					<AnyChip id={item.id} context={{ name: "Tackled", actions: [{ label: "Remove tackled", icon: Hammer, action: (ctx, id) => removeTackledMutation(ctx)({ id: data.task.id, tackled_id: id }) }] }}/>
 				{:else}
 					<div class="frame h-10">
 						<span class="text-muted-foreground/50 text-sm italic">No tackled</span>
@@ -300,7 +296,7 @@
 			<span class="text-muted-foreground text-sm flex-1">
 				Children
 			</span>
-			<DialogSelect onselect={(id) => addTaskChildMutation({})({ id: data.task.id, child_id: id })} filter={{ class: "Task" }}>
+			<DialogSelect onselect={(id) => addTaskChildMutation({})({ id: data.task.id, child_id: id })} filter={{ class: "Task", exclude: [data.task.id] }}>
 				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
 			</DialogSelect>
 		</div>
@@ -309,7 +305,7 @@
 				Loading children...
 			{:then children}
 				{#each children as child(child.id)}
-					<AnyChip id={child.id} context={{ name: "Child", actions: [{ label: "Remove child", icon: ListTree, action: (ctx, id) => {} }] }}/>
+					<AnyChip id={child.id} context={{ name: "Child", actions: [{ label: "Remove child", icon: ListTree, action: (ctx, id) => removeChildTaskMutation(ctx)({ id: data.task.id, child_id: id }) }] }}/>
 				{:else}
 						<div class="frame h-10">
 							<span class="text-muted-foreground/50 text-sm italic">No children</span>
@@ -321,7 +317,7 @@
 			<span class="text-muted-foreground text-sm flex-1">
 				Blockers
 			</span>
-			<DialogSelect onselect={(id) => addTaskBlockerMutation({})({ id: data.task.id, blocker_id: id })} filter={{ class: "Task" }}>
+			<DialogSelect onselect={(id) => addTaskBlockerMutation({})({ id: data.task.id, blocker_id: id })} filter={{ class: "Task", exclude: [data.task.id] }}>
 				<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
 			</DialogSelect>
 		</div>
@@ -329,7 +325,7 @@
 			Loading blocking tasks...
 		{:then blockers}
 			{#each blockers as blocker}
-				<AnyChip id={blocker.id} context={{ name: "Blocker", actions: [{ label: "Remove blocker", icon: OctagonX, action: (ctx, id) => {} }] }}/>
+				<AnyChip id={blocker.id} context={{ name: "Blocker", actions: [{ label: "Remove blocker", icon: OctagonX, action: (ctx, id) => removeBlockerTaskMutation(ctx)({ id: data.task.id, blocker_id: id }) }] }}/>
 			{:else}
 				<div class="frame h-10">
 					<span class="text-muted-foreground/50 text-sm italic">No blockers</span>
@@ -365,15 +361,3 @@
 		</Dialog.Content>
 	</Dialog.Root>
 </Dialog.Footer>
-
-<Dialog.Root bind:open={add_child}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Add child to {data.task.title}</Dialog.Title>
-		</Dialog.Header>
-		<ComboBox placeholder="Select the child task" entries={data.tasks.map((task) => ({ label: task.title, value: task.id }))}/>
-		<Dialog.Footer>
-			<Button type="submit" disabled={close_as === undefined}>Add child task</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>

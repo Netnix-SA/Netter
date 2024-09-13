@@ -68,10 +68,18 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	},
 })
 
-.get("", async ({ query: { text, class: clss } }) => {
+.get("", async ({ query: { text, class: clss, exclude } }) => {
 	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>("SELECT id, full_name as title FROM User WHERE full_name @@ $text; SELECT id, name as title FROM Project WHERE name @@ $text; SELECT id, name as title FROM Team WHERE name @@ $text; SELECT id, title FROM Task WHERE title @@ $text; SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text; SELECT id, name as title FROM Channel WHERE name @@ $text; SELECT id, name as title FROM Product WHERE name @@ $text; SELECT id, name as title FROM Feature WHERE name @@ $text;", { text });
 
-	const ids = results.flat().map(({ id, title }) => ({ id: id.toString(), title })).filter(({ id }) => id.startsWith(clss));
+	let ids = results.flat().map(({ id, title }) => ({ id: id.toString(), title }));
+
+	if (clss) {
+		ids = ids.filter(({ id }) => id.startsWith(clss));
+	}
+
+	if (exclude) {
+		ids = ids.filter(({ id }) => !exclude.includes(id));
+	}
 
 	return ids.map(({ id, title }) => ({ id, title }));
 }, {
@@ -79,6 +87,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	query: t.Object({
 		text: t.Optional(t.String({ maxLength: 128 })),
 		class: t.Optional(tClasses),
+		exclude: t.Optional(t.Array(t.String())),
 	}),
 	detail: {
 		description: "Allows searching across the querying user's whole organization",

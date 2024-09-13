@@ -452,6 +452,7 @@ describe("Blockers", async () => {
 
 test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");
+test.todo("Check channel is deleted after deleting task");
 
 test("Post update", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
