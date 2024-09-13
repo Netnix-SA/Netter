@@ -82,7 +82,191 @@ describe("Close task", async () => {
 	});
 });
 
-test("Add related task", async () => {
+describe("Related tasks", async () => {
+	const db = await create_db(); const eq = new MemoryEvents();
+	
+	const client = treaty(server(db, eq));
+	
+	const user = await create_user(client);
+	const status = await create_status(client);
+
+	test("add", async () => {
+		const task = await create_task(client, status);
+		const related_task = await create_task(client, status);
+	
+		const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+	
+		expect(response.status).toBe(200);
+	
+		const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+	
+		expect(tasks).toMatchObject([{ id: related_task.id }]);
+	});
+
+	test("duplicate add", async () => {
+		const task = await create_task(client, status);
+		const related_task = await create_task(client, status);
+	
+		{ // First add
+			const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Second add
+			const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+	
+		expect(tasks).toMatchObject([{ id: related_task.id }]);
+	});
+
+	test("add self", async () => {
+		const task = await create_task(client, status);
+		const related_task = await create_task(client, status);
+
+		{
+			const response = await client.api.tasks({ id: task.id }).related.post({ id: task.id });
+			expect(response.status).toBe(500);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("delete", async () => {
+		const task = await create_task(client, status);
+		const related_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Delete
+			const response = await client.api.tasks({ id: related_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("remove", async () => {
+		const task = await create_task(client, status);
+		const related_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Remove
+			const response = await client.api.tasks({ id: task.id }).related({ rid: related_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
+});
+
+describe("Tackled", async () => {
+	const db = await create_db(); const eq = new MemoryEvents();
+	
+	const client = treaty(server(db, eq));
+	
+	const user = await create_user(client);
+	const status = await create_status(client);
+
+	test("add", async () => {
+		const task = await create_task(client, status);
+		const feature = await create_feature(client);
+	
+		const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+	
+		expect(response.status).toBe(200);
+	
+		const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+	
+		expect(features).toMatchObject([{ id: feature.id }]);
+	});
+
+	test("duplicate add", async () => {
+		const task = await create_task(client, status);
+		const feature = await create_feature(client);
+	
+		{ // First add
+			const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Second add
+			const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+			expect(response.status).toBe(200);
+		}
+
+		const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+	
+		expect(features).toMatchObject([{ id: feature.id }]);
+	});
+
+	test("add non feature or bug", async () => {
+		const task = await create_task(client, status);
+		const feature = await create_feature(client);
+
+		{
+			const response = await client.api.tasks({ id: task.id }).tackled.post({ id: task.id });
+			expect(response.status).toBe(422);
+		}
+
+		const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+		expect(features).toMatchObject([]);
+	});
+
+	test("delete", async () => {
+		const task = await create_task(client, status);
+		const feature = await create_feature(client);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Delete
+			const response = await client.api.features({ id: feature.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+	
+		expect(features).toMatchObject([]);
+	});
+
+	test("remove", async () => {
+		const task = await create_task(client, status);
+		const feature = await create_feature(client);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Remove
+			const response = await client.api.tasks({ id: task.id }).tackled({ tid: feature.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+	
+		expect(features).toMatchObject([]);
+	});
+});
+
+describe("Children", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 
 	const client = treaty(server(db, eq));
@@ -90,97 +274,181 @@ test("Add related task", async () => {
 	const user = await create_user(client);
 	const status = await create_status(client);
 
-	const task = await create_task(client, status);
-	const related_task = await create_task(client, status);
+	test("add", async () => {
+		const task = await create_task(client, status);
+		const child_task = await create_task(client, status);
+	
+		const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+	
+		expect(response.status).toBe(200);
+	
+		const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
+	
+		expect(tasks).toMatchObject([{ id: child_task.id }]);
+	});
 
-	const response = await client.api.tasks({ id: task.id }).related.post({ id: related_task.id });
+	test("duplicate add", async () => {
+		const task = await create_task(client, status);
+		const child_task = await create_task(client, status);
+	
+		{ // First add
+			const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Second add
+			const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+			expect(response.status).toBe(200);
+		}
 
-	expect(response.status).toBe(200);
+		const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
+	
+		expect(tasks).toMatchObject([{ id: child_task.id }]);
+	});
 
-	const { data: tasks } = await client.api.tasks({ id: task.id }).related.get();
+	test("add self", async () => {
+		const task = await create_task(client, status);
+		const child_task = await create_task(client, status);
 
-	expect(tasks).toMatchObject([{ id: related_task.id }]);
+		{
+			const response = await client.api.tasks({ id: task.id }).children.post({ id: task.id });
+			expect(response.status).toBe(500);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("delete", async () => {
+		const task = await create_task(client, status);
+		const child_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Delete
+			const response = await client.api.tasks({ id: child_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("remove", async () => {
+		const task = await create_task(client, status);
+		const child_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Remove
+			const response = await client.api.tasks({ id: task.id }).children({ cid: child_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
 });
 
-test.todo("Double add related task");
-test.todo("Add self as related task");
-test.todo("Delete related task");
-test.todo("Remove related task");
-
-test("Add tackled feature", async () => {
+describe("Blockers", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
-
+	
 	const client = treaty(server(db, eq));
-
+	
 	const user = await create_user(client);
 	const status = await create_status(client);
 
-	const task = await create_task(client, status);
-	const feature = await create_feature(client);
+	test("add", async () => {
+		const task = await create_task(client, status);
+		const blocker_task = await create_task(client, status);
+	
+		const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+	
+		expect(response.status).toBe(200);
+	
+		const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
+	
+		expect(tasks).toMatchObject([{ id: blocker_task.id }]);
+	});
 
-	const response = await client.api.tasks({ id: task.id }).tackled.post({ id: feature.id });
+	test("duplicate add", async () => {
+		const task = await create_task(client, status);
+		const blocker_task = await create_task(client, status);
+	
+		{ // First add
+			const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Second add
+			const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+			expect(response.status).toBe(200);
+		}
 
-	expect(response.status).toBe(200);
+		const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
+	
+		expect(tasks).toMatchObject([{ id: blocker_task.id }]);
+	});
 
-	const { data: features } = await client.api.tasks({ id: task.id }).tackled.get();
+	test("add self", async () => {
+		const task = await create_task(client, status);
+		const blocker_task = await create_task(client, status);
 
-	expect(features).toMatchObject([{ id: feature.id }]);
+		{
+			const response = await client.api.tasks({ id: task.id }).blockers.post({ id: task.id });
+			expect(response.status).toBe(500);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("delete", async () => {
+		const task = await create_task(client, status);
+		const blocker_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Delete
+			const response = await client.api.tasks({ id: blocker_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
+
+	test("remove", async () => {
+		const task = await create_task(client, status);
+		const blocker_task = await create_task(client, status);
+	
+		{ // Add
+			const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
+			expect(response.status).toBe(200);
+		}
+	
+		{ // Remove
+			const response = await client.api.tasks({ id: task.id }).blockers({ bid: blocker_task.id }).delete();
+			expect(response.status).toBe(200);
+		}
+
+		const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
+	
+		expect(tasks).toMatchObject([]);
+	});
 });
-
-test.todo("Double add tackled feature");
-test.todo("Add self as tackled feature");
-test.todo("Delete tackled feature");
-test.todo("Remove tackled feature");
-
-test("Add children task", async () => {
-	const db = await create_db(); const eq = new MemoryEvents();
-
-	const client = treaty(server(db, eq));
-
-	const user = await create_user(client);
-	const status = await create_status(client);
-
-	const task = await create_task(client, status);
-	const child_task = await create_task(client, status);
-
-	const response = await client.api.tasks({ id: task.id }).children.post({ id: child_task.id });
-
-	expect(response.status).toBe(200);
-
-	const { data: tasks } = await client.api.tasks({ id: task.id }).children.get();
-
-	expect(tasks).toMatchObject([{ id: child_task.id }]);
-});
-
-test.todo("Double add children task");
-test.todo("Add self as children task");
-test.todo("Delete children task");
-test.todo("Remove children task");
-
-test("Add blockers task", async () => {
-	const db = await create_db(); const eq = new MemoryEvents();
-
-	const client = treaty(server(db, eq));
-
-	const user = await create_user(client);
-	const status = await create_status(client);
-
-	const task = await create_task(client, status);
-	const blocker_task = await create_task(client, status);
-
-	const response = await client.api.tasks({ id: task.id }).blockers.post({ id: blocker_task.id });
-
-	expect(response.status).toBe(200);
-
-	const { data: tasks } = await client.api.tasks({ id: task.id }).blockers.get();
-
-	expect(tasks).toMatchObject([{ id: blocker_task.id }]);
-});
-
-test.todo("Double add blockers task");
-test.todo("Add self as blockers task");
-test.todo("Delete blockers task");
-test.todo("Remove blockers task");
 
 test.todo("Mention other object in channel message and add related");
 test.todo("Send message in task channel");

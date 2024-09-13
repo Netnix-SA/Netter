@@ -118,11 +118,28 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 	const related_task_id = new StringRecordId(body.id);
 
+	if (task_id.rid === related_task_id.rid) {
+		throw new Error("Cannot relate a task to itself!");
+	}
+
 	await db.query(surql`RELATE ${task_id}->related->${related_task_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Adds a related task to the task."
+	}
+})
+
+.delete("/:id/related/:rid", async ({ params: { id, rid } }) => {
+	const task_id = new StringRecordId(id);
+
+	const related_task_id = new StringRecordId(rid);
+
+	await db.query(surql`DELETE related WHERE in == ${task_id} AND out == ${related_task_id};`);
+}, {
+	params: t.Object({ id: tTaskId, rid: tTaskId }),
+	detail: {
+		description: "Removes a related task from the task."
 	}
 })
 
@@ -148,11 +165,28 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 	const blocker_task_id = new StringRecordId(body.id);
 
+	if (task_id.rid === blocker_task_id.rid) {
+		throw new Error("Cannot relate a task to itself!");
+	}
+
 	await db.query(surql`RELATE ${blocker_task_id}->blocks->${task_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Adds a blocking task to the task."
+	}
+})
+
+.delete("/:id/blockers/:bid", async ({ params: { id, bid } }) => {
+	const task_id = new StringRecordId(id);
+
+	const blocker_task_id = new StringRecordId(bid);
+
+	await db.query(surql`DELETE blocks WHERE in == ${blocker_task_id} AND out == ${task_id};`);
+}, {
+	params: t.Object({ id: tTaskId, bid: tTaskId }),
+	detail: {
+		description: "Removes a blocking task from the task."
 	}
 })
 
@@ -178,11 +212,28 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 	const child_id = new StringRecordId(body.id);
 
+	if (parent_id.rid === child_id.rid) {
+		throw new Error("Cannot relate a task to itself!");
+	}
+
 	await db.query(surql`RELATE ${parent_id}->requires->${child_id};`);
 }, {
 	body: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Adds a child task to the task."
+	}
+})
+
+.delete("/:id/children/:cid", async ({ params: { id, cid } }) => {
+	const parent_id = new StringRecordId(id);
+
+	const child_id = new StringRecordId(cid);
+
+	await db.query(surql`DELETE requires WHERE in == ${parent_id} AND out == ${child_id};`);
+}, {
+	params: t.Object({ id: tTaskId, cid: tTaskId }),
+	detail: {
+		description: "Removes a child task from the task."
 	}
 })
 
@@ -231,6 +282,19 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	params: t.Object({ id: tTaskId }),
 	detail: {
 		description: "Adds a tackled item to the task. Tackled items can be features or bugs."
+	}
+})
+
+.delete("/:id/tackled/:tid", async ({ params: { id, tid } }) => {
+	const task_id = new StringRecordId(id);
+
+	const tackled_object_id = new StringRecordId(tid);
+
+	await db.query(surql`DELETE tackles WHERE in == ${task_id} AND out == ${tackled_object_id};`);
+}, {
+	params: t.Object({ id: tTaskId, tid: tFeatureId }),
+	detail: {
+		description: "Removes a tackled item from the task. Tackled items can be features or bugs."
 	}
 })
 
