@@ -7,7 +7,7 @@
     import { Check, ChevronsUpDown } from "lucide-svelte";
     import { cn } from "@/utils";
 
-	let { filter = undefined, value = $bindable() }: { filter?: { class?: string, exclude?: string[] }, value: string | undefined } = $props();
+	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (string) => void } = $props();
 
 	let open = $state(false);
    
@@ -39,13 +39,14 @@
 
 	$effect(() => {
 		value = selectedEntry?.value;
+		if (onselect) onselect(value);
 	});
 </script>
    
 <Popover.Root bind:open let:ids>
 	<Popover.Trigger asChild let:builder>
 		<Button builders={[builder]} variant="outline" role="combobox" aria-expanded={open} class="w-[200px] justify-between">
-			{selectedEntry?.label || "Select an item"}
+			{selectedEntry?.label || placeholder}
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>

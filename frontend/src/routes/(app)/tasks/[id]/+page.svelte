@@ -116,7 +116,7 @@
 		close_payload = undefined;
 	});
 
-	let assignee = $state(
+	let assignee: string | null = $state(
 		data.users.find((u) => u.id === data.task.assignee?.id) || null,
 	);
 
@@ -307,9 +307,9 @@
 				{#each children as child(child.id)}
 					<AnyChip id={child.id} context={{ name: "Child", actions: [{ label: "Remove child", icon: ListTree, action: (ctx, id) => removeChildTaskMutation(ctx)({ id: data.task.id, child_id: id }) }] }}/>
 				{:else}
-						<div class="frame h-10">
-							<span class="text-muted-foreground/50 text-sm italic">No children</span>
-						</div>
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No children</span>
+					</div>
 				{/each}	
 			{/await}
 		</div>

@@ -93,7 +93,7 @@
   }
 
   input, textarea {
-	@apply appearance-none outline-none focus:outline-none text-foreground rounded-md bg-transparent;
+	@apply appearance-none outline-none focus:outline-none text-foreground rounded-md bg-transparent hover:border-neutral-600 focus:border-neutral-400 transition-all;
   }
 
   .green-light {

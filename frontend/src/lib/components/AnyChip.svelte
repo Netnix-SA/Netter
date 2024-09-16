@@ -38,7 +38,7 @@
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
-<div class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all">
+<a class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all" href={link}>
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
 			{@const Icon = clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion}
@@ -47,7 +47,7 @@
 				<div class="w-16 h-2 animate-pulse">
 				</div>
 			{:then mtdt}
-				<a href={link} class="tactile-text text-sm">{mtdt.data?.title}</a>
+				<span class="tactile-text text-sm">{mtdt.data?.title}</span>
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
@@ -80,4 +80,4 @@
 			{/each}
 		</ContextMenu.Content>
 	</ContextMenu.Root>
-</div>
+</a>

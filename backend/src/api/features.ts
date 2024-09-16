@@ -5,6 +5,7 @@ import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
 import { map as mapComponent } from "./components";
 import { Surreal, StringRecordId, surql } from "surrealdb";
+import { effort_to_time } from "../utils";
 
 export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags: ["Features"] })
 
@@ -114,16 +115,6 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 
 	const [bugs] = await db.query<[Bug[]]>(surql`${new StringRecordId(id)}<-impacts<-Bug.*;`);
 
-	const effort_to_time = (effort: Efforts) => {
-		switch (effort) {
-			case "Hour": return 1;
-			case "Hours": return 6;
-			case "Day": return 8;
-			case "Days": return 8 * 4;
-			case "Week": return 8 * 5;
-		}
-	};
-
 	const total_time = tasks.reduce((acc, task) => acc + effort_to_time(task.effort), 0);
 	const executed_time = tasks.reduce((acc, task) => acc + ((task.progress || 0) / 100) * effort_to_time(task.effort), 0);
 	const real_time = Math.floor(tasks.reduce((acc, task) => acc + task.updates.reduce((acc, update) => acc + update.time_spent, 0), 0) / 60);
@@ -155,6 +146,9 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 			total: t.Number(),
 		}),
 	}),
+	detail: {
+		description: "Returns execution statistics for the feature. Like /objectives/:id/statistics, but for a feature."
+	},
 })
 
 ;

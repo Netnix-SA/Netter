@@ -311,6 +311,11 @@ export const CLASSES = {
 		url: (id?: string) => id ? `/objectives/${id}` : "/objectives",
 		actions: [
 			{
+				label: "Tasks",
+				icon: CLASS_TO_ICON["Task"],
+				action: (queryClient: QueryClient, id: string) => goto(`/objectives/${id}/tasks`),
+			},
+			{
 				label: "Create related ToDo",
 				icon: CLASS_TO_ICON["ToDo"],
 				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },

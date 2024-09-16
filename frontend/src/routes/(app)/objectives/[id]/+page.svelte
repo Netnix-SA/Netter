@@ -10,6 +10,9 @@
 	import Pin from "@/components/Pin.svelte";
     import { CLASSES } from "@/global";
     import Search from "@/components/Search.svelte";
+    import DialogSelect from "@/components/DialogSelect.svelte";
+    import { removeSlatedFeatureMutation, slateFeatureMutation } from "@/state";
+    import { LayoutList } from "lucide-svelte";
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -54,25 +57,60 @@
 				<p class="text-muted-foreground">{data.objective.description}</p>
 			</section>
 			<section class="column gap-2 w-96">
-				<h2 class="text-sm text-muted-foreground">Slated features</h2>
+				<div class="gallery">
+					<span class="text-muted-foreground text-sm flex-1">
+						Slated features
+					</span>
+					<DialogSelect filter={{ class: "Feature", exclude: data.features.map(f => f.id) }} onselect={(id) => slateFeatureMutation({})({ id: data.objective.id, feature_id: id })}>
+						<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+					</DialogSelect>
+				</div>
 				{#each data.features as feature}
-					<AnyChip id={feature.id} pinned={data.user.pinned}/>
+					<AnyChip id={feature.id} pinned={data.user.pinned} context={{ name: "Slated", actions: [{ label: "Remove slated", icon: LayoutList, action: (ctx, id) => removeSlatedFeatureMutation(ctx)({ id: data.objective.id, feature_id: id }) }] }}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No slatede features</span>
+					</div>
 				{/each}
 			</section>
-			<Dialog.Root>
-				<Dialog.Trigger>Add</Dialog.Trigger>
-				<Dialog.Content>
-					<Dialog.Header>
-						<Dialog.Title>Select the Feature to add to this Objective</Dialog.Title>
-						<Dialog.Description></Dialog.Description>
-					</Dialog.Header>
-					<Search/>
-				</Dialog.Content>
-			</Dialog.Root>
 		</div>
 		<side>
 			<section class="column gap-2">
-				<h2 class="text-sm text-muted-foreground">Completion</h2>
+				<span class="text-sm text-muted-foreground">Execution status</span>
+				<div class="gallery gap-8">
+					<div class="column">
+						<span class="text-sm text-muted-foreground">Features</span>
+						<span class="tactile-text text-2xl font-bold">
+							{data.statistics.features.completed} / {data.statistics.features.total}
+						</span>
+					</div>
+					<div class="column">
+						<span class="text-sm text-muted-foreground">Tasks</span>
+						<span class="tactile-text text-2xl font-bold">
+							{data.statistics.tasks.completion} / {data.statistics.tasks.total}
+						</span>
+					</div>
+				</div>
+				<div class="gallery gap-8">
+					<div class="column">
+						<span class="text-sm text-muted-foreground">Estimated time</span>
+						<span class="tactile-text text-2xl font-bold">
+							{data.statistics.tasks.time.total} hrs
+						</span>
+					</div>
+					<div class="column">
+						<span class="text-sm text-muted-foreground">Executed</span>
+						<span class="tactile-text text-2xl font-bold">
+							{data.statistics.tasks.time.executed} hrs
+						</span>
+					</div>
+					<div class="column">
+						<span class="text-sm text-muted-foreground">Spent</span>
+						<span class="tactile-text text-2xl font-bold">
+							{data.statistics.tasks.time.real} hrs
+						</span>
+					</div>
+				</div>	
 			</section>
 		</side>
 	</div>

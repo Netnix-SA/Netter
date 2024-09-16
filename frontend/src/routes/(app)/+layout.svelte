@@ -40,6 +40,8 @@
 			toast(JSON.stringify(message));
 		});
 
+		task.status = data.statuses[0];
+
 		return () => {
       		document.removeEventListener("keydown", handleKeydown);
     	};
@@ -271,10 +273,38 @@
 			<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value}/>
 		</div>
 		<section class="column gap-1">
-			<label class="text-muted-foreground text-sm">Related</label>
+			<span class="text-muted-foreground text-sm">Related</span>
 			<div class="column gap-1 max-h-16 overflow-scroll">
 				{#each task.value.related as related}
 					<AnyChip id={related.id} pinned={data.user.pinned}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No related tasks</span>
+					</div>
+				{/each}
+			</div>
+		</section>
+		<section class="column gap-1">
+			<span class="text-muted-foreground text-sm">Tackles</span>
+			<div class="column gap-1 max-h-16 overflow-scroll">
+				{#each task.value.tackles as tackled}
+					<AnyChip id={tackled.id} pinned={data.user.pinned}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No tackled elements</span>
+					</div>
+				{/each}
+			</div>
+		</section>
+		<section class="column gap-1">
+			<span class="text-muted-foreground text-sm">Children</span>
+			<div class="column gap-1 max-h-16 overflow-scroll">
+				{#each task.value.children as child}
+					<AnyChip id={child.id} pinned={data.user.pinned}/>
+				{:else}
+					<div class="frame h-10">
+						<span class="text-muted-foreground/50 text-sm italic">No children</span>
+					</div>
 				{/each}
 			</div>
 		</section>

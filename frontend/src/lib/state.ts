@@ -431,3 +431,37 @@ export const removeTackledMutation = createMutation({
 	},
 	onError: onError("Failed to remove tackled from task"),
 });
+
+export const slateFeatureMutation = createMutation({
+	mutationFn: async ({ id, feature_id }: { id: string, feature_id: string }) => {
+		const response = await client.api.objectives({ id }).slated.post({ id: feature_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Slated feature for objective");
+		invalidate('features:get');
+		invalidate('objectives:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update feature description"),
+});
+
+export const removeSlatedFeatureMutation = createMutation({
+	mutationFn: async ({ id, feature_id }: { id: string, feature_id: string }) => {
+		const response = await client.api.objectives({ id }).slated({ sid: feature_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed slated feature from objective");
+		invalidate('features:get');
+		invalidate('objectives:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update feature description"),
+});

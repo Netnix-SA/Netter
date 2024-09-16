@@ -348,7 +348,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 	if (body.assignee) { task = { ...task, assignee: body.assignee }; }
 
-	if (body.status) { task = { ...task, status: { id: body.status } }; }
+	if (body.status) { task = { ...task, status: { id: new StringRecordId(body.status) } }; }
 
 	if (body.labels) { task = { ...task, labels: body.labels.map(({ id }) => new StringRecordId(id)) }; }
 

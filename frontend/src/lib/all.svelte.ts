@@ -17,7 +17,7 @@ function createToDo() {
 
 export const todo = createToDo();
 
-function createTask() {
+function createTask(default_status: { id: string }) {
 	type Task = {
 		title: string, body: string,
 		status: { id: string, },
@@ -25,6 +25,8 @@ function createTask() {
 		assignee: { id: string } | null,
 		labels: { id: string }[],
 		related: { id: string }[],
+		tackles: { id: string }[],
+		children: { id: string }[],
 	};
 
 	const DEFAULT_TASK: Task = {
@@ -34,27 +36,31 @@ function createTask() {
 		assignee: null,
 		labels: [],
 		related: [],
+		tackles: [],
+		children: [],
 	};
 
 	let value: Task | null = $state(null);
 	let project: string | null = $state(null);
-	let status: { id: string, } | null = $state(null);
+	let status: { id: string, } = $state(default_status);
 
 	return {
 		get value(): Task | null { return value },
 		// Using this custom setter we can let users of this API set only the fields they are interested in and we fill the rest with defaults
-		set value(v: { title?: string, body?: string, status?: { id: string, }, priority?: Priorities, effort?: Efforts, value?: Value, assignee?: { id: string } | null, labels?: { id: string }[], related?: { id: string }[], } | null) {
+		set value(v: { title?: string, body?: string, status?: { id: string, }, priority?: Priorities, effort?: Efforts, value?: Value, assignee?: { id: string } | null, labels?: { id: string }[], related?: { id: string }[], tackles?: { id: string }[], children?: { id: string }[] } | null) {
 			if (v === null) { value = null; return; }
 			value = {
 				title: v.title || DEFAULT_TASK.title,
 				body: v.body || DEFAULT_TASK.body,
-				status: v.status || status || value.status,
+				status: v.status || status,
 				priority: v.priority || DEFAULT_TASK.priority,
 				effort: v.effort || DEFAULT_TASK.effort,
 				value: v.value || DEFAULT_TASK.value,
 				assignee: v.assignee || DEFAULT_TASK.assignee,
 				labels: v.labels || DEFAULT_TASK.labels,
 				related: v.related || DEFAULT_TASK.related,
+				tackles: v.tackles || DEFAULT_TASK.tackles,
+				children: v.children || DEFAULT_TASK.children,
 			};
 		},
 		get project() { return project },

@@ -116,7 +116,7 @@
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>Assignee</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent class="w-fit">
-								<Search filter="User"/>
+								<Search filter={{ class: "User" }}/>
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
 						<DropdownMenu.Sub>

@@ -1,11 +1,7 @@
 - test todos (tag, related)
 - test objective completion stats
 - add add button to objective slated features
-- create objective under project
 - create update under project
 - create feature under products
+- create linked task under feature
 - create components under features
-- add "add related" under task
-- add "add tackled" under task
-- add "add child" under task
-- add "add blocking" under task
