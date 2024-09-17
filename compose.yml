@@ -17,6 +17,8 @@ services:
   frontend:
     image: oven/bun:1.1.27
     working_dir: /app
+    depends_on:
+      - backend
     volumes:
       - ./frontend:/app
     ports:

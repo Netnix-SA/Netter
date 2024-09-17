@@ -8,7 +8,7 @@
     import { blur } from "svelte/transition";
     import { CLASSES } from "@/global";
 
-	let { data, children }: { data: PageData, children: Snippet<[]> } = $props();
+	let { data }: { data: PageData } = $props();
 </script>
 
 <header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
@@ -22,35 +22,35 @@
 	</button>
 </header>
 <main class="flex-1 flex size-full">
-	<div id="features" class="w-72 flex flex-col gap-2 border-r">
-		<ul class="">
-			{#each data.features as feature(feature.id)}
-			<li class="gallery px-4 h-10 border-b" transition:blur>
-				<ContextMenu.Root>
-					<ContextMenu.Trigger class="size-full gallery">
-					<a href={`/features/${feature.id}`} class="text-sm tactile-text flex-1">
-						{feature.name}
-					</a>
-					<span class="text-muted-foreground/50 text-xs">
-						{feature.value}
-					</span>
-					</ContextMenu.Trigger>
-					<ContextMenu.Content>
-					{#each CLASSES['Feature'].actions as { label, icon: Icon, action }}
-						{#if label === "Delete"}
-							<ContextMenu.Separator/>
-						{/if}
-						<ContextMenu.Item onclick={() => action({}, feature.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
-							<Icon class="size-4 mr-2"/> {label}
-						</ContextMenu.Item>
-					{/each}
-					</ContextMenu.Content>
-				</ContextMenu.Root>
-			</li>
-			{/each}
-		</ul>
-	</div>
-	<div id="chat" class="flex items-center justify-center flex-1">
-		{@render children()}
-	</div>
+	<ul class="size-full">
+		{#each data.features as feature(feature.id)}
+		<li class="gallery px-4 h-10 border-b" transition:blur>
+			<ContextMenu.Root>
+				<ContextMenu.Trigger class="size-full gallery">
+				<a href={`/features/${feature.id}`} class="text-sm tactile-text flex-1">
+					{feature.name}
+				</a>
+				<span class="text-muted-foreground/50 text-xs">
+					{feature.value}
+				</span>
+				</ContextMenu.Trigger>
+				<ContextMenu.Content>
+				{#each CLASSES['Feature'].actions as { label, icon: Icon, action }}
+					{#if label === "Delete"}
+						<ContextMenu.Separator/>
+					{/if}
+					<ContextMenu.Item onclick={() => action({}, feature.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+						<Icon class="size-4 mr-2"/> {label}
+					</ContextMenu.Item>
+				{/each}
+				</ContextMenu.Content>
+			</ContextMenu.Root>
+		</li>
+		{:else}
+			<div class="size-full frame flex-col">
+				<span class="text-muted-foreground/50 text-sm italic">No features.</span>
+				<span class="text-muted-foreground/50 text-sm italic">Create one from the upper right plus sign.</span>
+			</div>
+		{/each}
+	</ul>
 </main>

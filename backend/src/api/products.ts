@@ -73,9 +73,7 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 })
 
 .get("/:id/features", async ({ params: { id } }) => {
-	const results = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)} ORDER BY name ASC;`);
-
-	const features = results[0];
+	const [features] = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)};`);
 
 	return features.map(mapFeature);
 }, {

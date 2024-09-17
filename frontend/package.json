@@ -11,23 +11,24 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
-    "@playwright/test": "^1.47.0",
-    "@sveltejs/adapter-auto": "^3.2.4",
-    "@sveltejs/kit": "^2.5.26",
+    "@playwright/test": "^1.47.1",
+    "@sveltejs/adapter-auto": "^3.2.5",
+    "@sveltejs/kit": "^2.5.28",
     "@sveltejs/vite-plugin-svelte": "^4.0.0-next.7",
     "@types/bun": "^1.1.9",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.45",
+    "postcss": "^8.4.47",
     "svelte": "5.0.0-next.240",
     "svelte-check": "^3.8.6",
-    "tailwindcss": "^3.4.10",
+    "tailwindcss": "^3.4.12",
     "typescript": "^5.6.2",
-    "vite": "^5.4.3"
+    "vite": "^5.4.6"
   },
   "type": "module",
   "dependencies": {
     "@elysiajs/eden": "^1.1.3",
-    "@xyflow/svelte": "^0.1.18",
+    "@internationalized/date": "^3.5.5",
+    "@xyflow/svelte": "^0.1.19",
     "bits-ui": "^0.21.13",
     "carta-md": "^4.4.5",
     "clsx": "^2.1.1",
@@ -37,7 +38,7 @@
     "mode-watcher": "^0.4.1",
     "svelte-confetti": "^2.1.2",
     "svelte-radix": "^1.1.1",
-    "svelte-sonner": "^0.3.27",
+    "svelte-sonner": "^0.3.28",
     "tailwind-merge": "^2.5.2",
     "tailwind-variants": "^0.2.1"
   }

@@ -6,7 +6,7 @@
 
 	import type { Selected } from "bits-ui";
 
-	let { variant = "regular", label, values, placeholder = "Select", comparator, value = $bindable() }: { variant: "regular" | "small" | "icon", label?: string, placeholder: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
+	let { variant = "regular", values, placeholder = "Select", comparator, value = $bindable() }: { variant?: "regular" | "small" | "icon", placeholder?: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
 
 	let internal: Selected<T> | undefined = $state(value !== null ? values.find(v => comparator(v.value, value)) : undefined);
 
@@ -17,7 +17,7 @@
 
 {#if variant === "regular"}
 <Select.Root bind:selected={internal} loop>
-	<Select.Trigger name={label} class="min-w-24 flex-1 w-full">
+	<Select.Trigger class="w-full">
 		<Select.Value {placeholder}/>
 	</Select.Trigger>
 	<Select.Content>
@@ -35,7 +35,7 @@
 {#if variant === "icon" || variant === "small"}
 {@const Icon = values.find(v => v.label === internal?.label)?.icon}
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger class="{variant === "small" ? "gallery gap-1 px-1" : "frame"} bg-primary-foreground rounded-md border {variant === "small" ? "h-6 w-24" : "size-6"}" title={label}>
+	<DropdownMenu.Trigger class="{variant === "small" ? "gallery gap-1 px-2" : "frame"} bg-primary-foreground rounded-md border {variant === "small" ? "h-6 w-full" : "size-6"}">
 		{#if internal}
 			<Icon class={variant === "small" ? "size-3" : "size-4"}/>
 			{#if variant === "small"}

@@ -45,12 +45,12 @@
    
 <Popover.Root bind:open let:ids>
 	<Popover.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" role="combobox" aria-expanded={open} class="w-[200px] justify-between">
+		<Button builders={[builder]} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
 			{selectedEntry?.label || placeholder}
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>
-	<Popover.Content class="w-[200px] p-0">
+	<Popover.Content class="w-[512px] p-0">
 		<Command shouldFilter={false}>
 			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; await handleInput(e) }}/>
 			<CommandEmpty>No results found.</CommandEmpty>

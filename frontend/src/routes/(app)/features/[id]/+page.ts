@@ -2,7 +2,7 @@ import { client } from "@/state";
 import { error } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 
-export const load: PageLoad = async ({ params: { id } }) => {
+export const load: PageLoad = async ({ params: { id }, depends }) => {
 	const { data: feature } = await client.api.features({ id }).get();
 
 	if (!feature) {
@@ -32,6 +32,8 @@ export const load: PageLoad = async ({ params: { id } }) => {
 	if (!stats) {
 		error(404, "Could not load statistics!");
 	}
+
+	depends("tasks:get");
 
 	return {
 		feature,

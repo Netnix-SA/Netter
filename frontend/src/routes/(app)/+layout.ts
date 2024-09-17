@@ -40,8 +40,6 @@ export const load: LayoutLoad = async ({ fetch, depends }) => {
 		depends(pin);
 	}
 
-	console.log("Loaded layout");
-
     return {
         user,
         users,

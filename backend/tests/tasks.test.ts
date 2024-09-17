@@ -7,29 +7,34 @@ import { MemoryEvents } from "../src/events";
 import type { Transaction } from "../src/db/types";
 import { RecordId, StringRecordId, surql } from "surrealdb";
 
-test("Create task", async () => {
-	const db = await create_db(); const eq = new MemoryEvents();
-	const client = treaty(server(db, eq));
+describe("Create", async () => {
+	test("task", async () => {
+		const db = await create_db(); const eq = new MemoryEvents();
+		const client = treaty(server(db, eq));
 
-	const user = await create_user(client);
-	const status = await create_status(client);
+		const user = await create_user(client);
+		const status = await create_status(client);
 
-	const response = await client.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
+		const response = await client.api.tasks.post({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", assignee: null, status: status.id });
 
-	expect(response.status).toBe(200);
+		expect(response.status).toBe(200);
 
-	const { data: task } = await client.api.tasks({ id: response.data.id }).get();
+		const { data: task } = await client.api.tasks({ id: response.data.id }).get();
 
-	if (task === null) { throw new Error("Task is null"); }
+		if (task === null) { throw new Error("Task is null"); }
 
-	expect(task).toMatchObject({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", });
+		expect(task).toMatchObject({ title: "Test Task", body: "This is a test task", priority: "Low", effort: "Hour", value: "Low", });
 
-	const task_create_events = await eq.get("task.create");
+		const task_create_events = await eq.get("task.create");
 
-	expect(task_create_events).toMatchObject([{ id: response.data.id }]);
+		expect(task_create_events).toMatchObject([{ id: response.data.id }]);
 
-	const [[task_create_transaction]] = await db.query<[Transaction[]]>(surql`SELECT * FROM Transaction WHERE oid = ${new StringRecordId(task.id)};`);
-	expect(task_create_transaction).toMatchObject({ oid: new RecordId(task.id.split(':')[0], task.id.split(':')[1]), action: "CREATE", class: "Task", path: null });
+		const [[task_create_transaction]] = await db.query<[Transaction[]]>(surql`SELECT * FROM Transaction WHERE oid = ${new StringRecordId(task.id)};`);
+		expect(task_create_transaction).toMatchObject({ oid: new RecordId(task.id.split(':')[0], task.id.split(':')[1]), action: "CREATE", class: "Task", path: null });
+	});
+
+	test.todo("Create with related elements");
+	test.todo("Create with tackled elements");
 });
 
 describe("Close task", async () => {

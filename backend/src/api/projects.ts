@@ -181,7 +181,7 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 })
 
 .post("/:id/objectives", async ({ params: { id }, body }) => {
-	const objective = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true });
+	const objective = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true, end: body.end });
 
 	const project_id = new StringRecordId(id);
 	const project = await db.select<Project>(project_id);

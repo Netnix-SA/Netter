@@ -2,6 +2,6 @@
 - test objective completion stats
 - add add button to objective slated features
 - create update under project
-- create feature under products
 - create linked task under feature
 - create components under features
+- add task completion stat to feature stats

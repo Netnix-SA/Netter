@@ -32,23 +32,20 @@
 			{data.feature.name}
 		</h1>
 	</div>
-	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md">
-		+
-	</button>
 </header>
 <div class="flex-1 w-full flex px-12 py-12">
 	<div class="column flex-1 gap-4">
 		<input type="text" class="tactile-text text-4xl font-bold" bind:value={feature.name}/>
-		<section class="column">
+		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Description</span>
 			<textarea class="flex-1 w-full px-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.description}></textarea>
 		</section>
 		<div class="gallery gap-4">
-			<section class="flex flex-col flex-1">
+			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Constraints</span>
 				<textarea class="flex-1 w-full p-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.constraints}></textarea>
 			</section>
-			<section class="flex flex-col flex-1">
+			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Notes</span>
 				<textarea class="flex-1 w-full p-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.notes}></textarea>
 			</section>
@@ -58,7 +55,7 @@
 		</section>
 	</div>
 	<Separator orientation="vertical" class="mx-4"/>
-	<aside class="column w-96 gap-8">
+	<side class="column w-96 gap-8">
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Execution status</span>
 			<div class="gallery gap-8">
@@ -77,17 +74,19 @@
 			</div>
 		</section>
 		<Separator/>
-		<section>
-			<!-- <span class="text-sm text-muted-foreground">Value</span> -->
+		<section class="column gap-2">
+			<span class="text-sm text-muted-foreground">Value</span>
 			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={feature.value}/>
 		</section>
 		<section class="column gap-2">
-			<span class="text-sm text-muted-foreground">Components</span>
+			<div class="gallery">
+				<span class="text-sm text-muted-foreground flex-1">Components</span>
+			</div>
 			<div class="column flex-1 overflow-y-scroll gap-2">
 				{#each data.components as component}
 					<AnyChip id={component.id}/>
 				{:else}
-					<div class="frame h-10">
+					<div class="frame h-24">
 						<span class="text-muted-foreground/50 text-sm italic">No related components</span>
 					</div>
 				{/each}
@@ -95,12 +94,14 @@
 			<!-- <textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea> -->
 		</section>
 		<section class="column gap-2">
-			<span class="text-sm text-muted-foreground">Bugs</span>
+			<div class="gallery">
+				<span class="text-sm text-muted-foreground flex-1">Bugs</span>
+			</div>
 			<div class="column flex-1 overflow-y-scroll gap-2">
 				{#each data.bugs as bug}
 					<AnyChip id={bug.id}/>	
 				{:else}
-					<div class="frame h-10">
+					<div class="frame h-24">
 						<span class="text-muted-foreground/50 text-sm italic">No related bugs</span>
 					</div>
 				{/each}
@@ -126,12 +127,12 @@
 				{#each data.tasks as task}
 					<AnyChip id={task.id} context={{ name: "Tackles", actions: [{ label: "Remove tackling", icon: Hammer, action: (ctx, id) => removeTackledMutation(ctx)({ id, tackled_id: data.feature.id }) }] }}/>
 				{:else}
-					<div class="frame h-10">
+					<div class="frame h-24">
 						<span class="text-muted-foreground/50 text-sm italic">No tackling tasks</span>
 					</div>
 				{/each}
 			</div>
 			<!-- <textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea> -->
 		</section>
-	</aside>
+	</side>
 </div>

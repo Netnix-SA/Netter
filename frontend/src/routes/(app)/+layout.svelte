@@ -267,6 +267,8 @@
 		</textarea>
 		<div class="w-full flex flex-wrap gap-2">
 			<Search filter={{ class: "User" }} bind:value={task.value.assignee}/>
+		</div>
+		<div class="gallery w-full gap-2">
 			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status}/>
 			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority}/>
 			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort}/>

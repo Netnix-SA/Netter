@@ -114,6 +114,10 @@
 								<Separator orientation="vertical" class="mx-4"/>
 							{/if}
 							{@render milestone_snippet({ i, name: milestone.title, description: milestone.description, status: "done" })}
+						{:else}
+							<div class="frame h-24 w-full">
+								<span class="text-muted-foreground/50 text-xs select-none">No milestones</span>
+							</div>
 						{/each}
 					</div>
 				</section>

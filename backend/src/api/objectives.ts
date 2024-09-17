@@ -128,8 +128,9 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 
 ;
 
-export const map = ({ id, title, description, active }: Objective) => ({
+export const map = ({ id, title, description, active, end }: Objective) => ({
     id: id.toString(),
     title, description,
     active,
+	end,
 });
