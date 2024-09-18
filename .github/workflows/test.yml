@@ -47,5 +47,5 @@ jobs:
         run: sleep 10
       - name: Run unit tests
         env:
-          DB_URL: http://localhost:8000/rpc
+          DB_URL: http://surrealdb:8000/rpc
         run: bun test
