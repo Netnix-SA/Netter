@@ -6,19 +6,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
     # container: oven/bun:1.1.28
-    services:
-      db:
-        image: surrealdb/surrealdb:v2.0.0
-        ports:
-          - 8000:8000
-        env:
-          SURREAL_USER: root
-          SURREAL_PASS: root
-        options: >-
-          --health-cmd="curl --fail http://localhost:8000/health || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    # services:
+    #   db:
+    #     image: surrealdb/surrealdb:v2.0.0
+    #     ports:
+    #       - 8000:8000
+    #     env:
+    #       SURREAL_USER: root
+    #       SURREAL_PASS: root
+    #     options: >-
+    #       --health-cmd="curl --fail http://localhost:8000/health || exit 1"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,6 +26,16 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.1.28
+      - name: Start SurrealDB
+        uses: surrealdb/setup-surreal@v1
+        with:
+          surrealdb_version: v2.0.0
+          surrealdb_port: 8000
+          surrealdb_username: root
+          surrealdb_password: root
+          surrealdb_auth: true
+          surrealdb_log: debug
+          surrealdb_additional_args: memory # Use memory storage layer
       - name: Path
         run: cd backend
       - name: Install dependencies
