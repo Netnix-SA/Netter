@@ -3,7 +3,7 @@ import { Surreal } from "surrealdb";
 export async function create_db() {
 	const db = new Surreal();
 
-	await db.connect("http://db:8000/rpc", {
+	await db.connect(import.meta.env.DB_URL ?? "http://db:8000/rpc", {
 		auth: {
 			username: "root",
 			password: "root",

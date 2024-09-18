@@ -6,6 +6,8 @@ services:
       - ./backend:/app
     env_file:
       - .env
+    environment:
+      - DB_URL=http://db:8000/rpc
     expose:
       - 80
     ports:

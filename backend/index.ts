@@ -6,7 +6,7 @@ console.log("Starting Netter API server!");
 
 const db = new Surreal();
 
-await db.connect("http://db:8000/rpc", {
+await db.connect(import.meta.env.DB_URL ?? "http://db:8000/rpc", {
 	auth: {
 		username: "root",
 		password: "root",
