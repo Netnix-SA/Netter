@@ -42,8 +42,8 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Wait
-        run: curl --head -X GET --retry 25 --retry-connrefused --retry-delay 1 http://localhost:8000/health
+        run: curl --head -X GET --retry 25 --retry-connrefused --retry-delay 1 http://surrealdb:8000/health
       - name: Run unit tests
         env:
-          DB_URL: http://localhost:8000/rpc
+          DB_URL: http://surrealdb:8000/rpc
         run: bun test
