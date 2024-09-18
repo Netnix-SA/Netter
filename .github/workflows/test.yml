@@ -8,7 +8,7 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
-    # container: oven/bun:1.1.28
+    container: oven/bun:1.1.28
     # services:
     #   db:
     #     image: surrealdb/surrealdb:v2.0.0
@@ -41,8 +41,6 @@ jobs:
           surrealdb_additional_args: memory # Use memory storage layer
       - name: Install dependencies
         run: bun install
-      - name: Wait
-        run: curl --head -X GET --retry 25 --retry-connrefused --retry-delay 1 http://surrealdb:8000/health
       - name: Run unit tests
         env:
           DB_URL: http://surrealdb:8000/rpc
