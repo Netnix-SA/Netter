@@ -12,7 +12,7 @@ export async function create_db() {
 		database: `${Date.now()}-${Math.floor(Math.random() * 999999)}`,
 	});
 
-	await db.query(await Bun.file("/app/start.sql").text());
+	// await db.query(await Bun.file("/app/start.sql").text());
 
 	return db;
 }
@@ -55,7 +55,7 @@ export async function create_feature(api: any) {
 }
 
 export async function create_objective(api: any, project: any) {
-	const { data: objective, error } = await api.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+	const { data: objective, error } = await api.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", end: null });
 	log_error(error);
 	return objective;
 }

@@ -13,14 +13,14 @@ test("Create objective succesfully", async () => {
 	const status = await create_status(client);
 	const project = await create_project(client, status);
 
-	const response = await client.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", });
+	const response = await client.api.projects({ id: project.id }).objectives.post({ title: "Test Objective", description: "This is a test objective", end: null });
 
 	expect(response.status).toBe(200);
 
 	const project_response = await client.api.projects({ id: project.id }).objectives.get();
 
 	expect(project_response.status).toBe(200);
-	expect(project_response.data).toMatchObject([{ title: "Test Objective", description: "This is a test objective" }]);
+	expect(project_response.data).toMatchObject([{ title: "Test Objective", description: "This is a test objective", end: null }]);
 });
 
 describe("Slated features", async () => {
