@@ -1,0 +1,34 @@
+name: Backend Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # container: oven/bun:1.1.28
+    services:
+      db:
+        image: surrealdb/surrealdb:v2.0.0
+        ports:
+          - 8000:8000
+        env:
+          SURREAL_USER: root
+          SURREAL_PASS: root
+        options: >-
+          --health-cmd="curl --fail http://localhost:8000/health || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1.28
+      - name: Path
+        run: cd backend
+      - name: Install dependencies
+        run: bun install
+      - name: Run unit tests
+        run: bun test
