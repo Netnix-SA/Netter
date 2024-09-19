@@ -15,9 +15,11 @@
     import { LayoutList } from "lucide-svelte";
     import DatePicker from "@/components/ui/date-picker.svelte";
 	import { type DateValue, CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
+    import { patch } from "@/utils";
 
 	let { data }: { data: PageData } = $props();
 
+	let title = $state(data.objective.title);
 	let end = $state(data.objective.end && new CalendarDate(data.objective.end.getUTCFullYear(), data.objective.end.getUTCMonth(), data.objective.end.getUTCDate()));
 </script>
 
@@ -55,7 +57,7 @@
 				{:else}
 					<span class="text-sm text-white font-medium">Inactive</span>
 				{/if}
-				<input type="text" class="text-5xl font-semibold tactile-text flex-1" placeholder="Title" bind:value={data.objective.title}/>
+				<input use:patch={{ value: title, action: (e) => console.log(e) }} type="text" class="text-5xl font-semibold tactile-text flex-1" placeholder="Title" bind:value={title}/>
 			</div>
 		</header>
 		<section class="flex-1">
@@ -116,8 +118,8 @@
 			{#each data.features as feature}
 				<AnyChip id={feature.id} pinned={data.user.pinned} context={{ name: "Slated", actions: [{ label: "Remove slated", icon: LayoutList, action: (ctx, id) => removeSlatedFeatureMutation(ctx)({ id: data.objective.id, feature_id: id }) }] }}/>
 			{:else}
-				<div class="frame h-10">
-					<span class="text-muted-foreground/50 text-sm italic">No slatede features</span>
+				<div class="frame h-24">
+					<span class="text-muted-foreground/50 text-sm italic">No slated features</span>
 				</div>
 			{/each}
 		</section>

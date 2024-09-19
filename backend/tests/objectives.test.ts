@@ -66,6 +66,12 @@ describe("Slated features", async () => {
 	});
 });
 
+describe("Update", async () => {
+	test.todo("Update title");
+	test.todo("Update description");
+	test.todo("Update end");
+});
+
 test("Get execution stats", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 	const client = treaty(server(db, eq));

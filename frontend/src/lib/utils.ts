@@ -115,3 +115,28 @@ export function filterTask(t: Task, filter: StateFilter | StatusFilter | TextFil
 		}
 	}
 }
+
+import type { Action } from "svelte/action";
+
+export function patch(node: HTMLInputElement, { value, action, time }: { value: string, action?: Function, time?: number }) {
+	let timeout: Timer | null = null;
+
+	return {
+		update() {
+			if (timeout) { clearTimeout(timeout); }
+			timeout = setTimeout(() => {
+				if (action) {
+					action(node.value);
+				}
+			}, time ?? 5000);
+		},
+		destroy() {
+			if (timeout) {
+				clearTimeout(timeout);
+				if (action) {
+					action(node.value);
+				}
+			}
+		}
+	};
+}

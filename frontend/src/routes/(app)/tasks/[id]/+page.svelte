@@ -191,7 +191,7 @@
 						</Dialog.Description>
 					</Dialog.Header>
 					{#if close_as === "Duplicate"}
-						<Search placeholder="Select the original task" filter={{ class: "Task", exclude: [data.task.id] }} onSelect={(e) => close_payload = e}/>
+						<Search placeholder="Select the original task" filter={{ class: "Task", exclude: [data.task.id] }} bind:value={close_payload}/>
 					{:else if close_as === "Resolved"}
 						<div class="flex gap-2">
 							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Resolution" bind:value={close_payload}>
@@ -204,7 +204,9 @@
 						</div>
 					{/if}
 					<Dialog.Footer>
-						<Button title="Hey hey hey" type="submit" disabled={close_as === undefined || close_payload === undefined}>Close{close_as ? " as " + close_as.toLowerCase() : ""}</Button>
+						<Button title="Hey hey hey" type="submit" disabled={close_as === undefined || close_payload === undefined}>
+							Close{close_as ? " as " + close_as.toLowerCase() : ""}
+						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
