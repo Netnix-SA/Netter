@@ -1,0 +1,67 @@
+services:
+  backend:
+    hostname: backend
+    container_name: backend
+    build: ./backend
+    env_file:
+      - .env
+    environment:
+      - DB_URL=http://db:8000/rpc
+    expose:
+      - 80
+    depends_on:
+      - db
+    networks:
+      - internal
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`netter.netnix.net`) && PathPrefix(`/api`)
+      - traefik.http.routers.backend.entrypoints=web
+  frontend:
+    hostname: frontend
+    container_name: frontend
+    build: ./frontend
+    depends_on:
+      - backend
+    networks:
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`netter.netnix.net`)
+      - traefik.http.routers.frontend.entrypoints=web
+    env_file:
+      - .env
+    restart: always
+  db:
+    image: surrealdb/surrealdb:v2.0.0
+    user: root
+    expose:
+      - 8000
+    command: start --user root --pass root rocksdb://data/database.db
+    volumes:
+      - db:/data
+    networks:
+      - internal
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entryPoints.web.address=:80
+    ports:
+      - 10080:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal
+      - default
+
+volumes:
+  db:
+
+networks:
+  default:
+  internal:
