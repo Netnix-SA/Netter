@@ -1,8 +1,7 @@
 import { treaty } from "@elysiajs/eden";
 import { writable } from "svelte/store";
 import type { App } from "../../../backend/src/api";
-// import { createMutation, QueryClient } from "@tanstack/svelte-query";
-import { task, todo } from "./all.svelte";
+import { task, todo } from "./global.svelte.ts";
 import { toast } from "svelte-sonner";
 import { goto, invalidate } from "$app/navigation";
 import { createMutation } from "./query";

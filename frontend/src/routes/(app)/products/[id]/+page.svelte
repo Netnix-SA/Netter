@@ -5,7 +5,7 @@
     import Pin from "@/components/Pin.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { DotsHorizontal } from "svelte-radix";
-    import { CLASSES } from "@/global";
+    import { CLASSES } from "@/utils.ts";
     import { onNavigate } from "$app/navigation";
     import { updateProductMutation } from "@/state";
 

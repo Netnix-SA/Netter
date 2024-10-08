@@ -6,7 +6,7 @@
 
 	import "carta-md/default.css";
 	import Label from "@/components/ui/label/label.svelte";
-	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/global";
+	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/utils.ts";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
@@ -28,7 +28,7 @@
     import AnyChip from "@/components/AnyChip.svelte";
     import { onNavigate } from "$app/navigation";
     import Search from "@/components/Search.svelte";
-    import { task } from "@/all.svelte";
+    import { task } from "@/global.svelte.ts";
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
 
 	const carta = new Carta({
@@ -36,8 +36,8 @@
 		rendererDebounce: 10,
 	});
 
-	let add_update: boolean | undefined = $state(undefined);
-	let show_resolve_menu: boolean | undefined = $state(undefined);
+	let add_update: boolean = $state(false);
+	let show_resolve_menu: boolean = $state(false);
 
 	onMount(() => {
 		const entry = {
@@ -364,29 +364,27 @@
 	</side>
 </div>
 
-<Dialog.Footer>
-	<Dialog.Root bind:open={add_update}>
-		<Dialog.Content class="sm:max-w-[425px]">
-			<Dialog.Header>
-				<Dialog.Title>Add update to {data.task.title}</Dialog.Title>
-				<Dialog.Description>
-				</Dialog.Description>
-			</Dialog.Header>
-			<div class="gallery gap-2 w-full">
-				<div class="column w-full">
-					<span class="text-muted-foreground text-sm">Progress</span>
-					<Input type="number" max="100" min="0" class="w-16" bind:value={update.value}/>
-				</div>
-				<div class="column w-full">
-					<span class="text-muted-foreground text-sm">Time spent</span>
-					<Input type="number" min="0" max={60 * 24} class="w-16" bind:value={update.time_spent}/>
-				</div>
+<Dialog.Root bind:open={add_update}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Add update to {data.task.title}</Dialog.Title>
+			<Dialog.Description>
+			</Dialog.Description>
+		</Dialog.Header>
+		<div class="gallery gap-2 w-full">
+			<div class="column w-full">
+				<span class="text-muted-foreground text-sm">Progress</span>
+				<Input type="number" max="100" min="0" class="w-16" bind:value={update.value}/>
 			</div>
-			<span class="text-muted-foreground text-sm">Note</span>
-			<Input type="text" bind:value={update.note}/>
-			<Dialog.Footer>
-				<Button title="Hey hey hey" onclick={async () => { addUpdate(); add_update = false; }} type="submit">Add update</Button>
-			</Dialog.Footer>
-		</Dialog.Content>
-	</Dialog.Root>
-</Dialog.Footer>
+			<div class="column w-full">
+				<span class="text-muted-foreground text-sm">Time spent</span>
+				<Input type="number" min="0" max={60 * 24} class="w-16" bind:value={update.time_spent}/>
+			</div>
+		</div>
+		<span class="text-muted-foreground text-sm">Note</span>
+		<Input type="text" bind:value={update.note}/>
+		<Dialog.Footer>
+			<Button title="Hey hey hey" onclick={async () => { addUpdate(); add_update = false; }} type="submit">Add update</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

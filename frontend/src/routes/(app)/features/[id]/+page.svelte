@@ -3,11 +3,11 @@
 	import type { PageData } from "./$types";
     import type { Value } from "@/types";
     import Select from "@/components/Select.svelte";
-    import { VALUES } from "@/global";
+    import { VALUES } from "@/utils.ts";
     import AnyChip from "@/components/AnyChip.svelte";
     import { onNavigate } from "$app/navigation";
     import { addTaskTackledMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
-    import { task } from "@/all.svelte";
+    import { task } from "@/global.svelte.ts";
     import { Hammer } from "lucide-svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { client } from "@/state";
-	import { CLASSES } from "@/global";
+	import { CLASSES } from "@/utils.ts";
 
 	let { body }: { body: string } = $props();
 

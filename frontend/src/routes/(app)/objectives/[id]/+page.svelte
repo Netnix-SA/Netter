@@ -1,14 +1,10 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
 	import AnyChip from "@/components/AnyChip.svelte";
-	import Button from "@/components/ui/button/button.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import * as Dialog from "$lib/components/ui/dialog";
     import { DotsHorizontal } from "svelte-radix";
 	import { page } from "$app/stores";
-	import { addPinned } from "@/actions";
-	import Pin from "@/components/Pin.svelte";
-    import { CLASSES } from "@/global";
+    import { CLASSES } from "@/utils";
     import Search from "@/components/Search.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import { removeSlatedFeatureMutation, slateFeatureMutation } from "@/state";

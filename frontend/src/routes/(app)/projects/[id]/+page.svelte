@@ -9,9 +9,9 @@
 
 	import { blur } from 'svelte/transition';
 	import { onMount } from "svelte";
-	import { task } from "@/all.svelte";
+	import { task } from "@/global.svelte.ts";
     import { CalendarArrowUp, Check, Clock9, Star } from "lucide-svelte";
-    import { CLASSES, STATES } from "@/global";
+    import { CLASSES, STATES } from "@/utils.ts";
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
     import Pin from "@/components/Pin.svelte";

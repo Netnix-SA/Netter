@@ -16,12 +16,15 @@ const Root = ContextMenuPrimitive.Root;
 const Trigger = ContextMenuPrimitive.Trigger;
 const Group = ContextMenuPrimitive.Group;
 
+const Portal = ContextMenuPrimitive.Portal;
+
 export {
 	Sub,
 	Root,
 	Item,
 	Label,
 	Group,
+	Portal,
 	Trigger,
 	Content,
 	Shortcut,
@@ -37,6 +40,7 @@ export {
 	Item as ContextMenuItem,
 	Label as ContextMenuLabel,
 	Group as ContextMenuGroup,
+	Portal as ContextMenuPortal,
 	Content as ContextMenuContent,
 	Trigger as ContextMenuTrigger,
 	Shortcut as ContextMenuShortcut,

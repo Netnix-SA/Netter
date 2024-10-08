@@ -1,14 +1,14 @@
 <script lang="ts">
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import { CLASSES, EFFORTS, EFFORTS_ICONS, PRIORITIES, PRIORITIES_ICONS } from "@/global";
+	import { CLASSES, EFFORTS, EFFORTS_ICONS, PRIORITIES, PRIORITIES_ICONS } from "@/utils.ts";
 	import Circle from "./Circle.svelte";
 	import UserAvatar from "./UserAvatar.svelte";
 	import { addPinned, addToDo } from "@/actions";
     import LabelChip from "./LabelChip.svelte";
     import { client } from "@/state";
     import { toast } from "svelte-sonner";
-    import { todo } from "@/all.svelte";
+    import { todo } from "@/global.svelte.ts";
     import { blur } from "svelte/transition";
 
 	type Task = { id: string, title: string, labels: { id: string, }[], progress: number, priority: "Low" | "Medium" | "High" | "Urgent", effort: string };

@@ -157,11 +157,13 @@
 <div id="input-box" class="rounded-t-lg bg-neutral-900 border-t px-3 py-2 gap-2 flex">
 	<div id="left" class="flex flex-1 gap-2">
 		<Tooltip.Root>
-			<Tooltip.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="icon">
-					<Paperclip class="size-4" />
-					<span class="sr-only">Attach file</span>
-				</Button>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="ghost" size="icon">
+						<Paperclip class="size-4" />
+						<span class="sr-only">Attach file</span>
+					</Button>
+				{/snippet}
 			</Tooltip.Trigger>
 			<Tooltip.Content side="top">Attach File</Tooltip.Content>
 		</Tooltip.Root>

@@ -6,7 +6,7 @@
 
     import { client, createProductFeatureMutation, } from "@/state";
     import { blur } from "svelte/transition";
-    import { CLASSES } from "@/global";
+    import { CLASSES } from "@/utils.ts";
 
 	let { data }: { data: PageData } = $props();
 </script>

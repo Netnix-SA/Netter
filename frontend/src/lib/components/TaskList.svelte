@@ -3,7 +3,7 @@
 
     import TaskLine from "./TaskLine.svelte";
     import type { Efforts, Priorities, Value, Status } from "@/types";
-    import { STATES } from "@/global";
+    import { STATES } from "@/utils.ts";
 
 	type Task = {
 		id: string,

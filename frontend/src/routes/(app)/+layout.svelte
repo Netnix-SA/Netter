@@ -8,17 +8,17 @@
 	import * as Dialog from "$lib/components/ui/dialog";
 	import * as Tooltip from "$lib/components/ui/tooltip";
     import { goto, onNavigate } from "$app/navigation";
-	import { Separator } from "$lib/components/ui/separator";
     import { client, commands, createTaskMutation, createToDoMutation, } from "@/state";
-    import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/global";
+    import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/utils.ts";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
     import LabelChip from "@/components/LabelChip.svelte";
     import { toast } from "svelte-sonner";
-    import { task, todo } from "@/all.svelte";
+    import { task, todo } from "@/global.svelte.ts";
     import { Button } from "@/components/ui/button";
     import Select from "@/components/Select.svelte";
     import Search from "@/components/Search.svelte";
+	import { Tooltip as BitsTooltip } from "bits-ui";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -106,6 +106,7 @@
 </script>
 
 <Toaster/>
+<BitsTooltip.Provider>
 <main class="h-screen w-screen flex flex-col bg-background">
 	<div class="w-full h-full flex p-2 gap-4">
 		<nav class="border rounded-lg w-72 px-4 pb-4 pt-4 h-full flex flex-col gap-4 page-backdrop">
@@ -128,10 +129,10 @@
 					</DropdownMenu.Root>
 				</div>
 				<Tooltip.Root>
-					<Tooltip.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="outline" size="icon" onclick={() => todo.value = {}}>
+					<Tooltip.Trigger>
+						<!-- <Button variant="outline" size="icon" onclick={() => todo.value = {}}>
 							<SquareCheckBig class="size-4"/>
-						</Button>
+						</Button> -->
 					</Tooltip.Trigger>
 					<Tooltip.Content>Create ToDo</Tooltip.Content>
 				</Tooltip.Root>
@@ -316,3 +317,4 @@
 		{/if}
 	</Dialog.Content>
 </Dialog.Root>
+</BitsTooltip.Provider>

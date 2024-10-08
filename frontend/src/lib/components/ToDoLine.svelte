@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as ContextMenu from "$lib/components/ui/context-menu";
-    import { CLASSES } from "@/global";
+    import { CLASSES } from "@/utils.ts";
     import { client } from "@/state";
 
 	import { Confetti } from "svelte-confetti";

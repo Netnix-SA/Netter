@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CLASS_TO_ICON, CLASSES } from "@/global";
+	import { CLASSES } from "@/utils";
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -7,8 +7,9 @@
     import { goto } from "$app/navigation";
     import { client } from "@/state";
     import type { Classes } from "@/types";
-    import { task, todo } from "@/all.svelte.ts";
+    import { task, todo } from "@/global.svelte.ts";
     import { toast } from "svelte-sonner";
+    import type { Component } from "svelte";
 
 	let { id, pinned = [], context }: { id: string, pinned: string[], context?: { name: string, actions: { label: string, icon: Component, action: any }[] } } = $props();
 
@@ -41,7 +42,7 @@
 <a class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all" href={link}>
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
-			{@const Icon = clss !== undefined ? CLASS_TO_ICON[clss] : MessageCircleQuestion}
+			{@const Icon = clss !== undefined ? CLASSES[clss].icon : MessageCircleQuestion}
 			<Icon class="size-4"/>
 			{#await metadata}
 				<div class="w-16 h-2 animate-pulse">
@@ -50,34 +51,40 @@
 				<span class="tactile-text text-sm">{mtdt.data?.title}</span>
 			{/await}
 		</ContextMenu.Trigger>
-		<ContextMenu.Content>
-			{#if context && context.actions.length > 0}
-				<ContextMenu.Label>
-					{context.name}
-				</ContextMenu.Label>
-				<ContextMenu.Separator/>
-				{#each context.actions as { label, icon: Icon, action }}
-					{#if label === "Delete"}
+		<ContextMenu.Portal>
+			<ContextMenu.Content>
+				{#if context && context.actions.length > 0}
+					<ContextMenu.Group>
+						<ContextMenu.Label>
+							{context.name}
+						</ContextMenu.Label>
 						<ContextMenu.Separator/>
-					{/if}
-					<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
-						<Icon class="size-4 mr-2"/> {label}
-					</ContextMenu.Item>
-				{/each}
-				<ContextMenu.Separator/>
-			{/if}
-			<ContextMenu.Label>
-				{clss}
-			</ContextMenu.Label>
-			<ContextMenu.Separator/>
-			{#each CLASSES[clss].actions as { label, icon: Icon, action }}
-				{#if label === "Delete"}
-					<ContextMenu.Separator/>
+						{#each context.actions as { label, icon: Icon, action }}
+							{#if label === "Delete"}
+								<ContextMenu.Separator/>
+							{/if}
+							<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+								<Icon class="size-4 mr-2"/> {label}
+							</ContextMenu.Item>
+						{/each}
+						<ContextMenu.Separator/>
+					</ContextMenu.Group>
 				{/if}
-				<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
-					<Icon class="size-4 mr-2"/> {label}
-				</ContextMenu.Item>
-			{/each}
-		</ContextMenu.Content>
+				<ContextMenu.Group>
+					<ContextMenu.Label>
+						{clss}
+					</ContextMenu.Label>
+					<ContextMenu.Separator/>
+					{#each CLASSES[clss].actions as { label, icon: Icon, action }}
+						{#if label === "Delete"}
+							<ContextMenu.Separator/>
+						{/if}
+						<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+							<Icon class="size-4 mr-2"/> {label}
+						</ContextMenu.Item>
+					{/each}
+				</ContextMenu.Group>
+			</ContextMenu.Content>
+		</ContextMenu.Portal>
 	</ContextMenu.Root>
 </a>

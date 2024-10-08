@@ -43,12 +43,14 @@
 	});
 </script>
    
-<Popover.Root bind:open let:ids>
-	<Popover.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
-			{selectedEntry?.label || placeholder}
-			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-		</Button>
+<Popover.Root bind:open>
+	<Popover.Trigger>
+		{#snippet child({ props })}
+			<Button {...props} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
+				{selectedEntry?.label || placeholder}
+				<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-[512px] p-0">
 		<Command shouldFilter={false}>

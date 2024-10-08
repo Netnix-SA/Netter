@@ -13,12 +13,14 @@
 	let { value = $bindable() }: { value: DateValue | undefined } = $props();
 </script>
 	
-<Popover.Root openFocus>
-	<Popover.Trigger asChild let:builder>
-		<Button variant="outline" class={cn("w-[280px] justify-start text-left font-normal", !value && "text-muted-foreground")} builders={[builder]}>
-			<CalendarIcon class="mr-2 size-4"/>
-			{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
-		</Button>
+<Popover.Root>
+	<Popover.Trigger>
+		{#snippet child({ props })}
+			<Button {...props} variant="outline" class={cn("w-[280px] justify-start text-left font-normal", !value && "text-muted-foreground")}>
+				<CalendarIcon class="mr-2 size-4"/>
+				{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-auto p-0">
 		<Calendar bind:value initialFocus/>

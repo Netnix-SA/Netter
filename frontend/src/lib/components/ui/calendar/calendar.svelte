@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from "bits-ui";
-	import * as Calendar from "./index.js";
+	// import * as Calendar from "./index.js";
 	import { cn } from "$lib/utils.js";
 
 	type $$Props = CalendarPrimitive.Props;
@@ -21,38 +21,36 @@
 	class={cn("p-3", className)}
 	{...$$restProps}
 	on:keydown
-	let:months
-	let:weekdays
 >
-	<Calendar.Header>
-		<Calendar.PrevButton />
-		<Calendar.Heading />
-		<Calendar.NextButton />
-	</Calendar.Header>
-	<Calendar.Months>
+	{#snippet children({ months, weekdays })}
+		<CalendarPrimitive.Header>
+			<CalendarPrimitive.PrevButton />
+			<CalendarPrimitive.Heading />
+			<CalendarPrimitive.NextButton />
+		</CalendarPrimitive.Header>
 		{#each months as month}
-			<Calendar.Grid>
-				<Calendar.GridHead>
-					<Calendar.GridRow class="flex">
+			<CalendarPrimitive.Grid>
+				<CalendarPrimitive.GridHead>
+					<CalendarPrimitive.GridRow class="flex">
 						{#each weekdays as weekday}
-							<Calendar.HeadCell>
+							<CalendarPrimitive.HeadCell>
 								{weekday.slice(0, 2)}
-							</Calendar.HeadCell>
+							</CalendarPrimitive.HeadCell>
 						{/each}
-					</Calendar.GridRow>
-				</Calendar.GridHead>
-				<Calendar.GridBody>
+					</CalendarPrimitive.GridRow>
+				</CalendarPrimitive.GridHead>
+				<CalendarPrimitive.GridBody>
 					{#each month.weeks as weekDates}
-						<Calendar.GridRow class="mt-2 w-full">
+						<CalendarPrimitive.GridRow class="mt-2 w-full">
 							{#each weekDates as date}
-								<Calendar.Cell {date}>
-									<Calendar.Day {date} month={month.value} />
-								</Calendar.Cell>
+								<CalendarPrimitive.Cell {date} month={month.value}>
+									<CalendarPrimitive.Day/>
+								</CalendarPrimitive.Cell>
 							{/each}
-						</Calendar.GridRow>
+						</CalendarPrimitive.GridRow>
 					{/each}
-				</Calendar.GridBody>
-			</Calendar.Grid>
+				</CalendarPrimitive.GridBody>
+			</CalendarPrimitive.Grid>
 		{/each}
-	</Calendar.Months>
+	{/snippet}
 </CalendarPrimitive.Root>

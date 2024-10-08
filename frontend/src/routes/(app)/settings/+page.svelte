@@ -1,6 +1,6 @@
 <script lang="ts">
     import UserAvatar from "@/components/UserAvatar.svelte";
-    import { COLORS } from "@/global";
+    import { COLORS } from "@/utils.ts";
     import { client } from "@/state";
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { STATES } from "@/global";
+	import { STATES } from "@/utils.ts";
 	import type { PageData } from "./$types";
 	import { filterTask, groupBy } from "@/utils";
     import Label from "@/components/LabelChip.svelte";
@@ -49,7 +49,7 @@
     import Circle from "@/components/Circle.svelte";
     import TaskList from "@/components/TaskList.svelte";
     import Filters from "@/components/filters/Filters.svelte";
-    import { task } from "@/all.svelte";
+    import { task } from "@/global.svelte.ts";
     import Search from "@/components/Search.svelte";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
