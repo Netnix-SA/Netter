@@ -4,10 +4,12 @@ import type { LayoutLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import type { App } from "../../../../backend/src/api";
 
+import { env } from "$env/dynamic/public";
+
 export const ssr = false;
 
 export const load: LayoutLoad = async ({ fetch, depends }) => {
-	const client = treaty<App>('localhost', { fetcher: fetch, fetch: { credentials: "include" } });
+	const client = treaty<App>(env.PUBLIC_NETTER_API_URL, { fetcher: fetch, fetch: { credentials: "include" } });
 
     const { data: user, error: e } = await client.api.users.me.get();
 

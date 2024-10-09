@@ -7,7 +7,9 @@ import { goto, invalidate } from "$app/navigation";
 import { createMutation } from "./query";
 import type { Efforts, Value } from "./types";
 
-export const client = treaty<App>('localhost', { fetch: { credentials: 'include' } });
+import { env } from "$env/dynamic/public";
+
+export const client = treaty<App>(env.PUBLIC_NETTER_API_URL, { fetch: { credentials: 'include' } });
 
 export const commands = writable<{ name: string, commands: { name: string, key?: string, do: () => void }[] }[]>([]);
 

@@ -1,9 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-	import type { PageData } from './$types';
     import { error } from '@sveltejs/kit';
-    import { client } from '$lib/state';
     import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
     import Button from '@/components/ui/button/button.svelte';
     import { Github, GithubIcon, Key } from 'lucide-svelte';
 
@@ -47,7 +46,7 @@
 	}
 
 	async function handleGitHubLogin() {
-		await goto(`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`);
+		await goto(`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`);
 	}
 </script>
 
@@ -69,7 +68,7 @@
 				<Key class="size-4"/>
 				Login
 			</Button>
-			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${"http://localhost/auth/github"}&scope=user`} class="gap-2">
+			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`} class="gap-2">
 				<GithubIcon class="size-4"/>
 				Login with GitHub
 			</Button>
