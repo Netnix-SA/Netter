@@ -6,6 +6,7 @@ jobs:
   deploy:
     name: "Deploy to server"
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     env:
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
       SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
@@ -27,7 +28,7 @@ jobs:
           END
       - name: Copy
         run: |
-          scp -r ./* $SSH_USER@$SSH_HOST:/data/projects/netter
+          rsync -anv -r --delete --exclude .git . production:/data/projects/netter
       - name: Deploy
         run: |
           ssh production "cd /data/projects/netter && docker compose stop && docker compose -f compose.prod.yml --build up -d"
