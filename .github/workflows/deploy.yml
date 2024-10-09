@@ -28,7 +28,7 @@ jobs:
           END
       - name: Copy
         run: |
-          rsync -anv -r --delete --exclude .git . production:/data/projects/netter
+          rsync -v -r --exclude .git --exclude .github --exclude compose.yml . production:/data/projects/netter
       - name: Deploy
         run: |
-          ssh production "cd /data/projects/netter && docker compose stop && docker compose -f compose.prod.yml --build up -d"
+          ssh production "cd /data/projects/netter && docker compose -f compose.prod.yml stop && docker compose -f compose.prod.yml --build up -d"
