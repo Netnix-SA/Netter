@@ -22,7 +22,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`netter.netnix.net`) && PathPrefix(`/api`)
       - traefik.http.routers.backend.entrypoints=web
-      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.backend.tls=true
   frontend:
     hostname: frontend
     container_name: frontend
@@ -35,7 +35,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`netter.netnix.net`)
       - traefik.http.routers.frontend.entrypoints=web
-      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.frontend.tls=true
     env_file:
       - .env
     restart: always
@@ -44,7 +44,7 @@ services:
     user: root
     expose:
       - 80
-    command: start --user root --pass root --bind 0.0.0.0:80 rocksdb://data/database.db
+    command: start --user root --pass root --bind 0.0.0.0:80 rocksdb:///data/database.db
     volumes:
       - db:/data
     networks:
