@@ -6,7 +6,11 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=http://db:8000/rpc
+      - DB_URL=http://db/rpc
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAMESPACE=production
+      - DB_NAME=prod
     expose:
       - 80
     depends_on:
@@ -38,7 +42,7 @@ services:
     user: root
     expose:
       - 8000
-    command: start --user root --pass root rocksdb://data/database.db
+    command: start --user root --pass root --bind 0.0.0.0:80 rocksdb://data/database.db
     volumes:
       - db:/data
     networks:
