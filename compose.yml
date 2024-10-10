@@ -36,9 +36,9 @@ services:
     image: surrealdb/surrealdb:v2.0.0
     user: root
     expose:
-      - 8000
+      - 80
     ports:
-      - 8000:8000
+      - 8000:80
     command: start --user root --pass root --bind 0.0.0.0:80 rocksdb://data/database.db
     volumes:
       - db:/data
