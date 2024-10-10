@@ -31,4 +31,4 @@ jobs:
           rsync -v -r --exclude .git --exclude .github --exclude compose.yml . production:/data/projects/netter
       - name: Deploy
         run: |
-          ssh production "cd /data/projects/netter && docker compose -f compose.prod.yml stop && docker compose -f compose.prod.yml --build up -d"
+          ssh production "cd /data/projects/netter && docker compose -f compose.prod.yml stop && docker compose -f compose.prod.yml up --build -d"

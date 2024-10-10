@@ -9,7 +9,7 @@ services:
     environment:
       - DB_URL=http://db/rpc
       - DB_USER=root
-      - DB_PASS=root
+      - DB_PASSWORD=root
       - DB_NAMESPACE=development
       - DB_NAME=dev
     expose:
