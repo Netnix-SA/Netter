@@ -22,6 +22,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`netter.netnix.net`) && PathPrefix(`/api`)
       - traefik.http.routers.backend.entrypoints=web
+      - traefik.http.routers.traefik.tls=true
   frontend:
     hostname: frontend
     container_name: frontend
@@ -34,6 +35,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`netter.netnix.net`)
       - traefik.http.routers.frontend.entrypoints=web
+      - traefik.http.routers.traefik.tls=true
     env_file:
       - .env
     restart: always
@@ -53,16 +55,23 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entryPoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.tlsresolver.acme.tlschallenge=true
+      - --certificatesresolvers.tlsresolver.acme.email=fvilla@netnix.net
+      - --certificatesresolvers.tlsresolver.acme.storage=/letsencrypt/acme.json
     ports:
       - 80:80
+      - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
     networks:
       - internal
       - default
 
 volumes:
   db:
+  letsencrypt:
 
 networks:
   default:
