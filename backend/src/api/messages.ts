@@ -2,8 +2,9 @@ import type { Channel, Message } from "../db/types";
 import { Elysia, t } from "elysia";
 import { tChannelId, tMessage, tMessagePost, tTaskId, tUserId } from "./schemas";
 import Surreal, { StringRecordId } from "surrealdb";
+import type { Events } from "../events";
 
-export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detail: { tags: ["Messages"], description: "Messages make up the content in channels." } })
+export const messages = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/messages", detail: { tags: ["Messages"], description: "Messages make up the content in channels." } })
 
 .get("", async ({ query: { author, resolved, was_mentioned } }) => {
 	let query = "SELECT * FROM Message";
@@ -79,6 +80,11 @@ export const messages = (db: Surreal) => new Elysia({ prefix: "/messages", detai
 
 .patch("/:id", async ({ params: { id }, body: { resolved } }) => {
 	// TODO: what if message is not an inquiry?
+
+	if (resolved) {
+		event_queue.publish("MESSAGE_RESOLVED", { id });
+	}
+
 	await db.merge<Message>(new StringRecordId(id), { resolved });
 }, {
 	body: t.Object({ resolved: t.Boolean() }),

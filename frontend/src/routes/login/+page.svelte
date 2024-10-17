@@ -4,43 +4,60 @@
     import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
     import Button from '@/components/ui/button/button.svelte';
-    import { Github, GithubIcon, Key } from 'lucide-svelte';
+    import { Github, GithubIcon, Key, KeyRoundIcon } from 'lucide-svelte';
+    import { client } from '@/state';
 
 	let email = $state("fvilla@netnix.net");
 
-	onMount(async () => {
+	async function handleLogin() {
+		await goto(`/auth?email=${email}`);
+	}
+
+	async function handlePasskeyLogin() {
 		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
 			throw error(500, "Browser does not support passkeys, which are required by Netter.");
 		}
-	});
 
-	const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-		challenge: new ArrayBuffer(4096),
-		rp: {
-			name: "Example",
-			id: "example.com",
-		},
-		user: {
-			id: new ArrayBuffer(1024),
-			name: "john78",
-			displayName: "John",
-		},
-		pubKeyCredParams: [{alg: -7, type: "public-key"},{alg: -257, type: "public-key"}],
-		excludeCredentials: [{
-			id: new ArrayBuffer(1024),
-			type: 'public-key',
-			transports: ['internal'],
-		}],
-		authenticatorSelection: {
-			authenticatorAttachment: "platform",
-			requireResidentKey: true,
+		const { data } = await client.api.auth.passkeys.get({ email });
+
+		if (!data) {
+			throw error(500, "No passkeys found for this email.");
 		}
-	};
 
-	async function handleLogin() {
-		// const credential = await navigator.credentials.create({
-		// 	publicKey: publicKeyCredentialCreationOptions
-		// });
+		const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
+			challenge: new ArrayBuffer(data.options.challenge),
+			rp: {
+				name: "Netter",
+				id: $page.url.origin,
+			},
+			user: data?.options.user,
+			pubKeyCredParams: [{ alg: -7, type: "public-key" },{ alg: -257, type: "public-key" }],
+			excludeCredentials: [{
+				id: new ArrayBuffer(1024),
+				type: 'public-key',
+				transports: ['internal'],
+			}],
+			authenticatorSelection: {
+				authenticatorAttachment: "platform",
+				requireResidentKey: true,
+			}
+		};
+
+		const credential = await navigator.credentials.create({
+			publicKey: publicKeyCredentialCreationOptions
+		});
+
+		const publicKeyCredentialRequestOptions = {
+			challenge: new Uint8Array([/* challenge from server */]),
+			rpId: $page.url.origin,
+			userVerification: "required",
+		};
+
+		await client.api.auth.passkeys.post({ credential });
+
+		const assertion = await navigator.credentials.get({
+			publicKey: publicKeyCredentialRequestOptions
+		});
 
 		await goto(`/auth?email=${email}`);
 	}
@@ -67,6 +84,10 @@
 			<Button variant="default" onclick={handleLogin} class="gap-2">
 				<Key class="size-4"/>
 				Login
+			</Button>
+			<Button variant="default" onclick={handlePasskeyLogin} class="gap-2">
+				<KeyRoundIcon class="size-4"/>
+				Login with Passkey
 			</Button>
 			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`} class="gap-2">
 				<GithubIcon class="size-4"/>

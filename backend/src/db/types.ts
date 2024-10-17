@@ -1,5 +1,6 @@
 import type { RecordId, StringRecordId } from "surrealdb";
 
+export type AccountId = RecordId<"Account">;
 export type UserId = RecordId<"User">;
 export type BugId = RecordId<"Bug">;
 export type FeatureId = RecordId<"Feature">;
@@ -21,6 +22,7 @@ export type RepositoryId = RecordId<"Repository">;
 export type BranchId = RecordId<"Branch">;
 export type MergeRequestId = RecordId<"MergeRequest">;
 
+export type AccountTable = "Account";
 export type UserTable = "User";
 export type BugTable = "Bug";
 export type FeatureTable = "Feature";
@@ -42,7 +44,7 @@ export type RepositoryTable = "Repository";
 export type BranchTable = "Branch";
 export type MergeRequestTable = "MergeRequest";
 
-export type Tables = UserTable | BugTable | FeatureTable | ComponentTable | ReleaseTable | MessageTable | LabelTable | ObjectiveTable | TaskTable | StatusTable | ViewTable | ChannelTable | ProjectTable | ApplicationTable | ProductTable | TeamTable | ToDoTable | RepositoryTable | BranchTable | MergeRequestTable;
+export type Tables = AccountTable | UserTable | BugTable | FeatureTable | ComponentTable | ReleaseTable | MessageTable | LabelTable | ObjectiveTable | TaskTable | StatusTable | ViewTable | ChannelTable | ProjectTable | ApplicationTable | ProductTable | TeamTable | ToDoTable | RepositoryTable | BranchTable | MergeRequestTable;
 
 export type User = {
 	id: UserId,
@@ -51,6 +53,21 @@ export type User = {
 	handle: string,
 	color: Colors,
 	pinned: RecordId[],
+};
+
+export type Account = {
+	id: AccountId,
+	user: {
+		id: UserId,
+	},
+	passkeys: {
+		id: string,
+		public_key: string,
+		transports: {
+			type: 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'smart-card' | 'usb',
+		}[],
+		counter: number,
+	}[],
 };
 
 export type Role = {

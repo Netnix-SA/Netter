@@ -3,10 +3,10 @@ import { expect, describe, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_project, create_status, create_user } from "./utils";
-import { LocalEvents } from "../src/events";
+import { LocalEvents, MemoryEvents } from "../src/events";
 
 test("Create project succesfully", async () => {
-	const db = await create_db(); const eq = new LocalEvents();
+	const db = await create_db(); const eq = new MemoryEvents();
 
 	const client = treaty(server(db, eq));
 
@@ -19,6 +19,8 @@ test("Create project succesfully", async () => {
 
 	expect(project_response.status).toBe(200);
 	expect(project_response.data).toMatchObject({});
+
+	expect(await eq.get("PROJECT_CREATED")).toHaveLength(1);
 });
 
 describe("Members", async () => {

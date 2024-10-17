@@ -3,8 +3,9 @@ import { Elysia, t } from "elysia";
 import { tBug, tBugId, tBugPost, tFeature, tFeatureId } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
+import type { Events } from "../events";
 
-export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
+export const bugs = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/bugs", tags: ["Bugs"] })
 
 .post("", async ({ body: { title, description, } }) => {
 	const bug = await db.create<Omit<Bug, "id">>("Bug", {
@@ -17,6 +18,8 @@ export const bugs = (db: Surreal) => new Elysia({ prefix: "/bugs", tags: ["Bugs"
 	if (!bug) {
 		throw new Error("Bug not created");
 	}
+
+	event_queue.publish("BUG_CREATED", { bug });
 
 	return { id: bug.id.toString() };
 }, {

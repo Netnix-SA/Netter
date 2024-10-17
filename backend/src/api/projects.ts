@@ -5,8 +5,9 @@ import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapLabel } from "./labels";
 import { map as mapObjective } from "./objectives";
+import type { Events } from "../events";
 
-export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags: ["Projects"] })
+export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/projects", tags: ["Projects"] })
 
 .post("", async ({ body }) => {
 	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
@@ -31,6 +32,8 @@ export const projects = (db: Surreal) => new Elysia({ prefix: "/projects", tags:
 		objectives: [],
 		updates: [],
 	});
+
+	event_queue.publish("PROJECT_CREATED", { project });
 
 	return { id: project.id.toString() };
 }, {

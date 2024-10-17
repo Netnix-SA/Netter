@@ -2,8 +2,9 @@ import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
 import { jwt } from '@elysiajs/jwt';
+import { generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 
-import type { BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
+import type { Account, BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
 
 import { users } from "./users";
 import { teams } from "./teams";
@@ -27,33 +28,236 @@ import Surreal, { StringRecordId, surql } from "surrealdb";
 import type { Events } from "../events";
 import { tClasses } from "./schemas";
 
+import type { RegistrationResponseJSON } from "@simplewebauthn/types";
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
+
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
 .use(cors())
 .use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
 .use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
 
-.post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
+.get("/auth/passkeys", async ({ body, jwt, cookie: { auth }, }) => {
 	const email = body.email;
 
-	const results = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
-	const users = results[0];
-	const user = users[0];
+	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 
 	if (user === undefined) {
 		throw new Error("User not found.");
 	}
 
-	const value = await jwt.sign({ sub: user.id.toString() });
+	const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${user.id};`);
 
-	auth.set({
-		value,
-		httpOnly: true,
-		sameSite: "strict",
-		maxAge: 60 * 60 * 24 * 7,
-	});
+	if (account === undefined) {
+		throw new Error("Account not found.");
+	}
+
+	const passkeys = account.passkeys;
+
+	const excludeCredentials = passkeys.map((passkey) => ({
+		id: isoBase64URL.toBuffer(passkey.id),
+		type: 'public-key',
+		transports: passkey.transports.map(t => t.type),
+	}));
+
+	try {
+		const options = await generateRegistrationOptions({
+			rpName: "Netter",
+			rpID: "localhost",
+			userID: Buffer.from(user.id.toString()),
+			userName: user.handle,
+			timeout: 60000,
+			attestationType: 'direct',
+			excludeCredentials,
+			authenticatorSelection: {
+				residentKey: 'preferred',
+			},
+			// [ES256, RS256]
+			supportedAlgorithmIDs: [-7, -257],
+		});
+
+		// set.cookie["challenge"] = options.challenge;
+
+		return {
+			options,
+		};
+	} catch (error) {
+		console.error(error);
+		return;
+	}
 }, {
-	body: t.Object({ email: t.String() }),
+	detail: {
+		description: "Generate a passkey request for a user.",
+	},
+	response: t.Object({ options: t.Object({ challenge: t.String() }) }),
+	body: t.Object({ email: t.String({ format: "email" }) }),
+})
+
+.post("/auth/passkeys", async ({ body, jwt, cookie: { auth } }) => {
+	// Select account with a passkey matching the provided id
+	const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey};`);
+
+	if (account === undefined) {
+		throw new Error("No account found for the given passkey.");
+	}
+
+	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
+
+	if (user === undefined) {
+		throw new Error("User not found.");
+	}
+
+	try {
+		const verification = await verifyRegistrationResponse({
+			response: body.passkey.registration_response as RegistrationResponseJSON,
+			expectedChallenge: body.passkey.challenge,
+			expectedOrigin: origin,
+			expectedRPID: "localhost",
+			requireUserVerification: true,
+		});
+	
+		if (!(verification.verified && verification.registrationInfo)) {
+			throw new Error("Registration verification failed.");
+		}
+
+		const { credential: { publicKey, id, transports, counter } } = verification.registrationInfo;
+
+		account.passkeys.push({
+			id: isoBase64URL.toUTF8String(id),
+			public_key: isoBase64URL.fromBuffer(publicKey),
+			transports: transports?.map(t => ({ type: t })) ?? [],
+			counter,
+		});
+
+		await db.update<Account>(account.id, account);
+
+		return;
+	} catch (error) {
+		console.error(error);
+		return;
+	}
+}, {
+	detail: {
+		description: "Register a new passkey for a user.",
+	},
+	body: t.Object({
+		passkey: t.Object({
+			challenge: t.String(),
+			registration_response: t.Any(),
+		}),
+	}),
+})
+
+.post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
+	if (body.passkey) {
+		// Select account with a passkey matching the provided id
+		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey};`);
+
+		if (account === undefined) {
+			throw new Error("No account found for the given passkey.");
+		}
+
+		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
+	
+		if (user === undefined) {
+			throw new Error("User not found.");
+		}
+
+		try {
+			const passkey = account.passkeys[0];
+
+			if (!passkey) {
+				throw new Error("No passkey found for the given account.");
+			}
+
+			const { verified, authenticationInfo } = await verifyAuthenticationResponse({
+				expectedChallenge: body.passkey.challenge,
+				response: body.passkey.response,
+				expectedOrigin: "localhost", // TODO: Change this to the actual origin
+				expectedRPID: "localhost",
+				credential: {
+					id: passkey.id,
+					publicKey: isoBase64URL.toBuffer(passkey.public_key),
+					transports: passkey.transports.map(t => t.type),
+					counter: passkey.counter,
+				},
+				requireUserVerification: false,
+			});
+
+			if (!verified) {
+				throw new Error("Authentication verification failed.");
+			}
+
+			const value = await jwt.sign({
+				sub: user.email,
+			});
+	
+			auth.set({
+				value,
+				httpOnly: true,
+				sameSite: "strict",
+				maxAge: 60 * 60 * 24 * 7,
+			});
+	
+			return { token: value };
+		} catch (error) {
+			console.error(error);
+			return;
+		}
+	}
+
+	if (body.provider && body.provider.github) {
+		const gh_token = await jwt.verify(body.provider.github.token);
+		if (!gh_token) {
+			throw new Error("Invalid GitHub token.");
+		}
+
+		const email = gh_token.sub;
+
+		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
+
+		if (user === undefined) {
+			throw new Error("User not found.");
+		}
+		
+		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${user.id};`);
+		
+		if (account === undefined) {
+			throw new Error("Account not found.");
+		}
+		
+		const value = await jwt.sign({
+			sub: user.email,
+		});
+
+		auth.set({
+			value,
+			httpOnly: true,
+			sameSite: "strict",
+			maxAge: 60 * 60 * 24 * 7,
+		});
+
+		return { token: value };
+	}
+
+	throw new Error("No valid authentication method provided.");
+}, {
+	detail: {
+		description: "Authenticate a user using a passkey or a provider. If a passkey is provided, the user will be authenticated using WebAuthn. If a provider is provided, the user will be authenticated using OAuth.",
+	},
+	body: t.Object({
+		passkey: t.Optional(t.Object({
+			challenge: t.String(),
+			response: t.Any(),
+		}),),
+		provider: t.Optional(
+			t.Object({
+				github: t.Optional(t.Object({
+					token: t.String(),
+				})),
+			}),
+		),
+	}),
 })
 
 .ws("/ws", {
@@ -122,10 +326,10 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 // })
 .use(users(db))
 .use(teams(db))
-.use(channels(db))
-.use(messages(db))
-.use(projects(db))
-.use(bugs(db))
+.use(channels(db, event_queue))
+.use(messages(db, event_queue))
+.use(projects(db, event_queue))
+.use(bugs(db, event_queue))
 .use(features(db))
 .use(components(db))
 .use(products(db))

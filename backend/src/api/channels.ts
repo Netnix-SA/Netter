@@ -4,8 +4,9 @@ import { tChannel, tChannelId, tChannelPost, tMessage, tMessageId, tMessagePost 
 import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapMessage } from "./messages";
 import { parse_mentions } from "../utils";
+import type { Events } from "../events";
 
-export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
+export const channels = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
 
 .get("", async () => {
 	const results = await db.query<[Channel[]]>("SELECT * FROM Channel WHERE type::is::array(target);");
@@ -67,6 +68,8 @@ export const channels = (db: Surreal) => new Elysia({ prefix: "/channels", detai
 	});
 
 	await Promise.all(mentions.map(id => db.query("RELATE $mid->mentions->$id;", { mid: message.id, id })));
+
+	event_queue.publish("MESSAGE_CREATED", { message });
 
 	return { id: message.id.toString() };
 }, {

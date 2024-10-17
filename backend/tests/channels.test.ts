@@ -3,10 +3,10 @@ import { expect, describe, test } from "bun:test";
 import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_feature, create_project, create_status, create_task, create_user } from "./utils";
-import { LocalEvents } from "../src/events";
+import { LocalEvents, MemoryEvents } from "../src/events";
 
 test("Send message", async () => {
-	const db = await create_db(); const eq = new LocalEvents();
+	const db = await create_db(); const eq = new MemoryEvents();
 	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
@@ -24,10 +24,12 @@ test("Send message", async () => {
 	const { data: messages } = await client.api.channels({ id: channel.id }).messages.get();
 
 	expect(messages).toMatchObject([{ body: "Test message" }]);
+
+	expect(await eq.get("MESSAGE_CREATED")).toHaveLength(1);
 });
 
 test("Send inquiry", async () => {
-	const db = await create_db(); const eq = new LocalEvents();
+	const db = await create_db(); const eq = new MemoryEvents();
 	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
@@ -45,10 +47,12 @@ test("Send inquiry", async () => {
 	const { data: messages } = await client.api.channels({ id: channel.id }).messages.get();
 
 	expect(messages).toMatchObject([{ body: "Test message", resolved: false }]);
+
+	expect(await eq.get("MESSAGE_CREATED")).toHaveLength(1);
 });
 
 test("Resolve inquiry", async () => {
-	const db = await create_db(); const eq = new LocalEvents();
+	const db = await create_db(); const eq = new MemoryEvents();
 	const client = treaty(server(db, eq));
 
 	const user = await create_user(client);
@@ -72,6 +76,8 @@ test("Resolve inquiry", async () => {
 	const { data: messages } = await client.api.channels({ id: channel.id }).messages.get();
 
 	expect(messages).toMatchObject([{ body: "Test message", resolved: true }]);
+
+	expect(await eq.get("MESSAGE_RESOLVED")).toHaveLength(1);
 });
 
 test.todo("Send message as non member");
