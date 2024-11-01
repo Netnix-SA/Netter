@@ -15,13 +15,19 @@
 		await goto(`/auth?email=${email}`);
 	}
 
-	async function createPasskey() {
+	async function handlePasskeyCreation() {
+		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
+			toast.error("Cannot perform a passkey based login since this browser does not seem to support them!");
+			//return;
+		}
+
 		console.log("Requesting passkey challenge for email:", email);
 
 		const { data } = await client.api.auth.passkeys.challenges.get({ query: { email } });
 
 		if (!data) {
-			throw error(500, "No passkeys found for this email.");
+			toast.error("Failed to get passkey challenge.");
+			return;
 		}
 
 		console.log("Passkeys challenge:", data);
@@ -98,13 +104,8 @@
 		let passkeys_req = await client.api.auth.passkeys.get({ query: { email } });
 
 		if (!passkeys_req.data || passkeys_req.data.passkeys.length === 0) {
-			console.log("No passkeys found for this email, creating one...");
-			await createPasskey();
+			await handlePasskeyCreation();
 		}
-
-		passkeys_req = await client.api.auth.passkeys.get({ query: { email } });
-
-		console.log("Passkeys found:", passkeys_req.data);
 
 		const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
 			challenge: Uint8Array.from(passkeys_req.data.challenge),
@@ -121,11 +122,9 @@
 		});
 
 		if (!assertion) {
-			toast.warning("Passkey login was cancelled.");
+			toast.warning("No passkeys available!");
 			return;
 		}
-
-		console.log("Passkey assertion:", assertion);
 
 		const { data } = await client.api.auth.token.post({
 			passkey: {
@@ -146,10 +145,15 @@
 
 		if (!data) {
 			toast.error("Could not perform login!");
+			return;
 		}
 
 		await goto(`/auth`);
 	}
+
+	onMount(async () => {
+		await handlePasskeyLogin();
+	});
 
 	async function handleGitHubLogin() {
 		await goto(`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`);

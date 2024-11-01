@@ -170,8 +170,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 .post("/auth/passkeys", async ({ body }) => {
 	try {
-		console.log(body);
-
 		const verification = await verifyRegistrationResponse({
 			response: body.credential,
 			expectedChallenge: body.challenge,
@@ -236,7 +234,18 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
 	if (body.passkey) {
 		try {
-			const passkey = account.passkeys[0];
+			const passkey_id = isoBase64URL.toUTF8String(body.passkey.response.id);
+
+			console.log(passkey_id);
+
+			// Select account with a passkey matching the provided id
+			const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys[WHERE id = ${passkey_id}];`);
+
+			if (account === undefined) {
+				throw new Error("No account found for the given passkey.");
+			}
+
+			const passkey = account.passkeys.find(p => p.id === passkey_id);
 
 			if (!passkey) {
 				throw new Error("No passkey found for the given account.");
@@ -258,13 +267,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 			if (!verified) {
 				throw new Error("Authentication verification failed.");
-			}
-
-			// Select account with a passkey matching the provided id
-			const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey.response.id};`);
-
-			if (account === undefined) {
-				throw new Error("No account found for the given passkey.");
 			}
 
 			const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
