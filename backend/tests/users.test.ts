@@ -7,7 +7,7 @@ import { MemoryEvents } from "../src/events";
 
 test("Create user successfully", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
-	const client = treaty(server(db, eq), { fetch: { credentials: "include" } });
+	const client = treaty(server(db, eq), { fetch: { credentials: "same-origin" } });
 
 	const response = await client.api.users.post({ email: "fvilla@netnix.net", full_name: "Facundo Villa" });
 
@@ -28,7 +28,7 @@ test("Create user successfully", async () => {
 describe("Pins", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 
-	const client = treaty(server(db, eq), { fetch: { credentials: "include" } });
+	const client = treaty(server(db, eq), { fetch: { credentials: "same-origin" } });
 
 	const user = await create_user(client);
 	const status = await create_status(client);

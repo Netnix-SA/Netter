@@ -105,7 +105,6 @@
 	});
 </script>
 
-<Toaster/>
 <BitsTooltip.Provider>
 <main class="h-screen w-screen flex flex-col bg-background">
 	<div class="w-full h-full flex p-2 gap-4">

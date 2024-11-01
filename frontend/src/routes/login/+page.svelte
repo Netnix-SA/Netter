@@ -6,6 +6,8 @@
     import Button from '@/components/ui/button/button.svelte';
     import { Github, GithubIcon, Key, KeyRoundIcon } from 'lucide-svelte';
     import { client } from '@/state';
+    import { toast } from 'svelte-sonner';
+	import { bufferToBase64URLString, base64URLStringToBuffer } from '@simplewebauthn/browser';
 
 	let email = $state("fvilla@netnix.net");
 
@@ -13,53 +15,140 @@
 		await goto(`/auth?email=${email}`);
 	}
 
-	async function handlePasskeyLogin() {
-		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
-			throw error(500, "Browser does not support passkeys, which are required by Netter.");
-		}
+	async function createPasskey() {
+		console.log("Requesting passkey challenge for email:", email);
 
-		const { data } = await client.api.auth.passkeys.get({ email });
+		const { data } = await client.api.auth.passkeys.challenges.get({ query: { email } });
 
 		if (!data) {
 			throw error(500, "No passkeys found for this email.");
 		}
 
+		console.log("Passkeys challenge:", data);
+		console.log("typeof", typeof data.options.user.id);
+
 		const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-			challenge: new ArrayBuffer(data.options.challenge),
-			rp: {
-				name: "Netter",
-				id: $page.url.origin,
+			challenge: base64URLStringToBuffer(btoa(data.options.challenge)),
+			rp: data.options.rp,
+			user: {
+				...data.options.user,
+				id: Uint8Array.from(data.options.user.id),
 			},
-			user: data?.options.user,
-			pubKeyCredParams: [{ alg: -7, type: "public-key" },{ alg: -257, type: "public-key" }],
-			excludeCredentials: [{
-				id: new ArrayBuffer(1024),
-				type: 'public-key',
-				transports: ['internal'],
-			}],
+			pubKeyCredParams: data.options.pubKeyCredParams,
+			excludeCredentials: data.options.excludeCredentials,
 			authenticatorSelection: {
 				authenticatorAttachment: "platform",
 				requireResidentKey: true,
-			}
+			},
 		};
 
-		const credential = await navigator.credentials.create({
-			publicKey: publicKeyCredentialCreationOptions
+		console.log("btoa", btoa(data.options.challenge));
+		console.log("undone", bufferToBase64URLString(publicKeyCredentialCreationOptions.challenge));
+
+		console.log("Creating passkey:", publicKeyCredentialCreationOptions);
+
+		let credential: Credential | null = null;
+
+		try {
+			credential = await navigator.credentials.create({
+				publicKey: publicKeyCredentialCreationOptions,
+			});
+
+			console.log("Passkey created:", credential);
+		} catch (e) {
+			console.error(e);
+			toast.error("Failed to create passkey.",);
+			return;
+		}
+
+		if (!credential) {
+			toast.warning("Passkey creation was cancelled.");
+			return;
+		}
+
+		if (credential.type !== "public-key") {
+			toast.error("Invalid credential type.");
+			return;
+		}
+
+		const res = await client.api.auth.passkeys.post({
+			challenge: bufferToBase64URLString(base64URLStringToBuffer(btoa(data.options.challenge))),
+			credential: {
+				id: credential.id,
+				rawId: credential.id,
+				type: credential.type,
+				response: {
+					attestationObject: bufferToBase64URLString(credential.response.attestationObject),
+					clientDataJSON: bufferToBase64URLString(credential.response.clientDataJSON),
+					publicKey: (new TextDecoder()).decode(credential.response.getPublicKey()),
+				},
+				clientExtensionResults: credential.getClientExtensionResults(),
+			},
 		});
 
-		const publicKeyCredentialRequestOptions = {
-			challenge: new Uint8Array([/* challenge from server */]),
-			rpId: $page.url.origin,
-			userVerification: "required",
-		};
+		console.log("Passkey assertion response:", res);
+	}
 
-		await client.api.auth.passkeys.post({ credential });
+	async function handlePasskeyLogin() {
+		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
+			toast.error("Cannot perform a passkey based login since this browser does not seem to support them!");
+			// return;
+		}
+
+		let passkeys_req = await client.api.auth.passkeys.get({ query: { email } });
+
+		if (!passkeys_req.data || passkeys_req.data.passkeys.length === 0) {
+			console.log("No passkeys found for this email, creating one...");
+			await createPasskey();
+		}
+
+		passkeys_req = await client.api.auth.passkeys.get({ query: { email } });
+
+		console.log("Passkeys found:", passkeys_req.data);
+
+		const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
+			challenge: Uint8Array.from(passkeys_req.data.challenge),
+			allowCredentials: passkeys_req.data.passkeys.map(passkey => ({
+				id: base64URLStringToBuffer(btoa(passkey.id)),
+				type: "public-key",
+				transports: ["internal"],
+			})),
+			userVerification: "discouraged",
+		};
 
 		const assertion = await navigator.credentials.get({
-			publicKey: publicKeyCredentialRequestOptions
+			publicKey: publicKeyCredentialRequestOptions,
 		});
 
-		await goto(`/auth?email=${email}`);
+		if (!assertion) {
+			toast.warning("Passkey login was cancelled.");
+			return;
+		}
+
+		console.log("Passkey assertion:", assertion);
+
+		const { data } = await client.api.auth.token.post({
+			passkey: {
+				challenge: bufferToBase64URLString(assertion.response.authenticatorData),
+				response: {
+					id: assertion.id,
+					rawId: assertion.id,
+					type: assertion.type,
+					response: {
+						authenticatorData: bufferToBase64URLString(assertion.response.authenticatorData),
+						clientDataJSON: bufferToBase64URLString(assertion.response.clientDataJSON),
+						attestationObject: bufferToBase64URLString(assertion.response.userHandle),
+					},
+					clientExtensionResults: assertion.getClientExtensionResults(),
+				}
+			}
+		});
+
+		if (!data) {
+			toast.error("Could not perform login!");
+		}
+
+		await goto(`/auth`);
 	}
 
 	async function handleGitHubLogin() {

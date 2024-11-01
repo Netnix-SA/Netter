@@ -1,6 +1,6 @@
 services:
   backend:
-    image: oven/bun:1.1.28
+    image: oven/bun:1.1.30
     working_dir: /app
     volumes:
       - ./backend:/app
@@ -9,7 +9,7 @@ services:
     environment:
       - DB_URL=http://db/rpc
       - DB_USER=root
-      - DB_PASS=root
+      - DB_PASSWORD=root
       - DB_NAMESPACE=development
       - DB_NAME=dev
     expose:

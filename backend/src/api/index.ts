@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
 import { jwt } from '@elysiajs/jwt';
-import { generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
+import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 
 import type { Account, BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
 
@@ -28,8 +28,10 @@ import Surreal, { StringRecordId, surql } from "surrealdb";
 import type { Events } from "../events";
 import { tClasses } from "./schemas";
 
-import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
+
+const ES256 = -7;
+const RS256 = -257;
 
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
@@ -37,8 +39,12 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 .use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
 .use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
 
-.get("/auth/passkeys", async ({ body, jwt, cookie: { auth }, }) => {
-	const email = body.email;
+.get("/health", async () => {
+	return { status: "ok" };
+})
+
+.get("/auth/passkeys/challenges", async ({ query, jwt, cookie: { auth }, }) => {
+	const email = query.email;
 
 	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 
@@ -55,7 +61,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	const passkeys = account.passkeys;
 
 	const excludeCredentials = passkeys.map((passkey) => ({
-		id: isoBase64URL.toBuffer(passkey.id),
+		id: isoBase64URL.toBase64(passkey.id),
 		type: 'public-key',
 		transports: passkey.transports.map(t => t.type),
 	}));
@@ -64,16 +70,16 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		const options = await generateRegistrationOptions({
 			rpName: "Netter",
 			rpID: "localhost",
-			userID: Buffer.from(user.id.toString()),
-			userName: user.handle,
+			userID: isoBase64URL.toBuffer(user.id.toString()),
+			userName: user.email,
+			userDisplayName: user.full_name,
 			timeout: 60000,
 			attestationType: 'direct',
 			excludeCredentials,
 			authenticatorSelection: {
 				residentKey: 'preferred',
 			},
-			// [ES256, RS256]
-			supportedAlgorithmIDs: [-7, -257],
+			supportedAlgorithmIDs: [ES256, RS256],
 		});
 
 		// set.cookie["challenge"] = options.challenge;
@@ -89,31 +95,89 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	detail: {
 		description: "Generate a passkey request for a user.",
 	},
-	response: t.Object({ options: t.Object({ challenge: t.String() }) }),
-	body: t.Object({ email: t.String({ format: "email" }) }),
+	response: t.Object({
+		options: t.Object({
+			challenge: t.String(),
+			user: t.Object({
+				id: t.String(),
+				name: t.String(),
+				displayName: t.String(),
+			}),
+			excludeCredentials: t.Array(t.Object({
+				id: t.String(),
+				type: t.String(),
+				transports: t.Array(t.String()),
+			})),
+			pubKeyCredParams: t.Array(t.Object({
+				type: t.String(),
+				alg: t.Number(),
+			})),
+			rp: t.Object({
+				name: t.String(),
+				id: t.String(),
+			}),
+		}),
+	}),
+	query: t.Object({ email: t.String({ format: "email" }) }),
 })
 
-.post("/auth/passkeys", async ({ body, jwt, cookie: { auth } }) => {
-	// Select account with a passkey matching the provided id
-	const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey};`);
+.get("/auth/passkeys", async ({ query }) => {
+	const email = query.email;
 
-	if (account === undefined) {
-		throw new Error("No account found for the given passkey.");
-	}
-
-	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
+	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 
 	if (user === undefined) {
 		throw new Error("User not found.");
 	}
 
+	const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${user.id};`);
+
+	if (account === undefined) {
+		throw new Error("Account not found.");
+	}
+
+	const passkeys = account.passkeys;
+
+	console.log(passkeys);
+
+	const options = await generateAuthenticationOptions({
+		rpID: "localhost",
+		timeout: 60000,
+		userVerification: "discouraged",
+		allowCredentials: passkeys.map(passkey => ({
+			id: isoBase64URL.fromUTF8String(passkey.id),
+			transports: passkey.transports.map(t => t.type),
+		})),
+	});
+
+	console.log(options);
+
+	return {
+		challenge: options.challenge,
+		passkeys: passkeys.map(passkey => ({
+			id: passkey.id,
+		})),
+	};
+}, {
+	query: t.Object({ email: t.String({ format: "email" }) }),
+	response: t.Object({
+		challenge: t.String(),
+		passkeys: t.Array(t.Object({
+			id: t.String(),
+		})),
+	}),
+})
+
+.post("/auth/passkeys", async ({ body }) => {
 	try {
+		console.log(body);
+
 		const verification = await verifyRegistrationResponse({
-			response: body.passkey.registration_response as RegistrationResponseJSON,
-			expectedChallenge: body.passkey.challenge,
-			expectedOrigin: origin,
+			response: body.credential,
+			expectedChallenge: body.challenge,
+			expectedOrigin: "http://localhost:5173", // TODO: Change this to the actual origin
 			expectedRPID: "localhost",
-			requireUserVerification: true,
+			requireUserVerification: false,
 		});
 	
 		if (!(verification.verified && verification.registrationInfo)) {
@@ -121,6 +185,9 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		}
 
 		const { credential: { publicKey, id, transports, counter } } = verification.registrationInfo;
+
+		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${"fvilla@netnix.net"};`);
+		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${user.id};`);
 
 		account.passkeys.push({
 			id: isoBase64URL.toUTF8String(id),
@@ -141,28 +208,33 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		description: "Register a new passkey for a user.",
 	},
 	body: t.Object({
-		passkey: t.Object({
-			challenge: t.String(),
-			registration_response: t.Any(),
+		challenge: t.String(),
+		credential: t.Object({
+			id: t.String(),
+			rawId: t.String(),
+			response: t.Object({
+				clientDataJSON: t.String(),
+				attestationObject: t.String(),
+				authenticatorData: t.Optional(t.String()),
+				transports: t.Optional(t.Array(t.Union([t.Literal('ble'), t.Literal('cable'), t.Literal('hybrid'), t.Literal('internal'), t.Literal('nfc'), t.Literal('smart-card'), t.Literal('usb')]))),
+				publicKeyAlgorithm: t.Optional(t.Number(),),
+				publicKey: t.Optional(t.String()),
+			}),
+			authenticatorAttachment: t.Optional(t.Union([t.Literal("cross-platform"), t.Literal("platform")])),
+			clientExtensionResults: t.Object({
+				appid: t.Optional(t.Boolean()),
+				credProps: t.Optional(t.Object({
+					rk: t.Optional(t.Boolean()),
+				})),
+				hmacCreateSecret: t.Optional(t.Boolean()),
+			}),
+			type: t.Literal("public-key"),
 		}),
 	}),
 })
 
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
 	if (body.passkey) {
-		// Select account with a passkey matching the provided id
-		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey};`);
-
-		if (account === undefined) {
-			throw new Error("No account found for the given passkey.");
-		}
-
-		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
-	
-		if (user === undefined) {
-			throw new Error("User not found.");
-		}
-
 		try {
 			const passkey = account.passkeys[0];
 
@@ -173,7 +245,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 			const { verified, authenticationInfo } = await verifyAuthenticationResponse({
 				expectedChallenge: body.passkey.challenge,
 				response: body.passkey.response,
-				expectedOrigin: "localhost", // TODO: Change this to the actual origin
+				expectedOrigin: "http://localhost:5173", // TODO: Change this to the actual origin
 				expectedRPID: "localhost",
 				credential: {
 					id: passkey.id,
@@ -186,6 +258,19 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 			if (!verified) {
 				throw new Error("Authentication verification failed.");
+			}
+
+			// Select account with a passkey matching the provided id
+			const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys.id = ${body.passkey.response.id};`);
+
+			if (account === undefined) {
+				throw new Error("No account found for the given passkey.");
+			}
+
+			const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
+		
+			if (user === undefined) {
+				throw new Error("User not found.");
 			}
 
 			const value = await jwt.sign({
@@ -208,6 +293,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 	if (body.provider && body.provider.github) {
 		const gh_token = await jwt.verify(body.provider.github.token);
+
 		if (!gh_token) {
 			throw new Error("Invalid GitHub token.");
 		}
@@ -248,7 +334,27 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	body: t.Object({
 		passkey: t.Optional(t.Object({
 			challenge: t.String(),
-			response: t.Any(),
+			response: t.Object({
+				id: t.String(),
+				rawId: t.String(),
+				response: t.Object({
+					clientDataJSON: t.String(),
+					attestationObject: t.String(),
+					authenticatorData: t.Optional(t.String()),
+					transports: t.Optional(t.Array(t.String())),
+					publicKeyAlgorithm: t.Optional(t.Number(),),
+					publicKey: t.Optional(t.String()),
+				}),
+				authenticatorAttachment: t.Optional(t.String()),
+				clientExtensionResults: t.Optional(t.Object({
+					appid: t.Optional(t.Boolean()),
+					credProps: t.Optional(t.Object({
+						rk: t.Optional(t.Boolean()),
+					})),
+					hmacCreateSecret: t.Optional(t.Boolean()),
+				})),
+				type: t.String(),
+			}),
 		}),),
 		provider: t.Optional(
 			t.Object({
