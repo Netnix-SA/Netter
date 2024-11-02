@@ -7,13 +7,13 @@ import { MemoryEvents } from "../src/events";
 
 test("Create user successfully", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
-	const client = treaty(server(db, eq), { fetch: { credentials: "same-origin" } });
+	const client = treaty(server(db, eq), { fetch: { credentials: "include" } });
 
 	const response = await client.api.users.post({ email: "fvilla@netnix.net", full_name: "Facundo Villa" });
 
 	expect(response.status).toBe(200);
 
-	const re = await client.api.auth.token.post({ email: "fvilla@netnix.net" });
+	const re = await client.api.auth.token.post({ test: "fvilla@netnix.net" });
 
 	const users = await client.api.users.get();
 

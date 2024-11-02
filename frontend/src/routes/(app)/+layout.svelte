@@ -93,6 +93,22 @@
 		if (entry.startsWith("Product")) {
 			return goto(`/products/${entry}`);
 		}
+
+		if (entry.startsWith("User")) {
+			return goto(`/users/${entry}`);
+		}
+
+		if (entry.startsWith("Label")) {
+			return goto(`/labels/${entry}`);
+		}
+
+		if (entry.startsWith("ToDo")) {
+			return goto(`/todos/${entry}`);
+		}
+
+		if (entry.startsWith("Feature")) {
+			return goto(`/features/${entry}`);
+		}
 	}
 
 	$effect(() => {

@@ -232,6 +232,27 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 })
 
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
+	if (body.test) {
+		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${body.test};`);
+		
+		if (user === undefined) {
+			throw new Error("User not found.");
+		}
+
+		const value = await jwt.sign({
+			sub: user.email,
+		});
+
+		auth.set({
+			value,
+			httpOnly: true,
+			sameSite: "strict",
+			maxAge: 60 * 60 * 24 * 7,
+		});
+
+		return { token: value };
+	}
+
 	if (body.passkey) {
 		try {
 			const passkey_id = isoBase64URL.toUTF8String(body.passkey.response.id);
@@ -365,6 +386,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 				})),
 			}),
 		),
+		test: t.Optional(t.String()),
 	}),
 })
 

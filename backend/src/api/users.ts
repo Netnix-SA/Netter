@@ -47,7 +47,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 }) // TODO: put after auth
 
 .resolve(async ({ jwt, cookie: { auth } }) => {
-	if (!auth) {
+	if (!auth || !auth.value) {
 		console.error("No token provided.");
 		throw new Error("No token provided.");
 	}
