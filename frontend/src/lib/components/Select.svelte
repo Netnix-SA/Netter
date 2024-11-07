@@ -1,10 +1,9 @@
 <script lang="ts" generics="T">
-	import type { SelectEntry } from "@/utils.ts";
+	import { flyAndScale, type SelectEntry } from "@/utils.ts";
 
-	import * as Select from "$lib/components/ui/select";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
-	import { Select as BitsSelect } from "bits-ui";
+	import { Select } from "bits-ui";
 
 	let { variant = "regular", values, placeholder = "Select", comparator, value = $bindable() }: { variant?: "regular" | "small" | "icon", placeholder?: string, values: SelectEntry<T>[], comparator: (a: T, b: T) => boolean, value: T | null } = $props();
 
@@ -16,25 +15,34 @@
 </script>
 
 {#if variant === "regular"}
-<Select.Root bind:value={internal}>
-	<Select.Trigger class="w-full">
-		<Select.Value {placeholder}/>
+<Select.Root type="single" bind:value={internal} loop={true}>
+	<Select.Trigger class="border-input ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring aria-[invalid]:border-destructive data-[placeholder]:[&>span]:text-muted-foreground flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+		{#snippet children()}
+			{internal ?? placeholder}
+		{/snippet}
 	</Select.Trigger>
-	<BitsSelect.Portal>
-		<Select.Content position="item-aligned">
-			<BitsSelect.Viewport>
-				{#each values as entry}
-					{@const Icon = entry.icon}
-					<Select.Item value={entry.label}>
-						<Icon class="mr-2 size-4 shrink-0"/>
-						<BitsSelect.ItemText>
-							{entry.label}
-						</BitsSelect.ItemText>
-					</Select.Item>
-				{/each}
-			</BitsSelect.Viewport>
+	<Select.Portal>
+		<Select.Content align="center" class="bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-hidden rounded-md border shadow-md focus:outline-none" forceMount={true}>
+			{#snippet child({ props, open })}
+				{#if open}
+					<div {...props} transition:flyAndScale>
+						<Select.Viewport>
+							{#each values as entry}
+								{@const Icon = entry.icon}
+								<Select.Item value={entry.label} label={entry.label} class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+									{#snippet children({ selected })}
+										<Icon class="mr-2 size-4 shrink-0"/>
+										{entry.label}
+										{selected ? "✅" : ""}
+									{/snippet}
+								</Select.Item>
+							{/each}
+						</Select.Viewport>
+					</div>
+				{/if}
+			{/snippet}
 		</Select.Content>
-	</BitsSelect.Portal>
+	</Select.Portal>
 </Select.Root>
 {/if}
 
