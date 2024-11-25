@@ -3,10 +3,10 @@
 
 	import { Settings, Star, SquareCheckBig } from "lucide-svelte";
 	import { Toaster } from "$lib/components/ui/sonner";
-	import * as Command from "$lib/components/ui/command";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import * as Tooltip from "$lib/components/ui/tooltip";
+	import * as Command from "$lib/components/ui/command";
     import { goto, onNavigate } from "$app/navigation";
     import { client, commands, createTaskMutation, createToDoMutation, } from "@/state";
     import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/utils.ts";
@@ -186,7 +186,7 @@
 	</div>
 </main>
 
-<Command.Dialog bind:open loop>
+<Command.Dialog loop bind:open>
 	<Command.Input bind:value={search} oninput={handleInput} placeholder="Type a command or search..." />
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>

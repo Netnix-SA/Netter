@@ -15,6 +15,8 @@ DEFINE TABLE Objective;
 DEFINE TABLE View;
 DEFINE TABLE Task;
 DEFINE TABLE Transaction;
+DEFINE TABLE File;
+DEFINE TABLE Event;
 
 DEFINE TABLE impacts TYPE RELATION; -- Bug impacts Feature
 DEFINE TABLE needs TYPE RELATION; -- Feature needs Component

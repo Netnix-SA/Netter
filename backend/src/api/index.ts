@@ -36,7 +36,6 @@ const RS256 = -257;
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
 .use(cors())
-.use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
 .use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
 
 .get("/health", async () => {
@@ -232,32 +231,23 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 })
 
 .post("/auth/token", async ({ body, jwt, cookie: { auth } }) => {
+	let user;
+
 	if (body.test) {
-		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${body.test};`);
+		const [[u]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${body.test};`);
 		
-		if (user === undefined) {
+		if (u === undefined) {
 			throw new Error("User not found.");
 		}
 
-		const value = await jwt.sign({
-			sub: user.email,
-		});
-
-		auth.set({
-			value,
-			httpOnly: true,
-			sameSite: "strict",
-			maxAge: 60 * 60 * 24 * 7,
-		});
-
-		return { token: value };
+		user = u;
 	}
 
 	if (body.passkey) {
 		try {
 			const passkey_id = isoBase64URL.toUTF8String(body.passkey.response.id);
 
-			console.log(passkey_id);
+			console.log("raw", body.passkey.challenge);
 
 			// Select account with a passkey matching the provided id
 			const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys[WHERE id = ${passkey_id}];`);
@@ -272,8 +262,10 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 				throw new Error("No passkey found for the given account.");
 			}
 
+			console.log("raw", passkey.public_key);
+
 			const { verified, authenticationInfo } = await verifyAuthenticationResponse({
-				expectedChallenge: body.passkey.challenge,
+				expectedChallenge: isoBase64URL.fromUTF8String(body.passkey.challenge),
 				response: body.passkey.response,
 				expectedOrigin: "http://localhost:5173", // TODO: Change this to the actual origin
 				expectedRPID: "localhost",
@@ -290,24 +282,13 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 				throw new Error("Authentication verification failed.");
 			}
 
-			const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
+			const [[u]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE id = ${account.user.id};`);
 		
-			if (user === undefined) {
+			if (u === undefined) {
 				throw new Error("User not found.");
 			}
 
-			const value = await jwt.sign({
-				sub: user.email,
-			});
-	
-			auth.set({
-				value,
-				httpOnly: true,
-				sameSite: "strict",
-				maxAge: 60 * 60 * 24 * 7,
-			});
-	
-			return { token: value };
+			user = u;
 		} catch (error) {
 			console.error(error);
 			return;
@@ -323,33 +304,37 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 		const email = gh_token.sub;
 
-		const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
+		const [[u]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
 
-		if (user === undefined) {
+		if (u === undefined) {
 			throw new Error("User not found.");
 		}
 		
-		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${user.id};`);
+		const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE user.id = ${u.id};`);
 		
 		if (account === undefined) {
 			throw new Error("Account not found.");
 		}
-		
-		const value = await jwt.sign({
-			sub: user.email,
-		});
 
-		auth.set({
-			value,
-			httpOnly: true,
-			sameSite: "strict",
-			maxAge: 60 * 60 * 24 * 7,
-		});
-
-		return { token: value };
+		user = u;
 	}
 
-	throw new Error("No valid authentication method provided.");
+	if (!user) {
+		throw new Error("No user found.");
+	}
+
+	const value = await jwt.sign({
+		sub: user.id.toString(),
+	});
+
+	auth.set({
+		value,
+		httpOnly: true,
+		sameSite: "strict",
+		maxAge: 60 * 60 * 24 * 7,
+	});
+
+	return { token: value };
 }, {
 	detail: {
 		description: "Authenticate a user using a passkey or a provider. If a passkey is provided, the user will be authenticated using WebAuthn. If a provider is provided, the user will be authenticated using OAuth.",
@@ -367,6 +352,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 					transports: t.Optional(t.Array(t.String())),
 					publicKeyAlgorithm: t.Optional(t.Number(),),
 					publicKey: t.Optional(t.String()),
+					signature: t.String(),
 				}),
 				authenticatorAttachment: t.Optional(t.String()),
 				clientExtensionResults: t.Optional(t.Object({
@@ -471,7 +457,10 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 .use(objectives(db))
 .use(repositories(db))
 .use(merge_requests(db))
-.use(extensions(db));
+.use(extensions(db))
+
+.use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
+;
 
 // The uuid of the live query will be returned
 // const queryUuid = await db.live(

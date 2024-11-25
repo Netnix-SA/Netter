@@ -19,7 +19,7 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 		throw new Error("Did not find a status");
 	}
 
-	const project = await db.create<Omit<Project, "id">>("Project", {
+	const [project] = await db.create<Omit<Project, "id">>("Project", {
 		name: body.name, description: body.description,
 
 		created: new Date(),

@@ -5,3 +5,5 @@
 - create linked task under feature
 - create components under features
 - add task completion stat to feature stats
+- child features
+- events

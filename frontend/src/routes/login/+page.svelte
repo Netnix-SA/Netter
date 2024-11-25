@@ -108,7 +108,7 @@
 		}
 
 		const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-			challenge: Uint8Array.from(passkeys_req.data.challenge),
+			challenge: base64URLStringToBuffer(btoa(passkeys_req.data.challenge)),
 			allowCredentials: passkeys_req.data.passkeys.map(passkey => ({
 				id: base64URLStringToBuffer(btoa(passkey.id)),
 				type: "public-key",
@@ -128,7 +128,7 @@
 
 		const { data } = await client.api.auth.token.post({
 			passkey: {
-				challenge: bufferToBase64URLString(assertion.response.authenticatorData),
+				challenge: passkeys_req.data.challenge,
 				response: {
 					id: assertion.id,
 					rawId: assertion.id,
@@ -137,6 +137,7 @@
 						authenticatorData: bufferToBase64URLString(assertion.response.authenticatorData),
 						clientDataJSON: bufferToBase64URLString(assertion.response.clientDataJSON),
 						attestationObject: bufferToBase64URLString(assertion.response.userHandle),
+						signature: bufferToBase64URLString(assertion.response.signature),
 					},
 					clientExtensionResults: assertion.getClientExtensionResults(),
 				}

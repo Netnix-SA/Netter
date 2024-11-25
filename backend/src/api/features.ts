@@ -45,6 +45,25 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	}
 })
 
+.post("/:id/files", async ({ params: { id }, body }) => {
+	const files = await Promise.all(body.files.map(async file => {
+		return await db.create("File", {
+			data: await file.bytes(),
+			name: "?",
+		});
+	}));
+
+	const feature = await db.select<Feature>(new StringRecordId(id));
+
+	await db.merge<Feature>(new StringRecordId(id), {
+		files: feature.files.concat(files.map(({ id }) => ({ id }))),
+	});
+},{
+	body: t.Object({
+		files: t.Files(),
+	}),
+})
+
 .delete("/:id", async ({ params: { id } }) => {
 	await db.delete(new StringRecordId(id));
 }, {

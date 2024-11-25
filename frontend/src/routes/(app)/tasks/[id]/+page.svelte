@@ -30,6 +30,7 @@
     import Search from "@/components/Search.svelte";
     import { task } from "@/global.svelte.ts";
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
+    import LabelSelect from "@/components/LabelSelect.svelte";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -129,7 +130,7 @@
 	<title>{data.task.title}</title>
 </svelte:head>
 
-<header class="gallery bg-primary-foreground w-full border-b px-4 h-10">
+<header class="gallery bg-primary-foreground w-full border-b px-4 h-10 shrink-0">
 	<div class="flex-1">
 		<h1 class="tactile-text text-sm">
 			{data.task.title}
@@ -211,24 +212,7 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		</div>
-		<div class="mt-4 gallery w-full overflow-x-scroll gap-3">
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
-					+
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					{#each data.labels as label}
-						<DropdownMenu.Item class="gallery gap-2" onclick={() => { data.task.labels.push({ id: label.id }); data.task = data.task; }}>
-							{label.icon} {label.title}
-						</DropdownMenu.Item>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-			{#each data.task.labels as { id }}
-				{@const label = data.labels.find((l) => l.id === id)}
-				<LabelChip {label} />
-			{/each}
-		</div>
+		<LabelSelect/>
 		<div class="h-64">
 			<MarkdownEditor
 				bind:value={body}

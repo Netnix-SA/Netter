@@ -354,6 +354,9 @@ export type Feature = {
 	name: string,
 	description: string, constraints: string, notes: string,
 	value: Value,
+	files: {
+		id: StringRecordId,
+	}[],
 };
 
 export type ComponentTypes = "Application" | "Service" | "API" | "HTTP Route" | "UI Component" | "UI Page" | "Database Table" | "Database";
