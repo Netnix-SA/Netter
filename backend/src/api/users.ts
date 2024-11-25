@@ -74,7 +74,11 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 })
 
 .patch("/me", async ({ body, id }) => {
-	let user: { color?: Colors } = {};
+	let user: { full_name?: String, color?: Colors } = {};
+
+	if (body.full_name !== undefined) {
+		user.full_name = body.full_name;
+	}
 
 	if (body.color !== undefined) {
 		user.color = body.color;
@@ -83,6 +87,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	await db.merge<User>(new StringRecordId(id), user);
 }, {
 	body: t.Object({
+		full_name: t.Optional(t.String()),
 		color: t.Optional(tColors),
 	})
 })

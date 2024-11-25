@@ -5,6 +5,7 @@ import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapMessage } from "./messages";
 import { parse_mentions } from "../utils";
 import type { Events } from "../events";
+import { user } from "../session";
 
 export const channels = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/channels", detail: { tags:["Channels"], description: "Channels manage all chat-like things in Netter." }})
 
@@ -52,7 +53,9 @@ export const channels = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	},
 })
 
-.post("/:id/messages", async ({ params: { id }, body: { body, is_inquiry } }) => {
+.use(user)
+
+.post("/:id/messages", async ({ params: { id }, body: { body, is_inquiry }, user }) => {
 	// TODO: check if user is member of channel
 
 	const channel_id = new StringRecordId(id);
@@ -62,7 +65,7 @@ export const channels = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	const message = await db.create<Omit<Message, "id">>("Message", {
 		body,
 		channel: channel_id as unknown as RecordId<"Channel">,
-		author: new StringRecordId("User:yt2hrlb0mynjar8q5la5"),
+		author: new StringRecordId(user.sub),
 		date: new Date(),
 		resolved: is_inquiry ? false : undefined,
 	});

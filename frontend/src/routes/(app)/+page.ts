@@ -3,7 +3,7 @@ import { client } from '@/state';
 import { error } from '@sveltejs/kit';
 
 export const load: PageLoad = async ({ params, fetch }) => {
-    const { data: tasks } = await client.api.tasks.get({ query: { assignee: "User:yt2hrlb0mynjar8q5la5" } });
+    const { data: tasks } = await client.api.tasks.get();
 
 	if (!tasks) {
 		throw error(404, "Could not load tasks!");
@@ -16,7 +16,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	}
 
 	// Get messages which are pending resolution and where written by the current user
-	const { data: inquiries } = await client.api.messages.get({ query: { author: "User:yt2hrlb0mynjar8q5la5", resolved: false } });
+	const { data: inquiries } = await client.api.messages.get({ query: { resolved: false } });
 
 	if (!inquiries) {
 		throw error(404, "Could not load messages!");

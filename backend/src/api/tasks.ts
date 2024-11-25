@@ -5,10 +5,15 @@ import { Elysia, NotFoundError, t } from "elysia";
 import { tChannel, tEfforts, tFeature, tFeatureId, tPriorities, tStatusId, tTask, tTaskId, tTaskPost, tTaskUpdate, tTaskUpdatePost, tUserId, tValues } from "./schemas";
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 import type { Events } from "../events";
+import { user } from "../session";
 
 export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
-.get("", async ({ query: { assignee } }) => {
+.use(user)
+
+.get("", async ({ query: { assignee }, user }) => {
+	assignee = assignee ?? user.sub;
+
 	return await query(db, { assignee, state: undefined, belongs_to: undefined });
 }, {
 	response: t.Array(tTask),
@@ -346,7 +351,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	if (body.effort) { task = { ...task, effort: body.effort }; }
 	if (body.priority) { task = { ...task, priority: body.priority }; }
 
-	if (body.assignee) { task = { ...task, assignee: body.assignee }; }
+	if (body.assignee) { task = { ...task, assignee: new StringRecordId(body.assignee) }; }
 
 	if (body.status) { task = { ...task, status: { id: new StringRecordId(body.status) } }; }
 
@@ -411,7 +416,6 @@ export const create = async (db: Surreal, title: string, body: string, belongs_t
 };
 
 export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	// let query = `SELECT *, (SELECT id FROM Channel where target == $parent.id)[0].id as channel, FROM Task`;
 	let query = `SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
 
 	let pieces = [];

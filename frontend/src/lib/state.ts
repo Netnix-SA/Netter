@@ -187,8 +187,8 @@ export const createProductFeatureMutation = createMutation({
 });
 
 export const updateTaskMutation = createMutation({
-	mutationFn: async ({ id, title, body, priority, effort, value, }: { id: string, title: string, body: string, priority?: "Low" | "Medium" | "High", effort: Efforts, value: Value }) => {
-		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, });
+	mutationFn: async ({ id, title, body, priority, effort, value, assignee }: { id: string, title: string, body: string, priority?: "Low" | "Medium" | "High", effort: Efforts, value: Value, assignee?: string }) => {
+		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee });
 		if (response.error) {
 			throw new Error();
 		}

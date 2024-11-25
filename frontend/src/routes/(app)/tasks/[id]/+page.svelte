@@ -118,11 +118,13 @@
 	});
 
 	let assignee: string | null = $state(
-		data.users.find((u) => u.id === data.task.assignee?.id) || null,
+		data.users.find((u) => u.id === data.task.assignee?.id).id || null,
 	);
 
+	$inspect(assignee);
+
 	onNavigate(async () => {
-		await updateTaskMutation({})({ id: data.task.id, title, body, priority, effort, value });
+		await updateTaskMutation({})({ id: data.task.id, title, body, priority, effort, value, assignee });
 	});
 </script>
 

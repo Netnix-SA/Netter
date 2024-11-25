@@ -3,16 +3,24 @@ import { Elysia, t } from "elysia";
 import { tChannelId, tMessage, tMessagePost, tTaskId, tUserId } from "./schemas";
 import Surreal, { StringRecordId } from "surrealdb";
 import type { Events } from "../events";
+import { user } from "../session";
 
 export const messages = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/messages", detail: { tags: ["Messages"], description: "Messages make up the content in channels." } })
 
-.get("", async ({ query: { author, resolved, was_mentioned } }) => {
+.use(user)
+
+.get("", async ({ query: { author, resolved, was_mentioned }, user }) => {
 	let query = "SELECT * FROM Message";
 
 	let where = [];
 
+	author = author ?? user.sub;
+
+	console.log(author);
+	console.log(user);
+
 	if (author !== undefined) {
-		where.push(`author = ${author}`);
+		where.push(`author = ${new StringRecordId(author)}`);
 	}
 
 	if (resolved !== undefined) {
@@ -20,7 +28,7 @@ export const messages = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	}
 
 	if (was_mentioned !== undefined) {
-		where.push(`id->mentions->User CONTAINS ${new StringRecordId("User:yt2hrlb0mynjar8q5la5")}`);
+		where.push(`id->mentions->User CONTAINS ${new StringRecordId(user.sub)}`);
 	}
 
 	if (where.length > 0) {
@@ -36,7 +44,7 @@ export const messages = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	query: t.Object({
 		author: t.Optional(tUserId),
 		resolved: t.Optional(t.Boolean()),
-		was_mentioned: t.Optional(t.Boolean()),
+		was_mentioned: t.Boolean({default: false}),
 	}),
 	response: t.Array(tMessage),
 })

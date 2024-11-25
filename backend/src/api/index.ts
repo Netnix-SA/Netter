@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
-import { jwt } from '@elysiajs/jwt';
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 
 import type { Account, BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
@@ -29,6 +28,7 @@ import type { Events } from "../events";
 import { tClasses } from "./schemas";
 
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
+import { user } from "../session";
 
 const ES256 = -7;
 const RS256 = -257;
@@ -36,13 +36,13 @@ const RS256 = -257;
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
 .use(cors())
-.use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
+.use(user)
 
 .get("/health", async () => {
 	return { status: "ok" };
 })
 
-.get("/auth/passkeys/challenges", async ({ query, jwt, cookie: { auth }, }) => {
+.get("/auth/passkeys/challenges", async ({ query, cookie: { auth }, }) => {
 	const email = query.email;
 
 	const [[user]] = await db.query<[User[]]>(surql`SELECT * FROM User WHERE email = ${email};`);
@@ -388,8 +388,18 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	},
 })
 
-.get("", async ({ query: { text, class: clss, exclude } }) => {
-	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>("SELECT id, full_name as title FROM User WHERE full_name @@ $text; SELECT id, name as title FROM Project WHERE name @@ $text; SELECT id, name as title FROM Team WHERE name @@ $text; SELECT id, title FROM Task WHERE title @@ $text; SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text; SELECT id, name as title FROM Channel WHERE name @@ $text; SELECT id, name as title FROM Product WHERE name @@ $text; SELECT id, name as title FROM Feature WHERE name @@ $text;", { text });
+.get("", async ({ query: { text, class: clss, exclude, suggest } }) => {
+	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>(
+		`SELECT id, full_name as title FROM User ${suggest ? "LIMIT 5" : "WHERE full_name @@ $text"};
+		SELECT id, name as title FROM Project WHERE name @@ $text;
+		SELECT id, name as title FROM Team WHERE name @@ $text;
+		SELECT id, title FROM Task WHERE title @@ $text;
+		SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text;
+		SELECT id, name as title FROM Channel WHERE name @@ $text;
+		SELECT id, name as title FROM Product WHERE name @@ $text;
+		SELECT id, name as title FROM Feature WHERE name @@ $text;`,
+		{ text, suggest }
+	);
 
 	let ids = results.flat().map(({ id, title }) => ({ id: id.toString(), title }));
 
@@ -407,6 +417,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	query: t.Object({
 		text: t.Optional(t.String({ maxLength: 128 })),
 		class: t.Optional(tClasses),
+		suggest: t.Optional(t.Union([tClasses])),
 		exclude: t.Optional(t.Array(t.String())),
 	}),
 	detail: {

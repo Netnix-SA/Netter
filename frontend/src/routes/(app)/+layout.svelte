@@ -145,9 +145,9 @@
 				</div>
 				<Tooltip.Root>
 					<Tooltip.Trigger>
-						<!-- <Button variant="outline" size="icon" onclick={() => todo.value = {}}>
+						<Button variant="outline" size="icon" onclick={() => todo.value = {}}>
 							<SquareCheckBig class="size-4"/>
-						</Button> -->
+						</Button>
 					</Tooltip.Trigger>
 					<Tooltip.Content>Create ToDo</Tooltip.Content>
 				</Tooltip.Root>

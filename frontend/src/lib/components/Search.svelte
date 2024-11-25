@@ -2,7 +2,7 @@
 	import * as Popover from "$lib/components/ui/popover";
 	import { Command, CommandList, CommandEmpty, CommandItem, CommandInput, CommandGroup } from "$lib/components/ui/command";
     import { client } from "@/state";
-    import { tick } from "svelte";
+    import { onMount, tick } from "svelte";
     import { Button } from "./ui/button";
     import { Check, ChevronsUpDown } from "lucide-svelte";
     import { cn } from "@/utils";
@@ -27,15 +27,18 @@
 	let results: { id: string, title: string }[] = $state([]);
 	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id })));
 
-	async function handleInput(e: Event) {
+	async function handleInput(e: Event, { suggest }: { suggest?: string }) {
 		let query = { text: search };
 		if (filter?.class) query.class = filter.class;
 		if (filter?.exclude) query.exclude = filter.exclude;
+		if (suggest) query.suggest = suggest;
 		const { data } = await client.api.get({ query });
 		results = data || [];
 	}
 
-	$inspect(entries);
+	$effect(() => { // Run query on mount and when filter changes
+		handleInput(new Event("input"), { suggest: !search ? filter?.class : undefined });
+	});
 
 	$effect(() => {
 		value = selectedEntry?.value;
@@ -54,7 +57,7 @@
 	</Popover.Trigger>
 	<Popover.Content class="w-[512px] p-0">
 		<Command shouldFilter={false}>
-			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; await handleInput(e) }}/>
+			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; }}/>
 			<CommandEmpty>No results found.</CommandEmpty>
 			<CommandGroup>
 				{#each entries as entry(entry.value)}
