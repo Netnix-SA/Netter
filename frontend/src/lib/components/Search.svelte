@@ -5,7 +5,7 @@
     import { onMount, tick } from "svelte";
     import { Button } from "./ui/button";
     import { Check, ChevronsUpDown } from "lucide-svelte";
-    import { cn } from "@/utils";
+    import { CLASSES, cn } from "@/utils";
 
 	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (string) => void } = $props();
 
@@ -25,7 +25,7 @@
 
 	let search = $state("");
 	let results: { id: string, title: string }[] = $state([]);
-	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id })));
+	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id, icon: CLASSES[r.class].icon })));
 
 	async function handleInput(e: Event, { suggest }: { suggest?: string }) {
 		let query = { text: search };
@@ -61,9 +61,11 @@
 			<CommandEmpty>No results found.</CommandEmpty>
 			<CommandGroup>
 				{#each entries as entry(entry.value)}
+				{@const Icon = entry.icon}
 					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(ids.trigger); }}>
-						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>
+						<Icon class="ml-2 size-4"/>
 						{entry.label}
+						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>
 					</CommandItem>
 				{/each}
 			</CommandGroup>

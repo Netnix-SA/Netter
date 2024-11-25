@@ -411,9 +411,19 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		ids = ids.filter(({ id }) => !exclude.includes(id));
 	}
 
-	return ids.map(({ id, title }) => ({ id, title }));
+	console.log(ids);
+
+	return ids.map(({ id, title }) => ({
+		id,
+		title,
+		class: id.split(":")[0],
+	}));
 }, {
-	response: t.Array(t.Object({ id: t.String(), title: t.String() })),
+	response: t.Array(t.Object({
+		id: t.String(),
+		title: t.String(),
+		class: t.String(),
+	})),
 	query: t.Object({
 		text: t.Optional(t.String({ maxLength: 128 })),
 		class: t.Optional(tClasses),
@@ -432,6 +442,10 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	const results = await db.query<[any[]]>(`SELECT id, name, title, full_name FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
 
 	const metadata = results[0][0];
+
+	if (!metadata) {
+		throw new Error("Metadata not found.");
+	}
 
 	return {
 		id: metadata.id.toString(),

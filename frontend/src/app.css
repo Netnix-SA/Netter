@@ -92,8 +92,13 @@
     @apply bg-background text-foreground;
   }
 
-  input, textarea {
-	@apply appearance-none outline-none focus:outline-none text-foreground rounded-md bg-transparent hover:border-neutral-600 focus:border-neutral-400 transition-all;
+  input, textarea, select {
+	@apply appearance-none outline-none focus:outline-none text-foreground rounded-md bg-transparent hover:border-neutral-500 focus:border-neutral-300 transition-all;
+	@apply border border-neutral-800;
+  }
+
+  textarea {
+	@apply px-2 py-1;
   }
 
   .green-light {

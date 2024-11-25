@@ -14,12 +14,10 @@
     import { CLASSES, STATES } from "@/utils.ts";
     import Select from "@/components/Select.svelte";
     import { Button } from "@/components/ui/button";
-    import Pin from "@/components/Pin.svelte";
-    import { client, createObjectiveMutation } from "@/state";
-    import { toast } from "svelte-sonner";
-    import { goto, invalidate } from "$app/navigation";
+    import { client, createMilestoneMutation, createObjectiveMutation } from "@/state";
     import { DotsHorizontal } from "svelte-radix";
     import Search from "@/components/Search.svelte";
+    import { preventDefault } from "svelte/legacy";
 
 	const { data }: { data: PageData } = $props();
 
@@ -65,17 +63,52 @@
 	<!-- <Pin pinned={data.user.pinned} id={data.project.id}/> -->
 </header>
 <div class="flex-1 flex flex-col w-full">
-	<main class="flex-1 flex items-center justify-center page-backdrop px-48 py-32">
+	<main class="flex-1 flex items-center justify-center page-backdrop">
 		<div class="flex flex-1 h-full">
-			<div class="flex-1 column gap-4">
-				<h1 class="text-5xl font-semibold bg-gradient-to-b from-popover-foreground to-muted-foreground bg-clip-text text-transparent" in:blur>{project.name}</h1>
+			<div class="flex-1 column gap-4 px-16 py-24">
+				<input in:blur class="tactile-text text-5xl font-semibold border-0" value={project.name} onblur={async (e) => await client.api.projects({ id: project.id }).patch({ name: e.target.value })}/>
 				<section id="description" class="flex-1">
-					<p class="text-muted-foreground h-[8lh]">
-						{project.description}
-					</p>
+					<textarea class="text-muted-foreground w-full flex-1 h-full border-0" value={project.description} in:blur={{ delay: 100 }} onblur={async (e) => await client.api.projects({ id: project.id }).patch({ description: e.target.value })}/>
 				</section>
-				<section id="milestones" class="h-fit">
-					<span class="text-sm text-muted-foreground font-regular">Milestones</span>
+				<section id="milestones" class="h-32 w-full">
+					<header class="gallery">
+						<span class="text-sm text-muted-foreground font-regular">Milestones</span>
+						<Sheet.Root>
+							<Sheet.Trigger><span class="ml-2 text-[0.6rem] text-muted-foreground font-regular">{"See all"}</span></Sheet.Trigger>
+							<Sheet.Content>
+							<Sheet.Header>
+								<Sheet.Title>Milestones</Sheet.Title>
+								<Sheet.Description>
+									{#each project.milestones as { title, description }, i}
+										{@render milestone_snippet({ i, name: title, description, status: "done" })}
+									{/each}
+								</Sheet.Description>
+							</Sheet.Header>
+							</Sheet.Content>
+						</Sheet.Root>
+						<div class="flex-1"></div>
+						<Dialog.Root>
+							<Dialog.Trigger>
+								<span class="text-[0.7rem] text-muted-foreground font-regular hover:green-light hover:text-white transition-all">{"New milestone"}</span>
+							</Dialog.Trigger>
+							<Dialog.Content>
+								<Dialog.Header>Create milestone</Dialog.Header>
+								<form class="flex flex-col gap-2" onsubmit={async (e) => {
+									e.preventDefault();
+									await createMilestoneMutation({})({ project_id: data.project.id, title: e.target.title.value, description: e.target.description.value });
+									document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+								}}>
+									<div class="gallery gap-2 h-8">
+										<input name="title" type="text" placeholder="Title" class="border flex-1 h-full px-2"/>
+									</div>
+									<textarea name="description" placeholder="Description" class="border px-2 py-1"/>
+									<Dialog.Footer>
+										<Button type="submit">Create</Button>
+									</Dialog.Footer>
+								</form>
+							</Dialog.Content>
+						</Dialog.Root>
+					</header>
 					{#snippet milestone_snippet({ i, name, description, status }: { i: number, name: string, description: string, status: "done" | "current" | "upcoming" })}
 						<div class="flex flex-col h-24 w-56 p-2 gap-2" in:blur={{ delay: i * 100 }}>
 							<div class="flex items-center justify-between w-full">
@@ -95,19 +128,6 @@
 							</p>
 						</div>
 					{/snippet}
-					<Sheet.Root>
-						<Sheet.Trigger><span class="text-[0.6rem] text-muted-foreground font-regular">{"See all"}</span></Sheet.Trigger>
-						<Sheet.Content>
-						<Sheet.Header>
-							<Sheet.Title>Milestones</Sheet.Title>
-							<Sheet.Description>
-								{#each project.milestones as { title, description }, i}
-									{@render milestone_snippet({ i, name: title, description, status: "done" })}
-								{/each}
-							</Sheet.Description>
-						</Sheet.Header>
-						</Sheet.Content>
-					</Sheet.Root>
 					<div class="flex">
 						{#each project.milestones.slice(0, 3) as milestone, i}
 							{#if i > 0}
@@ -122,7 +142,13 @@
 					</div>
 				</section>
 			</div>
-			<div class="w-96 column gap-16">
+			<div class="w-96 column gap-16 border-l bg-neutral-950 px-6 py-8">
+				<section class="column gap-2">
+					<span class="text-sm text-muted-foreground font-regular">Lead</span>
+					<Search filter={{ class: "User" }} bind:value={lead}/>
+					<span class="text-sm text-muted-foreground font-regular">Status</span>
+					<Select comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
+				</section>
 				<section class="column gap-2">
 					<div class="gallery">
 						<span class="text-sm text-muted-foreground font-regular flex-1">Objectives</span>
@@ -204,10 +230,6 @@
 							<span class="text-muted-foreground/50 text-xs select-none">No updates</span>
 						</div>
 					{/each}
-				</section>
-				<section class="column gap-2">
-					<Search label="Lead" filter={{ class: "User" }} bind:value={lead}/>
-					<Select label="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} value={data.project.status}/>
 				</section>
 			</div>
 		</div>

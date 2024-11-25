@@ -9,7 +9,7 @@
 	import * as Command from "$lib/components/ui/command";
     import { goto, onNavigate } from "$app/navigation";
     import { client, commands, createTaskMutation, createToDoMutation, } from "@/state";
-    import { EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/utils.ts";
+    import { CLASSES, EFFORTS, LINKS, PRIORITIES, STATES, VALUES } from "@/utils.ts";
     import type { LayoutData } from "./$types";
     import AnyChip from "@/components/AnyChip.svelte";
     import LabelChip from "@/components/LabelChip.svelte";
@@ -19,6 +19,7 @@
     import Select from "@/components/Select.svelte";
     import Search from "@/components/Search.svelte";
 	import { Tooltip as BitsTooltip } from "bits-ui";
+    import LabelSelect from "@/components/LabelSelect.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -66,11 +67,11 @@
 
 	let search = $state("");
 
-	let entries: { id: string, title: string }[] = $state([]);
+	let entries: { id: string, title: string, clss: string }[] = $state([]);
 
 	async function handleInput(e: Event) {
 		const { data } = await client.api.get({ query: { text: search } });
-		entries = data;
+		entries = (data ?? []).map(e => ({ ...e, clss: e.class }));
 	}
 
 	function handleEntry(entry: string) {
@@ -186,7 +187,7 @@
 	</div>
 </main>
 
-<Command.Dialog loop bind:open>
+<Command.Dialog loop bind:open shouldFilter={false}>
 	<Command.Input bind:value={search} oninput={handleInput} placeholder="Type a command or search..." />
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>
@@ -204,14 +205,16 @@
 			<Command.Separator/>
 		{/each}
 		{#if entries.length > 0}
-		{#key search}
 			<Command.Group heading="Results">
-				{#each entries as { id, title }(id)}
-					<Command.Item class="h-8" onSelect={async () => await handleEntry(id)}>{title}</Command.Item>
+				{#each entries as { id, title, clss }(id)}
+				{@const Icon = CLASSES[clss].icon}
+					<Command.Item class="h-8" onSelect={async () => await handleEntry(id)}>
+						<Icon class="mr-2 size-4"/>
+						{title}
+					</Command.Item>
 				{/each}
 			</Command.Group>
 			<Command.Separator/>
-		{/key}
 		{/if}
 		<Command.Separator />
 		<Command.Group heading="Sections">
@@ -258,74 +261,77 @@
 				<span class="text-muted-foreground text-sm font-normal">{task.project}</span>
 			</Dialog.Title>
 		</Dialog.Header>
+		<span class="text-sm text-muted-foreground font-regular">Title</span>
 		<input type="text" placeholder="Title" class="text-2xl tactile-text" bind:value={task.value.title}/>
-		<div class="gallery w-full gap-3">
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger class="size-6 frame border border-dashed text-md hover:text-xl transition-all bg-primary-foreground rounded-md" title="Add label">
-					+
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					{#each data.labels.filter(l => !task.value.labels.some(tl => tl.id === l.id)) as label}
-						<DropdownMenu.Item class="gallery gap-2" onclick={() => { task.value.labels.push({ id: label.id }); }}>
-							{label.icon} {label.title}
-						</DropdownMenu.Item>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-			<div class="gallery gap-3 overflow-scroll w-full">
-				{#each task.value.labels.filter(l => l.id) as { id }}
-					{@const label = data.labels.find((l) => l.id === id)}
-					<LabelChip {label} />
-				{/each}
-			</div>
-		</div>
+		<span class="text-sm text-muted-foreground font-regular">Labels</span>
+		<LabelSelect/>
+		<span class="text-sm text-muted-foreground font-regular">Description</span>
 		<textarea class="bg-transparent text-sm min-h-[2lh]" placeholder="Description" bind:value={task.value.body}>
 		</textarea>
+		<span class="text-sm text-muted-foreground font-regular">Assignee</span>
 		<div class="w-full flex flex-wrap gap-2">
 			<Search filter={{ class: "User" }} bind:value={task.value.assignee}/>
 		</div>
 		<div class="gallery w-full gap-2">
-			<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status}/>
-			<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority}/>
-			<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort}/>
-			<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value}/>
+			<div class="column flex-1">
+				<span class="text-sm text-muted-foreground font-regular mb-1">Status</span>
+				<Select variant="small" placeholder="Status" comparator={(a, b) => a.id === b.id} values={data.statuses.map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={task.value.status}/>
+			</div>
+			<div class="column flex-1">
+				<span class="text-sm text-muted-foreground font-regular mb-1">Priority</span>
+				<Select variant="small" placeholder="Priority" comparator={(a, b) => a === b}     values={PRIORITIES} bind:value={task.value.priority}/>
+			</div>
+			<div class="column flex-1">
+				<span class="text-sm text-muted-foreground font-regular mb-1">Effort</span>
+				<Select variant="small" placeholder="Effort" comparator={(a, b) => a === b}       values={EFFORTS} bind:value={task.value.effort}/>
+			</div>
+			<div class="column flex-1">
+				<span class="text-sm text-muted-foreground font-regular mb-1">Value</span>
+				<Select variant="small" placeholder="Value" comparator={(a, b) => a === b}        values={VALUES} bind:value={task.value.value}/>
+			</div>
 		</div>
-		<section class="column gap-1">
-			<span class="text-muted-foreground text-sm">Related</span>
-			<div class="column gap-1 max-h-16 overflow-scroll">
-				{#each task.value.related as related}
-					<AnyChip id={related.id} pinned={data.user.pinned}/>
-				{:else}
-					<div class="frame h-10">
-						<span class="text-muted-foreground/50 text-sm italic">No related tasks</span>
-					</div>
-				{/each}
-			</div>
-		</section>
-		<section class="column gap-1">
-			<span class="text-muted-foreground text-sm">Tackles</span>
-			<div class="column gap-1 max-h-16 overflow-scroll">
-				{#each task.value.tackles as tackled}
-					<AnyChip id={tackled.id} pinned={data.user.pinned}/>
-				{:else}
-					<div class="frame h-10">
-						<span class="text-muted-foreground/50 text-sm italic">No tackled elements</span>
-					</div>
-				{/each}
-			</div>
-		</section>
-		<section class="column gap-1">
-			<span class="text-muted-foreground text-sm">Children</span>
-			<div class="column gap-1 max-h-16 overflow-scroll">
-				{#each task.value.children as child}
-					<AnyChip id={child.id} pinned={data.user.pinned}/>
-				{:else}
-					<div class="frame h-10">
-						<span class="text-muted-foreground/50 text-sm italic">No children</span>
-					</div>
-				{/each}
-			</div>
-		</section>
+		{#if task.value.related.length}
+			<section class="column gap-1">
+				<span class="text-muted-foreground text-sm">Related</span>
+				<div class="column gap-1 max-h-16 overflow-scroll">
+					{#each task.value.related as related}
+						<AnyChip id={related.id} pinned={data.user.pinned}/>
+					{:else}
+						<div class="frame h-10">
+							<span class="text-muted-foreground/50 text-sm italic">No related tasks</span>
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
+		{#if task.value.tackles.length}
+			<section class="column gap-1">
+				<span class="text-muted-foreground text-sm">Tackles</span>
+				<div class="column gap-1 max-h-16 overflow-scroll">
+					{#each task.value.tackles as tackled}
+						<AnyChip id={tackled.id} pinned={data.user.pinned}/>
+					{:else}
+						<div class="frame h-10">
+							<span class="text-muted-foreground/50 text-sm italic">No tackled elements</span>
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
+		{#if task.value.children.length}
+			<section class="column gap-1">
+				<span class="text-muted-foreground text-sm">Children</span>
+				<div class="column gap-1 max-h-16 overflow-scroll">
+					{#each task.value.children as child}
+						<AnyChip id={child.id} pinned={data.user.pinned}/>
+					{:else}
+						<div class="frame h-10">
+							<span class="text-muted-foreground/50 text-sm italic">No children</span>
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
 		<Dialog.Footer>
 			<Button onclick={async () => await createTaskMutation({})()}>Create</Button>
 		</Dialog.Footer>

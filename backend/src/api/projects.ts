@@ -202,8 +202,11 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	const project = await db.select<Project>(project_id);
 
 	await db.merge(project_id, { milestones: [...project.milestones, { title: body.title, description: body.description }] });
+
+	return { id: project.id.toString() };
 }, {
 	body: t.Object({ title: t.String(), description: t.String() }),
+	response: t.Object({ id: t.String() }),
 })
 
 .get("/:id/milestones", async ({ params: { id } }) => {

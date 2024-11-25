@@ -243,6 +243,23 @@ export const createObjectiveMutation = createMutation({
 	onError: onError("Failed to create objective"),
 });
 
+export const createMilestoneMutation = createMutation({
+	mutationFn: async ({ project_id, title, description }: { project_id: string, title: string, description: string }) => {
+		const response = await client.api.projects({ id: project_id }).milestones.post({ title, description });
+		if (response.data) {
+			return response.data;
+		} else {
+			console.error(response.error);
+			throw new Error("Failed to create milestone");
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Created new milestone!", {});
+		invalidate('project:get');
+	},
+	onError: onError("Failed to create milestone"),
+});
+
 export const deleteProductMutation = createMutation({
 	mutationFn: async (id: string) => {
 		const response = await client.api.products({ id }).delete();

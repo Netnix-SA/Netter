@@ -38,16 +38,16 @@
 		<input type="text" class="tactile-text text-4xl font-bold" bind:value={feature.name}/>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Description</span>
-			<textarea class="flex-1 w-full px-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.description}></textarea>
+			<textarea class="flex-1 w-full min-h-[8lh]" bind:value={feature.description}></textarea>
 		</section>
 		<div class="gallery gap-4">
 			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Constraints</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.constraints}></textarea>
+				<textarea class="flex-1 w-full min-h-[8lh]" bind:value={feature.constraints}></textarea>
 			</section>
 			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Notes</span>
-				<textarea class="flex-1 w-full p-2 border border-transparent min-h-[8lh] rounded bg-transparent transition-all" bind:value={feature.notes}></textarea>
+				<textarea class="flex-1 w-full min-h-[8lh]" bind:value={feature.notes}></textarea>
 			</section>
 		</div>
 		<section>
