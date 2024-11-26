@@ -1,13 +1,14 @@
 import Surreal, { RecordId, StringRecordId } from "surrealdb";
 import { Elysia, NotFoundError, t } from "elysia";
-import { jwt } from '@elysiajs/jwt';
 
 import { type User, type ToDo, type Colors } from "../db/types";
 import { tUserPost, tUser, tToDo, tToDoPost, tColors, tUserId } from "./schemas";
 import { map as mapToDo } from "./todos";
+import { user } from "../session";
 
 export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Users"] })
-.use(jwt({ name: 'jwt', secret: 'Fischl von Luftschloss Narfidort' }))
+
+.use(user)
 
 .post("", async ({ body }) => {
 	let handle: string;
@@ -32,7 +33,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 		throw new NotFoundError("A user with this handle or email already exists.");
 	}
 
-	const user = await db.create<Omit<User, "id">>("User", { email: body.email, full_name: body.full_name, handle, pinned: [], color: "Green/Light" });
+	const user = await db.create<Omit<User, "id">>("User", { email: body.email, full_name: body.full_name, handle, color: "Green/Light" });
 
 	return { id: user.id.toString() };
 }, {
@@ -46,22 +47,6 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 }) // TODO: put after auth
 
-.resolve(async ({ jwt, cookie: { auth } }) => {
-	if (!auth || !auth.value) {
-		console.error("No token provided.");
-		throw new Error("No token provided.");
-	}
-
-	const token = await jwt.verify(auth.value);
-
-	if (!token || !token.sub) {
-		console.error("Invalid token:", auth.value);
-		throw new Error("Invalid token.");
-	}
-
-	return { id: token.sub };
-})
-
 .get("", async () => {
 	const users = await db.select<User>("User");
 
@@ -73,18 +58,18 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.patch("/me", async ({ body, id }) => {
-	let user: { full_name?: String, color?: Colors } = {};
+.patch("/me", async ({ body, user }) => {
+	let u: { full_name?: String, color?: Colors } = {};
 
 	if (body.full_name !== undefined) {
-		user.full_name = body.full_name;
+		u.full_name = body.full_name;
 	}
 
 	if (body.color !== undefined) {
-		user.color = body.color;
+		u.color = body.color;
 	}
 
-	await db.merge<User>(new StringRecordId(id), user);
+	await db.merge<User>(new StringRecordId(user.sub), u);
 }, {
 	body: t.Object({
 		full_name: t.Optional(t.String()),
@@ -92,14 +77,14 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	})
 })
 
-.get("/me", async ({ id }) => {
-	const user = await db.select<User>(new StringRecordId(id));
+.get("/me", async ({ user }) => {
+	const u = await db.select<User>(new StringRecordId(user.sub));
 
-	if (!user) {
+	if (!u) {
 		throw new NotFoundError("User not found.");
 	}
 
-	return map(user);
+	return map(u);
 }, {
 	response: tUser,
 	detail: {
@@ -107,8 +92,8 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.get("/me/todos", async ({ query: { resolved }, id }) => {
-	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId(id), resolved });
+.get("/me/todos", async ({ query: { resolved }, user }) => {
+	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId(user.sub), resolved });
 
 	const todos = results[0];
 
@@ -120,8 +105,8 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}),
 })
 
-.post("/me/todos", async ({ body, id }) => {
-	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId(id), due: null, done: false });
+.post("/me/todos", async ({ body, user }) => {
+	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId(user.sub), due: null, done: false });
 }, {
 	body: tToDoPost,
 	detail: {
@@ -129,10 +114,10 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.get("/me/pins", async ({ body, id: uid }) => {
-	const user = await db.select<User>(new StringRecordId(uid));
+.get("/me/pins", async ({ body, user }) => {
+	const [pins] = await db.query<[{ id: StringRecordId }[]]>("SELECT out AS id FROM pins WHERE in = $id;", { id: new StringRecordId(user.sub) });
 
-	return user.pinned.map(id => ({ id: id.toString() }));
+	return pins.map(p => ({ id: p.id.toString() }));
 }, {
 	response: t.Array(t.Object({
 		id: t.String(),
@@ -142,20 +127,14 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.post("/me/pins", async ({ body, id: uid }) => {
-	const user = await db.select<User>(new StringRecordId(uid));
+.post("/me/pins", async ({ body, user }) => {
+	const u = await db.select<User>(new StringRecordId(user.sub));
 
-	if (user === undefined) {
+	if (u === undefined) {
 		throw new NotFoundError("User not found.");
 	}
 
-	const id = new StringRecordId(body.id);
-
-	if (user.pinned.some(e => e.toString() == id.toString())) { return; }
-
-	user.pinned.push(id);
-
-	await db.merge<User>(new StringRecordId(uid), { pinned: user.pinned });
+	await db.query("RELATE $user->pins->$item;", { user: new StringRecordId(user.sub), item: new StringRecordId(body.id) });
 }, {
 	body: t.Object({
 		id: t.String(),
@@ -165,21 +144,22 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
-.delete("/me/pins/:id", async ({ body, id: uid, params: { id } }) => {
-	const user = await db.select<User>(new StringRecordId(uid));
+.delete("/me/pins/:id", async ({ body, user, params: { id } }) => {
+	const u = await db.select<User>(new StringRecordId(user.sub));
 
-	user.pinned = user.pinned.filter(upid => upid.toString() !== id);
+	if (u === undefined) {
+		throw new NotFoundError("User not found.");
+	}
 
-	await db.merge<User>(new StringRecordId(uid), { pinned: user.pinned });
+	await db.query("DELETE $user->pins WHERE out=$item RETURN BEFORE;", { user: new StringRecordId(user.sub), item: new StringRecordId(id) });
 }, {
 	detail: {
 		description: "Creates a todo for the currently logged in user.",
 	}
 });
 
-const map = ({ id, handle, full_name, email, pinned, color }: User) => ({
+const map = ({ id, handle, full_name, email, color }: User) => ({
 	id: id.toString(),
 	handle, full_name, email,
-	pinned: pinned.map(id => id.toString()),
 	color,
 });

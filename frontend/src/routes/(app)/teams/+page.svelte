@@ -7,7 +7,6 @@
 			<a href={`${$page.url}/tasks`} class="text-xs text-center tactile-text">Tasks</a>
 		</div> -->
 	</div>
-	<!-- <Pin pinned={data.user.pinned} id={data.objective.id}/> -->
 </header>
 <div class="flex-1 flex flex-col w-full divide-y">
 	<main class="grid grid-cols-4 gap-8 p-8">

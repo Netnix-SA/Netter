@@ -4,11 +4,8 @@
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
     import { removePinned, addPinned } from "@/actions";
-    import { goto } from "$app/navigation";
     import { client } from "@/state";
     import type { Classes } from "@/types";
-    import { task, todo } from "@/global.svelte.ts";
-    import { toast } from "svelte-sonner";
     import type { Component } from "svelte";
 
 	let { id, pinned = [], context }: { id: string, pinned: string[], context?: { name: string, actions: { label: string, icon: Component, action: any }[] } } = $props();
@@ -51,31 +48,11 @@
 				<span class="tactile-text text-sm">{mtdt.data?.title}</span>
 			{/await}
 		</ContextMenu.Trigger>
-		<ContextMenu.Portal>
-			<ContextMenu.Content>
-				{#if context && context.actions.length > 0}
-					<ContextMenu.Group>
-						<ContextMenu.Label>
-							{context.name}
-						</ContextMenu.Label>
-						<ContextMenu.Separator/>
-						{#each context.actions as { label, icon: Icon, action }}
-							{#if label === "Delete"}
-								<ContextMenu.Separator/>
-							{/if}
-							<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
-								<Icon class="size-4 mr-2"/> {label}
-							</ContextMenu.Item>
-						{/each}
-						<ContextMenu.Separator/>
-					</ContextMenu.Group>
-				{/if}
-				<ContextMenu.Group>
-					<ContextMenu.Label>
-						{clss}
-					</ContextMenu.Label>
+		<ContextMenu.Content>
+			{#if context && context.actions.length > 0}
+				<ContextMenu.Group title={context.name}>
 					<ContextMenu.Separator/>
-					{#each CLASSES[clss].actions as { label, icon: Icon, action }}
+					{#each context.actions as { label, icon: Icon, action }}
 						{#if label === "Delete"}
 							<ContextMenu.Separator/>
 						{/if}
@@ -83,8 +60,20 @@
 							<Icon class="size-4 mr-2"/> {label}
 						</ContextMenu.Item>
 					{/each}
+					<ContextMenu.Separator/>
 				</ContextMenu.Group>
-			</ContextMenu.Content>
-		</ContextMenu.Portal>
+			{/if}
+			<ContextMenu.Group title={clss}>
+				<ContextMenu.Separator/>
+				{#each CLASSES[clss].actions as { label, icon: Icon, action }}
+					{#if label === "Delete"}
+						<ContextMenu.Separator/>
+					{/if}
+					<ContextMenu.Item onclick={() => action({}, id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+						<Icon class="size-4 mr-2"/> {label}
+					</ContextMenu.Item>
+				{/each}
+			</ContextMenu.Group>
+		</ContextMenu.Content>
 	</ContextMenu.Root>
 </a>

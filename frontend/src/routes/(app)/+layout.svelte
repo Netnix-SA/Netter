@@ -20,6 +20,8 @@
     import Search from "@/components/Search.svelte";
 	import { Tooltip as BitsTooltip } from "bits-ui";
     import LabelSelect from "@/components/LabelSelect.svelte";
+    import { flip } from "svelte/animate";
+    import { blur } from "svelte/transition";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -170,8 +172,10 @@
 							Pinned
 						</span>
 						<div class="column flex-1 gap-2 overflow-scroll">
-							{#each data.user.pinned as pinned(Math.random())}
-								<AnyChip id={pinned} pinned={data.user.pinned}/>
+							{#each data.pins as pinned(pinned)}
+								<div animate:flip transition:blur>
+									<AnyChip id={pinned} pinned={data.pins}/>
+								</div>
 							{/each}
 						</div>
 					</section>
@@ -295,7 +299,7 @@
 				<span class="text-muted-foreground text-sm">Related</span>
 				<div class="column gap-1 max-h-16 overflow-scroll">
 					{#each task.value.related as related}
-						<AnyChip id={related.id} pinned={data.user.pinned}/>
+						<AnyChip id={related.id} pinned={data.pins}/>
 					{:else}
 						<div class="frame h-10">
 							<span class="text-muted-foreground/50 text-sm italic">No related tasks</span>
@@ -309,7 +313,7 @@
 				<span class="text-muted-foreground text-sm">Tackles</span>
 				<div class="column gap-1 max-h-16 overflow-scroll">
 					{#each task.value.tackles as tackled}
-						<AnyChip id={tackled.id} pinned={data.user.pinned}/>
+						<AnyChip id={tackled.id} pinned={data.pins}/>
 					{:else}
 						<div class="frame h-10">
 							<span class="text-muted-foreground/50 text-sm italic">No tackled elements</span>
@@ -323,7 +327,7 @@
 				<span class="text-muted-foreground text-sm">Children</span>
 				<div class="column gap-1 max-h-16 overflow-scroll">
 					{#each task.value.children as child}
-						<AnyChip id={child.id} pinned={data.user.pinned}/>
+						<AnyChip id={child.id} pinned={data.pins}/>
 					{:else}
 						<div class="frame h-10">
 							<span class="text-muted-foreground/50 text-sm italic">No children</span>

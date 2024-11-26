@@ -89,6 +89,27 @@ test("Get product features", async () => {
 	}
 });
 
+test("Get product components", async () => {
+	const db = await create_db(); const eq = new LocalEvents();
+	const client = treaty(server(db, eq));
+
+	const product = await create_product(client);
+
+	{
+		const response = await client.api.products({ id: product.id }).features.get();
+		expect(response.status).toBe(200);
+		expect(response.data).toMatchObject([]);
+	}
+
+	await client.api.products({ id: product.id }).components.post({ name: "Test Component", description: "This is a test component", type: "HTTP Route", });
+
+	{
+		const response = await client.api.products({ id: product.id }).components.get();
+		expect(response.status).toBe(200);
+		expect(response.data).toMatchObject([{ name: "Test Component", description: "This is a test component", type: "HTTP Route", }]);
+	}
+});
+
 describe("Delete", async () => {
 	const db = await create_db(); const eq = new LocalEvents();
 	const client = treaty(server(db, eq));

@@ -331,6 +331,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 .delete("/:id", async ({ params: { id } }) => {
 	await db.delete(new StringRecordId(id));
+	await db.query(surql`DELETE FROM Channel WHERE target == ${new StringRecordId(id)};`);
 }, {
 	params: t.Object({ id: tTaskId }),
 	detail: {

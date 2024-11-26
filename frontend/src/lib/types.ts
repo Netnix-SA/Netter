@@ -22,7 +22,6 @@ export type User = {
 	email: string,
 	handle: string,
 	color: Colors,
-	pinned: string[],
 };
 
 export type Role = {

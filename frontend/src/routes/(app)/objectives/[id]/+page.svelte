@@ -112,7 +112,7 @@
 				</DialogSelect>
 			</div>
 			{#each data.features as feature}
-				<AnyChip id={feature.id} pinned={data.user.pinned} context={{ name: "Slated", actions: [{ label: "Remove slated", icon: LayoutList, action: (ctx, id) => removeSlatedFeatureMutation(ctx)({ id: data.objective.id, feature_id: id }) }] }}/>
+				<AnyChip id={feature.id} pinned={data.pins} context={{ name: "Slated", actions: [{ label: "Remove slated", icon: LayoutList, action: (ctx, id) => removeSlatedFeatureMutation(ctx)({ id: data.objective.id, feature_id: id }) }] }}/>
 			{:else}
 				<div class="frame h-24">
 					<span class="text-muted-foreground/50 text-sm italic">No slated features</span>

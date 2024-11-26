@@ -60,7 +60,6 @@
 			{/each}
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
-	<!-- <Pin pinned={data.user.pinned} id={data.project.id}/> -->
 </header>
 <div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex items-center justify-center page-backdrop">

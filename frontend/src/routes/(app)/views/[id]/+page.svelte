@@ -16,7 +16,7 @@
 			{data.view.name}
 		</h1>
 	</div>
-	<Pin pinned={data.user.pinned} id={data.view.id}/>
+	<Pin pinned={data.pins} id={data.view.id}/>
 </header>
 <main class="flex-1 w-full">
 	<header class="gallery">

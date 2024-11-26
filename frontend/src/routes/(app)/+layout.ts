@@ -36,10 +36,16 @@ export const load: LayoutLoad = async ({ fetch, depends }) => {
 		throw error(404, "Could not load labels!");
 	}
 
+	const { data: pins } = await client.api.users.me.pins.get();
+
+	if (pins === null) {
+		throw error(404, "Could not load pins!");
+	}
+
 	depends('pins:get');
 
-	for (const pin of user.pinned) {
-		depends(pin);
+	for (const pin of pins) {
+		depends(pin.id);
 	}
 
     return {
@@ -47,5 +53,6 @@ export const load: LayoutLoad = async ({ fetch, depends }) => {
         users,
 		labels,
 		statuses,
+		pins: pins.map((pin) => pin.id),
     };
 };

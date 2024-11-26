@@ -137,8 +137,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 	const passkeys = account.passkeys;
 
-	console.log(passkeys);
-
 	const options = await generateAuthenticationOptions({
 		rpID: "localhost",
 		timeout: 60000,
@@ -148,8 +146,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 			transports: passkey.transports.map(t => t.type),
 		})),
 	});
-
-	console.log(options);
 
 	return {
 		challenge: options.challenge,
@@ -247,8 +243,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		try {
 			const passkey_id = isoBase64URL.toUTF8String(body.passkey.response.id);
 
-			console.log("raw", body.passkey.challenge);
-
 			// Select account with a passkey matching the provided id
 			const [[account]] = await db.query<[Account[]]>(surql`SELECT * FROM Account WHERE passkeys[WHERE id = ${passkey_id}];`);
 
@@ -261,8 +255,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 			if (!passkey) {
 				throw new Error("No passkey found for the given account.");
 			}
-
-			console.log("raw", passkey.public_key);
 
 			const { verified, authenticationInfo } = await verifyAuthenticationResponse({
 				expectedChallenge: isoBase64URL.fromUTF8String(body.passkey.challenge),
@@ -411,8 +403,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		ids = ids.filter(({ id }) => !exclude.includes(id));
 	}
 
-	console.log(ids);
-
 	return ids.map(({ id, title }) => ({
 		id,
 		title,
@@ -440,8 +430,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	const oid = id.split(":")[1];
 
 	const results = await db.query<[any[]]>(`SELECT id, name, title, full_name FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
-
-	console.log(results, id, table);
 
 	const metadata = results[0][0];
 

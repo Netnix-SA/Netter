@@ -5,8 +5,6 @@ import { error, redirect } from "@sveltejs/kit";
 export const load: PageLoad = async ({ params: { id } }) => {
 	const { data: parent } = await client.api.messages({ id }).parent.get();
 
-	console.log(parent);
-
 	if (parent === null) {
 		error(404, "Could not load parent!");
 	}

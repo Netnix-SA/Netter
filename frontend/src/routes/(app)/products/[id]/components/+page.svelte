@@ -7,6 +7,7 @@
 		FlexRender,
 	} from "$lib/components/ui/data-table/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
+    import { createProductComponentMutation, createProductFeatureMutation } from "@/state";
 	
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -37,7 +38,7 @@
 			{data.product.name} {'/'} Components
 		</h1>
 	</div>
-	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={async () => await createProductFeatureMutation({})({ id: data.product.id })}>
+	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={async () => await createProductComponentMutation({})({ id: data.product.id })}>
 		+
 	</button>
 </header>

@@ -1,8 +1,9 @@
 import { Elysia, NotFoundError, t } from "elysia";
-import { tApplication, tFeature, tFeatureId, tFeaturePost, tProduct, tProductId, tProductPost } from "./schemas";
-import { type Application, type Feature, type Product } from "../db/types";
+import { tApplication, tComponent, tComponentId, tComponentPost, tFeature, tFeatureId, tFeaturePost, tProduct, tProductId, tProductPost } from "./schemas";
+import { type Application, type Component, type Feature, type Product } from "../db/types";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
+import { map as mapComponent } from "./components";
 
 export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
@@ -83,11 +84,38 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	}
 })
 
+.get("/:id/components", async ({ params: { id } }) => {
+	const [components] = await db.query<[Component[]]>(surql`${new StringRecordId(id)}->needs->Component.*;`);
+
+	console.log(components);
+
+	return components.map(mapComponent);
+}, {
+	response: t.Array(tComponent),
+	detail: {
+		description: "Retrieves all components for a product. Components are sorted by name."
+	}
+})
+
+.post("/:id/components", async ({ params: { id }, body }) => {
+	const product_id = new StringRecordId(id);
+	const product = await db.select<Product>(product_id);
+
+	const [component] = await db.create<Omit<Component, "id">>("Component", { name: body.name, description: body.description, type: body.type });
+
+	await db.query(surql`RELATE ${product_id}->needs->${component.id};`);
+
+	return { id: component.id.toString() };
+}, {
+	body: tComponentPost,
+	response: t.Object({ id: tComponentId }),
+})
+
 .post("/:id/features", async ({ params: { id }, body }) => {
 	const product_id = new StringRecordId(id);
 	const product = await db.select<Product>(product_id);
 
-	const feature = await db.create<Omit<Feature, "id">>("Feature", { name: body.name, description: body.description, constraints: body.constraints, notes: body.notes, product: product_id, value: body.value });
+	const [feature] = await db.create<Omit<Feature, "id">>("Feature", { name: body.name, description: body.description, constraints: body.constraints, notes: body.notes, product: product_id, value: body.value });
 
 	return { id: feature.id.toString() };
 }, {

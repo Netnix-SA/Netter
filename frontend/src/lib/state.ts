@@ -185,6 +185,27 @@ export const createProductFeatureMutation = createMutation({
 	onError: onError("Failed to add feature to product"),
 });
 
+export const createProductComponentMutation = createMutation({
+	mutationFn: async ({ id }: { id: string }) => {
+		const response = await client.api.products({ id }).components.post({ name: "New Component", description: "Feature description", type: "HTTP Route" });
+		if (response.data) {
+			return response.data;
+		} else {
+			throw new Error();
+		}
+	},
+	onSuccess: (response) => {
+		toast.success("Added component to product", {
+			action: {
+				label: "Open",
+				onClick: () => goto(`/components/${response.id}`),
+			},
+		});
+		invalidate('components:get');
+	},
+	onError: onError("Failed to add component to product"),
+});
+
 export const updateTaskMutation = createMutation({
 	mutationFn: async ({ id, title, body, priority, effort, value, assignee }: { id: string, title: string, body: string, priority?: "Low" | "Medium" | "High", effort: Efforts, value: Value, assignee?: string }) => {
 		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee });

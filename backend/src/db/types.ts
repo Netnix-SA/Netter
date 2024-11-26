@@ -52,7 +52,6 @@ export type User = {
 	email: string,
 	handle: string,
 	color: Colors,
-	pinned: RecordId[],
 };
 
 export type Account = {

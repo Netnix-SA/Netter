@@ -6,7 +6,6 @@ export const load: PageLoad = async ({ params: { id }, fetch, depends }) => {
     const { data: project, error: e } = await client.api.projects({ id }).get();
 
 	if (project === null) {
-		console.log(e);
 		throw error(404, "Could not load project!");
 	}
 

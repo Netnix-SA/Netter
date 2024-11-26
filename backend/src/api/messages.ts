@@ -16,9 +16,6 @@ export const messages = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 
 	author = author ?? user.sub;
 
-	console.log(author);
-	console.log(user);
-
 	if (author !== undefined) {
 		where.push(`author = ${new StringRecordId(author)}`);
 	}

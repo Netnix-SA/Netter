@@ -167,23 +167,17 @@
 			Netter
 		</h1>
 	</div>
-	<form action="/login" method="post" target="_blank" class="flex flex-col rounded-3xl border h-[42em] w-96 px-8 py-12 bg-primary-foreground">
-		<span class="font-medium font-800 text-2xl text-slate-200">
-			Login
-		</span>
-		<div class="flex-1 column">
+	<form action="/login" method="post" target="_blank" class="flex flex-col rounded-3xl border h-96 w-96 px-8 py-12 bg-primary-foreground">
+		<span class="text-sm text-muted-foreground">Email</span>
+		<div class="flex-1 column mt-2">
 			<input name="email" type="email" class="border px-2 py-1" bind:value={email}/>
 		</div>
 		<div class="frame flex-col w-full gap-2">
-			<Button variant="default" onclick={handleLogin} class="gap-2">
-				<Key class="size-4"/>
-				Login
-			</Button>
-			<Button variant="default" onclick={handlePasskeyLogin} class="gap-2">
+			<Button variant="default" onclick={handlePasskeyLogin} class="gap-2 min-w-48">
 				<KeyRoundIcon class="size-4"/>
 				Login with Passkey
 			</Button>
-			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`} class="gap-2">
+			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`} class="gap-2 min-w-48">
 				<GithubIcon class="size-4"/>
 				Login with GitHub
 			</Button>
