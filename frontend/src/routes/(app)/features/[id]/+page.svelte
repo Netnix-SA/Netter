@@ -33,9 +33,9 @@
 		</h1>
 	</div>
 </header>
-<div class="flex-1 w-full flex px-12 py-12">
-	<div class="column flex-1 gap-4">
-		<input type="text" class="tactile-text text-4xl font-bold" bind:value={feature.name}/>
+<div class="flex-1 w-full flex">
+	<div class="column flex-1 gap-4 px-16 py-24">
+		<input type="text" class="tactile-text text-5xl font-semibold border-0" bind:value={feature.name}/>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Description</span>
 			<textarea class="flex-1 w-full min-h-[8lh]" bind:value={feature.description}></textarea>
@@ -54,8 +54,7 @@
 			<span class="text-sm text-muted-foreground">Files</span>
 		</section>
 	</div>
-	<Separator orientation="vertical" class="mx-4"/>
-	<side class="column w-96 gap-8">
+	<side class="column w-96 gap-8 border-l bg-neutral-950 px-6 py-8">
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Execution status</span>
 			<div class="gallery gap-8">

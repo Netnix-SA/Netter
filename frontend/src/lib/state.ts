@@ -121,7 +121,6 @@ export const updateFeatureMutation = createMutation({
 		return { id };
 	},
 	onSuccess: (data) => {
-		toast.success("Updated Feature");
 		invalidate('features:get');
 		invalidate(data.id);
 	},
@@ -315,7 +314,6 @@ export const updateProductMutation = createMutation({
 		return { id };
 	},
 	onSuccess: (data) => {
-		toast.success("Updated Product");
 		invalidate('products:get');
 		invalidate(data.id);
 	},

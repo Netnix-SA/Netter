@@ -141,7 +141,7 @@ export function patch(node: HTMLInputElement, { value, action, time }: { value: 
 	};
 }
 
-import { Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, Copy, DiamondPlus, Flag, Flame, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, Copy, DiamondPlus, Flag, FlagIcon, Flame, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
 import { createProductFeatureMutation, deleteFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
@@ -174,10 +174,10 @@ export const STATES: SelectEntry<State>[] = [
 ];
 
 export const PRIORITIES_ICONS = {
-    "Low": WifiZero,
-    "Medium": WifiLow,
-    "High": WifiHigh,
-    "Urgent": Wifi,
+    "Low": ArrowDownIcon,
+    "Medium": ArrowRightIcon,
+    "High": ArrowUpIcon,
+    "Urgent": FlagIcon,
 };
 
 export const PRIORITIES: SelectEntry<Priorities>[] = [
@@ -392,6 +392,13 @@ export const CLASSES = {
     "Product": {
     	icon: Gift,
     	url: (id?: string) => id ? `/products/${id}` : "/products",
+		links: [{
+			label: "Features",
+			url: (id: string) => `/products/${id}/features`,
+		},{
+			label: "Components",
+			url: (id: string) => `/products/${id}/components`,
+		}],
 		actions: [
 			{
 				label: "Create related ToDo",
@@ -491,6 +498,7 @@ export const COLORS = [
 
 import { crossfade } from 'svelte/transition';
 import { quintOut } from 'svelte/easing';
+import { ArrowRight } from "svelte-radix";
 
 export const [send, receive] = crossfade({
 	duration: (d) => Math.sqrt(d * 200),

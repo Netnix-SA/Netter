@@ -5,13 +5,10 @@
 	import DOMPurify from "isomorphic-dompurify";
 
 	import "carta-md/default.css";
-	import Label from "@/components/ui/label/label.svelte";
 	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/utils.ts";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
-    import type { Efforts, Priorities, State, Value } from "../db/types";
-    import LabelChip from "@/components/LabelChip.svelte";
 
     import Button from "@/components/ui/button/button.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -28,7 +25,6 @@
     import AnyChip from "@/components/AnyChip.svelte";
     import { onNavigate } from "$app/navigation";
     import Search from "@/components/Search.svelte";
-    import { task } from "@/global.svelte.ts";
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
     import LabelSelect from "@/components/LabelSelect.svelte";
 
@@ -118,7 +114,7 @@
 	});
 
 	let assignee: string | null = $state(
-		data.users.find((u) => u.id === data.task.assignee?.id).id || null,
+		data.users.find((u) => u.id === data.task.assignee?.id)?.id || null,
 	);
 
 	$inspect(assignee);
@@ -154,8 +150,8 @@
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 </header>
-<div class="flex-1 flex p-24">
-	<div class="flex flex-col gap-4 w-[64em]">
+<div class="flex-1 flex">
+	<div class="flex flex-col gap-4 flex-1 px-16 py-24">
 		<div class="gallery gap-8">
 			<div id="left" class="flex-1 gallery gap-2">
 				<Dialog.Root>
@@ -230,7 +226,7 @@
 			</div>
 		</div>
 	</div>
-	<side class="flex flex-col w-96 gap-8 px-12">
+	<side class="flex flex-col w-96 gap-8 px-6 py-8 border-l bg-neutral-950">
 		<section class="column gap-2">
 			<span class="text-muted-foreground text-sm flex-1">Assignee</span>
 			<Search filter={{ class: "User" }} label="Assignee" bind:value={assignee}/>

@@ -390,10 +390,10 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 .get("", async ({ query: { text, class: clss, exclude, suggest } }) => {
 	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>(
-		`SELECT id, full_name as title FROM User ${suggest ? "LIMIT 5" : "WHERE full_name @@ $text"};
+		`SELECT id, full_name as title FROM User ${suggest == "User" ? "LIMIT 5" : "WHERE full_name @@ $text"};
 		SELECT id, name as title FROM Project WHERE name @@ $text;
 		SELECT id, name as title FROM Team WHERE name @@ $text;
-		SELECT id, title FROM Task WHERE title @@ $text;
+		SELECT id, title FROM Task ${suggest == "Task" ? "LIMIT 5" : "WHERE title @@ $text"};
 		SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text;
 		SELECT id, name as title FROM Channel WHERE name @@ $text;
 		SELECT id, name as title FROM Product WHERE name @@ $text;
@@ -440,6 +440,8 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	const oid = id.split(":")[1];
 
 	const results = await db.query<[any[]]>(`SELECT id, name, title, full_name FROM ${table} WHERE id = $id;`, { id: new StringRecordId(id) });
+
+	console.log(results, id, table);
 
 	const metadata = results[0][0];
 

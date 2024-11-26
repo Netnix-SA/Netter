@@ -7,20 +7,21 @@
     import { Check, ChevronsUpDown } from "lucide-svelte";
     import { CLASSES, cn } from "@/utils";
 
-	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (string) => void } = $props();
+	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
 
 	let open = $state(false);
+	let triggerRef = $state<HTMLButtonElement>(null!);
    
 	let selectedEntry: { label: string, value: string } | undefined = $state(undefined);
    
 	// We want to refocus the trigger button when the user selects
 	// an item from the list so users can continue navigating the
 	// rest of the form with the keyboard.
-	function closeAndFocusTrigger(triggerId: string) {
+	function closeAndFocusTrigger() {
 		open = false;
 		tick().then(() => {
-			document.getElementById(triggerId)?.focus();
-		});
+			triggerRef.focus();
+    	});
 	}
 
 	let search = $state("");
@@ -47,7 +48,7 @@
 </script>
    
 <Popover.Root bind:open>
-	<Popover.Trigger>
+	<Popover.Trigger bind:ref={triggerRef}>
 		{#snippet child({ props })}
 			<Button {...props} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
 				{selectedEntry?.label || placeholder}
@@ -55,14 +56,14 @@
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content class="w-[512px] p-0">
+	<Popover.Content class="p-0">
 		<Command shouldFilter={false}>
 			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; }}/>
 			<CommandEmpty>No results found.</CommandEmpty>
 			<CommandGroup>
 				{#each entries as entry(entry.value)}
 				{@const Icon = entry.icon}
-					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(ids.trigger); }}>
+					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(); }}>
 						<Icon class="ml-2 size-4"/>
 						{entry.label}
 						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>

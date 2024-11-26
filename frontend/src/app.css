@@ -97,6 +97,10 @@
 	@apply border border-neutral-800;
   }
 
+  input {
+	@apply px-2 py-1 h-10;
+  }
+
   textarea {
 	@apply px-2 py-1;
   }

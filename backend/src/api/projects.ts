@@ -110,8 +110,7 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 })
 
 .post("/:id/tasks", async ({ params: { id }, body }) => {
-	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
-	const statuses = results[0];
+	const [statuses] = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
 
 	const first_status = statuses[0];
 
@@ -119,7 +118,7 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 		throw new Error("Did not find a status");
 	}
 
-	const task = await createTask(db, body.title, body.body, new StringRecordId(id) as unknown as ProjectId, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, body.status as unknown as StatusId || first_status.id);
+	const task = await createTask(db, body.title, body.body, new StringRecordId(id) as unknown as ProjectId, body.priority, body.effort, body.value, (body.assignee ? new StringRecordId(body.assignee) : null) as UserId | null, (body.status ? new StringRecordId(body.status) : null) as unknown as StatusId || first_status.id);
 
 	return { id: task.id.toString() };
 }, {

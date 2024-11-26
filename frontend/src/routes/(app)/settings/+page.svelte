@@ -12,19 +12,15 @@
 	</section>
 	<section class="column w-full gap-4">
 		<h2 class="text-2xl tactile-text">Profile</h2>
-		<div class="column gap-4 border rounded-lg px-6 py-4 justify-between">
+		<div class="column gap-4 justify-between">
 			{#await data then { data: user }}
 				<!-- <UserAvatar user={{ id: "tex", full_name: user.full_name, color: user.color }}/> -->
-				<div class="gallery">
-					<h2 class="tactile-text text-2xl min-w-48">
-						Full Name: &nbsp;
-					</h2>
-					<input class="tactile-text text-2xl" type="text" value={user.full_name} oninput={(e) => user.full_name = e.target.value} onblur={async (e) => await client.api.users.me.patch({ full_name: e.target.value })}/>
+				<div class="column">
+					<span class="text-sm text-muted-foreground mb-2">Full Name</span>
+					<input class="" type="text" value={user.full_name} oninput={(e) => user.full_name = e.target.value} onblur={async (e) => await client.api.users.me.patch({ full_name: e.target.value })}/>
 				</div>
-				<div class="gallery">
-					<h2 class="tactile-text text-2xl min-w-48">
-						Color: &nbsp;
-					</h2>
+				<div class="column">
+					<span class="text-sm text-muted-foreground mb-2">Full Name</span>
 					<select class="bg-transparent rounded-lg border px-2 h-10" onchange={async (e) => await client.api.users.me.patch({ color: e.target.value })}>
 						{#each COLORS as color}
 							<option value={color.name}>{color.name}</option>

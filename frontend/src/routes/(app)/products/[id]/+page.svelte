@@ -6,16 +6,11 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { DotsHorizontal } from "svelte-radix";
     import { CLASSES } from "@/utils.ts";
-    import { onNavigate } from "$app/navigation";
     import { updateProductMutation } from "@/state";
 
     let { data }: { data: PageData } = $props();
 
 	let product = $state(data.product);
-
-	onNavigate(async () => {
-		await updateProductMutation({})(product);
-	});
 </script>
 
 <svelte:head>
@@ -27,9 +22,11 @@
 		<h1 class="tactile-text text-sm">
 			{data.product.name}
 		</h1>
+		{#each CLASSES["Product"].links as { label, url }}
 		<div class="rounded item-background h-6 min-w-12 px-2 frame">
-			<a href={`${$page.url}/features`} class="text-xs text-center tactile-text">Features</a>
+			<a href={`${$page.url}/${label.toLowerCase()}`} class="text-xs text-center tactile-text">{label}</a>
 		</div>
+		{/each}
 	</div>
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger class="rounded border frame size-6">
@@ -48,14 +45,14 @@
 	</DropdownMenu.Root>
 </header>
 <div class="flex-1 flex flex-col w-full divide-y">
-	<main class="flex-1 flex p-24">
-		<div class="flex-1">
-			<input class="text-5xl font-semibold bg-gradient-to-b from-popover-foreground to-muted-foreground bg-clip-text text-transparent" transition:blur bind:value={product.name}/>
-			<textarea class="text-muted-foreground h-[8lh]" bind:value={product.description}>
+	<main class="flex-1 flex">
+		<div class="flex-1 column gap-4 px-16 py-24">
+			<input class="text-5xl font-semibold tactile-text border-0" in:blur bind:value={product.name} onblur={async (e) => await updateProductMutation({})(product)}/>
+			<textarea class="text-muted-foreground h-full border-0" bind:value={product.description} in:blur={{ delay: 100}} onblur={async (e) => await updateProductMutation({})(product)}>
 			</textarea>
 		</div>
-		<div class="column gap-4">
-			<div class="w-96 column">
+		<div class="w-96 column gap-4 border-l bg-neutral-950 px-6 py-8">
+			<div class="column">
 				<span class="text-sm text-muted-foreground">Applications</span>
 				{#await data.applications}
 					Loading applications...
@@ -70,7 +67,7 @@
 					{/each}
 				{/await}
 			</div>
-			<div class="w-96">
+			<div class="column">
 				<span class="text-sm text-muted-foreground font-regular">Projects</span>
 				{#each [{ title: "All is well", body: "Project is going great and on time. Thank you everyone!" }] as update}
 					<div class="flex flex-col gap-1 mt-2">

@@ -11,6 +11,9 @@ export const load: PageLoad = async ({ params: { id } }) => {
 
     return {
         product,
-        applications: client.api.products({ id }).applications.get().then(({ data }) => data ?? []),
+		components: [{
+			name: "ProductPage",
+			type: "page",
+		}]
     };
 };

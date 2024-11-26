@@ -404,13 +404,13 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 });
 
 export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId | undefined, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const task = await db.create<Omit<Task, "id">>(new Table("Task"), { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
+	const [task] = await db.create<Omit<Task, "id">>("Task", { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
 
 	if (!task) {
 		throw new Error("Could not create task");
 	}
 
-	const channel = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
+	const [channel] = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
 
 	return task;
 };
