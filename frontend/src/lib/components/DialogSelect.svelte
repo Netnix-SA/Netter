@@ -28,9 +28,9 @@
 </button>
 
 <Command.Dialog loop shouldFilter={false} bind:open>
-	<Command.Input bind:value={search} placeholder="Type a command or search..."/>
-	<Command.Empty>No results found.</Command.Empty>
+	<Command.Input bind:value={search} placeholder="Search"/>
 	<Command.List>
+		<Command.Empty>No results found.</Command.Empty>
 		<Command.Group heading="Results">
 			{#each entries as { id, title }(id)}
 				<Command.Item class="h-8" onSelect={() => { onselect(id); open = false; search = ''; }}>{title}</Command.Item>

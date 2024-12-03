@@ -27,6 +27,7 @@
     import Search from "@/components/Search.svelte";
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
     import LabelSelect from "@/components/LabelSelect.svelte";
+    import { blur } from "svelte/transition";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -177,7 +178,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
-				<input class="text-4xl tactile-text flex-1 border-b border-opacity-0 focus:border-opacity-100 outline-none transition-all" bind:value={title}/>
+				<input in:blur class="tactile-text text-5xl font-semibold p-0 border-0" bind:value={title}/>
 				<!-- TODO: link to merge request -->
 			</div>
 			<Dialog.Root bind:open={show_resolve_menu}>

@@ -4,7 +4,7 @@
     import { client } from "@/state";
     import { onMount, tick } from "svelte";
     import { Button } from "./ui/button";
-    import { Check, ChevronsUpDown } from "lucide-svelte";
+    import { Check, ChevronsUpDown, SparkleIcon, StarsIcon } from "lucide-svelte";
     import { CLASSES, cn } from "@/utils";
 
 	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
@@ -65,7 +65,12 @@
 				{@const Icon = entry.icon}
 					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(); }}>
 						<Icon class="ml-2 size-4"/>
-						{entry.label}
+						<span>
+							{entry.label}
+						</span>
+						{#if true}
+							<StarsIcon class="ml-1 size-4"/>
+						{/if}
 						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>
 					</CommandItem>
 				{/each}

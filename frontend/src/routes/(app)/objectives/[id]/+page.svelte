@@ -11,7 +11,9 @@
     import { LayoutList } from "lucide-svelte";
     import DatePicker from "@/components/ui/date-picker.svelte";
 	import { type DateValue, CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
+	import NumberFlow from '@number-flow/svelte';
     import { patch } from "@/utils";
+    import { blur } from "svelte/transition";
 
 	let { data }: { data: PageData } = $props();
 
@@ -44,8 +46,8 @@
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 </header>
-<main class="flex p-24 gap-4 flex-1 w-full">
-	<div class="column gap-8 flex-1">
+<main class="flex flex-1 w-full">
+	<div class="column gap-8 flex-1 px-16 py-24">
 		<header class="gallery">
 			<div class="column gap-2">
 				{#if data.objective.active}
@@ -53,51 +55,51 @@
 				{:else}
 					<span class="text-sm text-white font-medium">Inactive</span>
 				{/if}
-				<input use:patch={{ value: title, action: (e) => console.log(e) }} type="text" class="text-5xl font-semibold tactile-text flex-1" placeholder="Title" bind:value={title}/>
+				<input in:blur use:patch={{ value: title, action: (e) => console.log(e) }} type="text" class="text-5xl font-semibold tactile-text flex-1 border-0 p-0" placeholder="Title" bind:value={title}/>
 			</div>
 		</header>
 		<section class="flex-1">
-			<textarea class="text-muted-foreground" bind:value={data.objective.description}></textarea>
+			<textarea class="text-muted-foreground border-0 w-full h-full flex-1 p-0" in:blur={{ delay: 100 }} bind:value={data.objective.description}></textarea>
 		</section>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Execution status</span>
-			<div class="gallery gap-8">
-				<div class="column">
+			<div class="gallery gap-2">
+				<div class="column w-32">
 					<span class="text-sm text-muted-foreground">Features</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.statistics.features.completed} / {data.statistics.features.total}
+						<NumberFlow value={data.statistics.features.completed}/> / <NumberFlow value={data.statistics.features.total}/>
 					</span>
 				</div>
-				<div class="column">
+				<div class="column w-32">
 					<span class="text-sm text-muted-foreground">Tasks</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.statistics.tasks.completion} / {data.statistics.tasks.total}
+						<NumberFlow value={data.statistics.tasks.completion}/> / <NumberFlow value={data.statistics.tasks.total}/>
 					</span>
 				</div>
 			</div>
-			<div class="gallery gap-8">
-				<div class="column">
+			<div class="gallery gap-2">
+				<div class="column w-32">
 					<span class="text-sm text-muted-foreground">Estimated time</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.statistics.tasks.time.total} hrs
+						<NumberFlow value={data.statistics.tasks.time.total} suffix=" hrs"/>
 					</span>
 				</div>
-				<div class="column">
+				<div class="column w-32">
 					<span class="text-sm text-muted-foreground">Executed</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.statistics.tasks.time.executed} hrs
+						<NumberFlow value={data.statistics.tasks.time.executed} suffix=" hrs"/>
 					</span>
 				</div>
-				<div class="column">
+				<div class="column w-32">
 					<span class="text-sm text-muted-foreground">Spent</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.statistics.tasks.time.real} hrs
+						<NumberFlow value={data.statistics.tasks.time.real} suffix=" hrs"/>
 					</span>
 				</div>
 			</div>	
 		</section>
 	</div>
-	<side class="column gap-8 w-96">
+	<side class="w-96 column gap-16 border-l bg-neutral-950 px-6 py-8">
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">End</span>
 			<DatePicker bind:value={end}/>

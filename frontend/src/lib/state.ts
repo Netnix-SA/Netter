@@ -241,7 +241,7 @@ export const deleteFeatureMutation = createMutation({
 export const createObjectiveMutation = createMutation({
 	mutationFn: async ({ project_id }: { project_id: string }) => {
 		console.log("Creating objective");
-		const response = await client.api.projects({ id: project_id }).objectives.post({ title: "New objective", description: "Objective description" });
+		const response = await client.api.projects({ id: project_id }).objectives.post({ title: "New objective", end: null, description: "Objective description" });
 		if (response.data) {
 			return response.data;
 		} else {

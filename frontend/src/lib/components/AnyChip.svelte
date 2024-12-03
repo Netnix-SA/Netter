@@ -50,7 +50,10 @@
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>
 			{#if context && context.actions.length > 0}
-				<ContextMenu.Group title={context.name}>
+				<ContextMenu.Group>
+					<ContextMenu.GroupHeading>
+						{context.name}
+					</ContextMenu.GroupHeading>
 					<ContextMenu.Separator/>
 					{#each context.actions as { label, icon: Icon, action }}
 						{#if label === "Delete"}
@@ -64,6 +67,9 @@
 				</ContextMenu.Group>
 			{/if}
 			<ContextMenu.Group title={clss}>
+				<ContextMenu.GroupHeading>
+					{clss}
+				</ContextMenu.GroupHeading>
 				<ContextMenu.Separator/>
 				{#each CLASSES[clss].actions as { label, icon: Icon, action }}
 					{#if label === "Delete"}
