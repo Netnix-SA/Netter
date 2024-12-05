@@ -141,10 +141,10 @@ export function patch(node: HTMLInputElement, { value, action, time }: { value: 
 	};
 }
 
-import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, Copy, DiamondPlus, Flag, FlagIcon, Flame, Gift, GitBranch, GitPullRequestArrow, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, Copy, DiamondPlus, Flag, FlagIcon, Flame, Gift, GitBranch, GitPullRequestArrow, HammerIcon, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
-import { createProductFeatureMutation, deleteFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
+import { addTaskTackledMutation, createProductFeatureMutation, deleteFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
 import type { QueryClient } from "@tanstack/svelte-query";
 import { task, todo } from "./global.svelte.ts";
 import { goto } from "$app/navigation";
@@ -155,21 +155,27 @@ export type SelectEntry<T> = {
     icon?: Component<{}>;
 };
 
+export const STATES_ICONS = {
+    "Backlog": CircleHelp,
+    "Alive": CircleArrowUp,
+    "Resolved": CircleCheck,
+};
+
 export const STATES: SelectEntry<State>[] = [
     {
         value: "Backlog",
         label: "Backlog",
-        icon: CircleHelp,
+        icon: STATES_ICONS["Backlog"],
     },
     {
         value: "Alive",
         label: "Alive",
-        icon: CircleArrowUp,
+        icon: STATES_ICONS["Alive"],
     },
     {
         value: "Resolved",
         label: "Resolved",
-        icon: CircleCheck,
+        icon: STATES_ICONS["Resolved"],
     },
 ];
 
@@ -316,6 +322,11 @@ export const CLASSES = {
 				label: "Create related ToDo",
 				icon: SquareCheckBig,
 				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
+			},
+			{
+				label: "Add tackling task",
+				icon: HammerIcon,
+				action: (queryClient: QueryClient, id: string) => {},
 			},
 			{
 				label: "Pin",
@@ -495,6 +506,16 @@ export const COLORS = [
         name: "Orange/Light",
     },
 ];
+
+export const color_to_class = (u: "text" | "border" | "bg", color: Colors) => {
+	switch (color) {
+		case "Green/Light": return `text-green-400`;
+		case "Orange/Light": return `text-orange-400`;
+		case "Red/Light": return `text-red-400`;
+		case "Purple/Light": return `text-purple-400`;
+		default: return `text-gray-400`;
+	}
+};
 
 import { crossfade } from 'svelte/transition';
 import { quintOut } from 'svelte/easing';

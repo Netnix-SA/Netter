@@ -7,7 +7,7 @@
     import { CLASSES } from "@/utils";
     import Search from "@/components/Search.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
-    import { removeSlatedFeatureMutation, slateFeatureMutation } from "@/state";
+    import { removeSlatedFeatureMutation, slateFeatureMutation, updateObjectiveMutation } from "@/state";
     import { LayoutList } from "lucide-svelte";
     import DatePicker from "@/components/ui/date-picker.svelte";
 	import { type DateValue, CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
@@ -55,7 +55,7 @@
 				{:else}
 					<span class="text-sm text-white font-medium">Inactive</span>
 				{/if}
-				<input in:blur use:patch={{ value: title, action: (e) => console.log(e) }} type="text" class="text-5xl font-semibold tactile-text flex-1 border-0 p-0" placeholder="Title" bind:value={title}/>
+				<input in:blur use:patch={{ value: title, action: (e) => updateObjectiveMutation({})({ id: data.objective.id, title: e }) }} type="text" class="text-5xl font-semibold tactile-text flex-1 border-0 p-0" placeholder="Title" bind:value={title}/>
 			</div>
 		</header>
 		<section class="flex-1">

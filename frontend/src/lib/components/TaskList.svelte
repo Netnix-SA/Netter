@@ -5,7 +5,7 @@
 
     import TaskLine from "./TaskLine.svelte";
     import type { Efforts, Priorities, Value, Status } from "@/types";
-    import { STATES } from "@/utils.ts";
+    import { cn, color_to_class, EFFORTS_ICONS, PRIORITIES_ICONS, STATES, STATES_ICONS, VALUES_ICONS } from "@/utils.ts";
     import { goto } from "$app/navigation";
     import { client } from "@/state";
 
@@ -22,12 +22,9 @@
 
 	let {
 		tasks,
-		statuses,
-		labels,
-		users,
 		draft_task = $bindable(),
 		onselect = () => {},
-	}: { tasks: Task[], statuses: any[], labels: any[], users: any[], draft_task?: Omit<Task, "id"> | null, onselect: (id: string) => void } = $props();
+	}: { tasks: Task[], draft_task?: Omit<Task, "id"> | null, onselect: (id: string) => void } = $props();
 </script>
 	
 <Table.Root>
@@ -37,13 +34,13 @@
 			<Table.Head class="w-8">
 				<input type="checkbox" class="size-4" onchange={(e) => tasks.forEach(task => onselect(task.id))}/>
 			</Table.Head>
-			<Table.Head class="w-full">Title</Table.Head>
-			<Table.Head class="w-full">Labels</Table.Head>
-			<Table.Head class="w-48">Status</Table.Head>
-			<Table.Head class="w-48">Priority</Table.Head>
-			<Table.Head class="w-48">Effort</Table.Head>
-			<Table.Head class="w-48">Assignee</Table.Head>
-			<Table.Head class="w-48">Value</Table.Head>
+			<Table.Head class="w-96">Title</Table.Head>
+			<Table.Head class="w-64">Labels</Table.Head>
+			<Table.Head class="w-16">Status</Table.Head>
+			<Table.Head class="w-16">Priority</Table.Head>
+			<Table.Head class="w-16">Effort</Table.Head>
+			<Table.Head class="w-16">Value</Table.Head>
+			<Table.Head class="w-32">Assignee</Table.Head>
 			<Table.Head class="w-8">
 				<button class="rounded-md bg-primary-foreground border size-6 frame" onclick={() => draft_task = {}}>
 					<Plus class="size-4"/>
@@ -59,12 +56,19 @@
 				</Table.Cell>
 				<Table.Cell class="font-medium" onclick={() => goto(`/tasks/${id}`)}>{title}</Table.Cell>
 				<Table.Cell>
+					<div class="gallery gap-2">
 					{#each labels as { id }}
-						{@const label = labels.find(l => l.id === id)}
-						{#if label}
-							{label.id}
-						{/if}
+						{#await client.api.labels({ id }).get()}
+							<span class="animate-pulse">
+								Label
+							</span>
+						{:then { data }}
+							<div class={cn("gallery px-2 py-1 rounded-full bg-neutral-950 border text-xs", color_to_class("text", data?.color))}>
+								{data?.title}
+							</div>
+						{/await}
 					{/each}
+					</div>
 				</Table.Cell>
 				<Table.Cell>
 					{#await client.api.statuses({ id: status.id }).get()}
@@ -72,13 +76,47 @@
 							Status
 						</span>
 					{:then { data }}
-						{data?.name}
+					{@const Icon = STATES_ICONS[data?.state]}
+						<div class="gallery">
+							<Icon class="size-4 mr-2"/>
+							{data?.name}
+						</div>
 					{/await}
 				</Table.Cell>
-				<Table.Cell>{priority}</Table.Cell>
-				<Table.Cell>{effort}</Table.Cell>
-				<Table.Cell>{assignee}</Table.Cell>
-				<Table.Cell>{value}</Table.Cell>
+				<Table.Cell>
+					{@const Icon = PRIORITIES_ICONS[priority]}
+					<div class="gallery">
+						<Icon class="size-4 mr-2"/>
+						{priority}
+					</div>
+				</Table.Cell>
+				<Table.Cell>
+					{@const Icon = EFFORTS_ICONS[effort]}
+					<div class="gallery">
+						<Icon class="size-4 mr-2"/>
+						{effort}
+					</div>
+				</Table.Cell>
+				<Table.Cell>
+					{@const Icon = VALUES_ICONS[value]}
+					<div class="gallery">
+						<Icon class="size-4 mr-2"/>
+						{value}
+					</div>
+				</Table.Cell>
+				<Table.Cell>
+					{#if assignee?.id}
+						{#await client.api.users({ id: assignee?.id }).get()}
+							<span class="animate-pulse">
+								Assignee
+							</span>
+						{:then { data }}
+							{data?.full_name}
+						{/await}
+					{:else}
+						<span class="text-muted-foreground">Unassigned</span>
+					{/if}
+				</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>

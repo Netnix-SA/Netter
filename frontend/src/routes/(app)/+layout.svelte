@@ -274,7 +274,7 @@
 		<span class="text-sm text-muted-foreground font-regular">Title</span>
 		<input type="text" placeholder="Title" class="text-2xl tactile-text" bind:value={task.value.title}/>
 		<span class="text-sm text-muted-foreground font-regular">Labels</span>
-		<LabelSelect/>
+		<LabelSelect labels={data.labels} value={task.value.labels.map(l => l.id)} onSelect={(id) => task.value.labels.push({ id })} onRemove={(id) => task.value.labels = task.value.labels.filter(l => l.id !== id)}/>
 		<span class="text-sm text-muted-foreground font-regular">Description</span>
 		<textarea class="bg-transparent text-sm min-h-[2lh]" placeholder="Description" bind:value={task.value.body}>
 		</textarea>

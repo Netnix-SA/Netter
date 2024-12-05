@@ -1,7 +1,7 @@
-import { Elysia, t } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import { tLabel, tLabelId, tLabelPost } from "./schemas";
 import type { Label } from "../db/types";
-import Surreal, { surql } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 
 export const labels = (db: Surreal) => new Elysia({ prefix: "/labels", tags: ["Labels"] })
 
@@ -30,6 +30,24 @@ export const labels = (db: Surreal) => new Elysia({ prefix: "/labels", tags: ["L
 	response: t.Array(tLabel),
 	detail: {
 		description: "Gets the labels for the querying user's organization. Does not include any project/team specific labels.",
+	},
+})
+
+.get("/:id", async ({ params: { id } }) => {
+	const [[label]] = await db.query<[Label[]]>(surql`SELECT * FROM Label WHERE id = ${new StringRecordId(id)} AND !owner;`);
+
+	console.log(label);
+
+	if (!label) {
+		throw new NotFoundError("Label not found.");
+	}
+
+	return map(label);
+}, {
+	params: t.Object({ id: tLabelId }),
+	response: tLabel,
+	detail: {
+		description: "Gets a label by its ID.",
 	},
 });
 

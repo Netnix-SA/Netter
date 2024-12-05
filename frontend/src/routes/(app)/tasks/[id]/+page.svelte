@@ -197,7 +197,7 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		</div>
-		<LabelSelect value={data.task.labels.map(l => l.id)} labels={data.labels}/>
+		<LabelSelect value={data.task.labels.map(l => l.id)} labels={data.labels} onSelect={async (id) => await updateTaskMutation({})({ id: data.task.id, labels: [...data.task.labels, { id }] })} onRemove={async (id) => await updateTaskMutation({})({ id: data.task.id, labels: data.task.labels.filter(l => l.id !== id) })}/>
 		<div class="h-64">
 			<MarkdownEditor
 				mode="tabs"

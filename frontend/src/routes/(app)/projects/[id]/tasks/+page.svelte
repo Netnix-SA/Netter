@@ -20,20 +20,20 @@
     import Input from "@/components/ui/input/input.svelte";
 
 	onMount(() => {
-		const entry = { name: "Project", commands: [{ name: "Create task", key: 'c', do: () => {
-			// open_create_task = true;
-		} }] };
+		// const entry = { name: "Project", commands: [{ name: "Create task", key: 'c', do: () => {
+		// 	// open_create_task = true;
+		// } }] };
 
-		commands.update(c => {
-			c.push(entry);
-			return c;
-		});
+		// commands.update(c => {
+		// 	c.push(entry);
+		// 	return c;
+		// });
 
-		task.project = data.project.id;
+		// task.project = data.project.id;
 
-		return () => {
-			commands.update(c => { return c.filter(e => e != entry); });
-		};
+		// return () => {
+		// 	commands.update(c => { return c.filter(e => e != entry); });
+		// };
 	});
 
 	let view: "list" | "kanban" | "graph" = $state("list");

@@ -36,7 +36,6 @@ const RS256 = -257;
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
 
 .use(cors())
-.use(user)
 
 .get("/health", async () => {
 	return { status: "ok" };
@@ -367,6 +366,8 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		test: t.Optional(t.String()),
 	}),
 })
+
+.use(user)
 
 .ws("/ws", {
 	open(ws) {

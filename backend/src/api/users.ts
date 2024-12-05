@@ -58,6 +58,22 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	}
 })
 
+.get("/:id", async ({ params: { id } }) => {
+	const user = await db.select<User>(new StringRecordId(id));
+
+	if (!user) {
+		throw new NotFoundError("User not found.");
+	}
+
+	return map(user);
+}, {
+	response: tUser,
+	params: t.Object({ id: t.String() }),
+	detail: {
+		description: "Returns a user by their ID.",
+	}
+})
+
 .patch("/me", async ({ body, user }) => {
 	let u: { full_name?: String, color?: Colors } = {};
 

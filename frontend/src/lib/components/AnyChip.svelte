@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CLASSES } from "@/utils";
+	import { CLASSES, cn, color_to_class } from "@/utils";
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -42,10 +42,27 @@
 			{@const Icon = clss !== undefined ? CLASSES[clss].icon : MessageCircleQuestion}
 			<Icon class="size-4"/>
 			{#await metadata}
-				<div class="w-16 h-2 animate-pulse">
+				<div class="w-24 h-3 rounded animate-pulse bg-neutral-700">
 				</div>
 			{:then mtdt}
-				<span class="tactile-text text-sm">{mtdt.data?.title}</span>
+				<div class="gallery flex-1">
+					<span class="tactile-text text-sm">{mtdt.data?.title}</span>
+				</div>
+				{#if clss == "Task"}
+					{#await client.api.tasks({ id }).get()}
+						<div class="w-8 h-3 rounded animate-pulse bg-neutral-700">
+						</div>
+					{:then { data }}
+						{#await client.api.statuses({ id: data?.status.id }).get()}
+							<div class="w-8 h-3 rounded animate-pulse bg-neutral-700">
+							</div>
+						{:then { data }}
+							<span class="text-xs text-muted-foreground mr-2">
+								{data?.name}
+							</span>
+						{/await}
+					{/await}
+				{/if}
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>

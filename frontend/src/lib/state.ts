@@ -207,8 +207,8 @@ export const createProductComponentMutation = createMutation({
 });
 
 export const updateTaskMutation = createMutation({
-	mutationFn: async ({ id, title, body, priority, effort, value, assignee, status }: { id: string, title?: string, body?: string, priority?: "Low" | "Medium" | "High", effort?: Efforts, value?: Value, assignee?: string, status?: string }) => {
-		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee, status });
+	mutationFn: async ({ id, title, body, priority, effort, value, assignee, status, labels }: { id: string, title?: string, body?: string, priority?: "Low" | "Medium" | "High", effort?: Efforts, value?: Value, assignee?: string, status?: string, labels?: { id: string }[] }) => {
+		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee, status, labels });
 		if (response.error) {
 			throw new Error();
 		}
@@ -260,6 +260,21 @@ export const createObjectiveMutation = createMutation({
 		invalidate('project:get');
 	},
 	onError: onError("Failed to create objective"),
+});
+
+export const updateObjectiveMutation = createMutation({
+	mutationFn: async ({ id, title, description, end }: { id: string, title?: string, description?: string, end?: string }) => {
+		const response = await client.api.objectives({ id }).patch({ title, description, end });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		invalidate('objectives:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update objective"),
 });
 
 export const createMilestoneMutation = createMutation({

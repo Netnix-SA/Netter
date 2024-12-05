@@ -7,3 +7,4 @@
 - add task completion stat to feature stats
 - child features
 - events
+- add tackling task to feature from context menu
