@@ -55,11 +55,12 @@
 				{:else}
 					<span class="text-sm text-white font-medium">Inactive</span>
 				{/if}
-				<input in:blur use:patch={{ value: title, action: (e) => updateObjectiveMutation({})({ id: data.objective.id, title: e }) }} type="text" class="text-5xl font-semibold tactile-text flex-1 border-0 p-0" placeholder="Title" bind:value={title}/>
+				<input in:blur onblur={async (e) => await updateObjectiveMutation({})({ id: data.objective.id, title: e.target.value })} type="text" class="text-5xl font-semibold tactile-text flex-1 w-full border-0 p-0" placeholder="Title" value={data.objective.title}/>
 			</div>
 		</header>
 		<section class="flex-1">
-			<textarea class="text-muted-foreground border-0 w-full h-full flex-1 p-0" in:blur={{ delay: 100 }} bind:value={data.objective.description}></textarea>
+			<textarea class="text-muted-foreground border-0 w-full h-full flex-1 p-0" in:blur={{ delay: 100 }} bind:value={data.objective.description} onblur={async (e) => await updateObjectiveMutation({})({ id: data.objective.id, description: e.target.value })}>
+			</textarea>
 		</section>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Execution status</span>

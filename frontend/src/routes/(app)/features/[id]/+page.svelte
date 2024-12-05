@@ -11,6 +11,7 @@
     import { task } from "@/global.svelte.ts";
     import { Hammer } from "lucide-svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
+    import NumberFlow from "@number-flow/svelte";
 
 	let { data }: { data: PageData } = $props();
 
@@ -62,13 +63,13 @@
 				<div class="column">
 					<span class="text-sm text-muted-foreground">Tasks</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.stats.tasks.completion} / {data.stats.tasks.total}
+						<NumberFlow value={data.stats.tasks.completion}/> / <NumberFlow value={data.stats.tasks.total}/>
 					</span>
 				</div>
 				<div class="column">
 					<span class="text-sm text-muted-foreground">Bugs</span>
 					<span class="tactile-text text-2xl font-bold">
-						{data.stats.bugs.total}
+						<NumberFlow value={data.stats.bugs.total}/>
 					</span>
 				</div>
 			</div>

@@ -5,7 +5,7 @@
 	import DOMPurify from "isomorphic-dompurify";
 
 	import "carta-md/default.css";
-	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES, type SelectEntry } from "@/utils.ts";
+	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES } from "@/utils.ts";
 
 	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
@@ -17,18 +17,16 @@
 
     import { buttonVariants } from "@/components/ui/button";
     import { onMount } from "svelte";
-    import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, client, commands, removeBlockerTaskMutation, removeChildTaskMutation, removeRelativeTaskMutation, removeTackledMutation, updateTaskMutation } from "@/state";
+    import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, commands, removeBlockerTaskMutation, removeChildTaskMutation, removeRelativeTaskMutation, removeTackledMutation, updateTaskMutation } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";
     import AnyChip from "@/components/AnyChip.svelte";
-    import { onNavigate } from "$app/navigation";
     import Search from "@/components/Search.svelte";
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
     import LabelSelect from "@/components/LabelSelect.svelte";
     import { blur } from "svelte/transition";
-    import { on } from "svelte/events";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -37,64 +35,6 @@
 
 	let add_update: boolean = $state(false);
 	let show_resolve_menu: boolean = $state(false);
-
-	onMount(() => {
-		const entry = {
-			name: "Task",
-			commands: [
-				// { name: "Add to ToDo's", do: () => {} },
-				// {
-				// 	name: "Add blocker",
-				// 	do: () => {
-				// 		add_blocker = true;
-				// 	}
-				// },
-				// {
-				// 	name: "Add child",
-				// 	do: () => {
-				// 		add_child = true;
-				// 	}
-				// },
-				// {
-				// 	name: "Add relative",
-				// 	do: () => {
-				// 		add_relative = true;
-				// 	}
-				// },
-				// {
-				// 	name: "Add update",
-				// 	key: 'u',
-				// 	do: () => {
-				// 		add_update = true;
-				// 	}
-				// },
-				// {
-				// 	name: "Resolve task",
-				// 	key: 'r',
-				// 	do: () => {
-				// 		show_resolve_menu = true;
-				// 	}
-				// },
-			]
-		};
-
-		commands.update(c => {
-			c.push(entry);
-			return c;
-		});
-
-		return () => {
-			commands.update(c => { return c.filter(e => e != entry); });
-		};
-	});
-
-	async function addUpdate() {
-		await client.api.tasks({ id: data.task.id }).updates.post({
-			value: update.value,
-			note: update.note,
-			time_spent: update.time_spent,
-		});
-	}
 
 	const { data }: { data: PageData } = $props();
 
@@ -107,8 +47,6 @@
 		close_as; // Keep to trigger effect
 		close_payload = undefined;
 	});
-
-	console.warn(data.labels);
 </script>
 
 <svelte:head>
@@ -352,7 +290,7 @@
 		<span class="text-muted-foreground text-sm">Note</span>
 		<Input type="text" bind:value={update.note}/>
 		<Dialog.Footer>
-			<Button title="Hey hey hey" onclick={async () => { addUpdate(); add_update = false; }} type="submit">Add update</Button>
+			<Button title="Hey hey hey" onclick={async () => { add_update = false; }} type="submit">Add update</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

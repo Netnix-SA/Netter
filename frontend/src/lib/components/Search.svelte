@@ -6,13 +6,14 @@
     import { Button } from "./ui/button";
     import { Check, ChevronsUpDown, SparkleIcon, StarsIcon } from "lucide-svelte";
     import { CLASSES, cn, type SelectEntry } from "@/utils";
+    import type { Classes } from "@/types";
 
 	let {
 		placeholder = "Select an item",
 		filter = undefined,
 		value = $bindable(),
 		onselect,
-	}: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
+	}: { placeholder?: string, filter?: { class?: Classes, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
 
 	let open = $state(false);
 	let triggerRef = $state<HTMLButtonElement>(null!);
@@ -25,7 +26,7 @@
 	}
 
 	let search = $state("");
-	let results: { id: string, title: string }[] = $state([]);
+	let results: { id: string, title: string, class: Classes }[] = $state([]);
 	let entries: SelectEntry<string>[] = $derived(results.map(r => ({ label: r.title, value: r.id, icon: CLASSES[r.class].icon })));
 
 	let internal: SelectEntry<string> | undefined = $state(undefined);
@@ -42,8 +43,6 @@
 	$effect(() => { // Run query on mount and when filter changes
 		handleInput(new Event("input"), { suggest: !search ? filter?.class : undefined });
 	});
-
-	$inspect(value, entries);
 </script>
    
 <Popover.Root bind:open>
@@ -62,7 +61,7 @@
 			<CommandGroup>
 				{#each entries as entry(entry.value)}
 				{@const Icon = entry.icon}
-					<CommandItem value={entry.value} onSelect={() => { internal = entry; value = entry.value; onselect(entry.value); closeAndFocusTrigger(); }}>
+					<CommandItem value={entry.value} onSelect={() => { internal = entry; value = entry.value; onselect?.(entry.value); closeAndFocusTrigger(); }}>
 						<Check class={cn("size-4", value !== entry.value && "text-transparent" )}/>
 						<div class="gallery">
 							<Icon class="mr-2 size-4"/>

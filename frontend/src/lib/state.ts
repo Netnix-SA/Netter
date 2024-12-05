@@ -263,7 +263,7 @@ export const createObjectiveMutation = createMutation({
 });
 
 export const updateObjectiveMutation = createMutation({
-	mutationFn: async ({ id, title, description, end }: { id: string, title?: string, description?: string, end?: string }) => {
+	mutationFn: async ({ id, title, description, end }: { id: string, title?: string, description?: string, end?: Date }) => {
 		const response = await client.api.objectives({ id }).patch({ title, description, end });
 		if (response.error) {
 			throw new Error();

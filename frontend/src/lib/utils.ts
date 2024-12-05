@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
-import type { Colors, LabelFilter, StateFilter, Status, StatusFilter, Task, TextFilter } from "./types";
+import type { Classes, Colors, LabelFilter, StateFilter, Status, StatusFilter, Task, TextFilter } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -270,7 +270,7 @@ export const RESOLUTION_METHODS = [
     { label: "Canceled", value: "Canceled", icon: SquareX },
 ];
 
-export const CLASSES = {
+export const CLASSES: { [key in Classes]: any } = {
 	"User": {
         icon: User,
         url: (id?: string) => id ? `/users/${id}` : "/users",
@@ -512,6 +512,7 @@ export const color_to_class = (u: "text" | "border" | "bg", color: Colors) => {
 		case "Green/Light": return `text-green-400`;
 		case "Orange/Light": return `text-orange-400`;
 		case "Red/Light": return `text-red-400`;
+		case "Blue/Light": return `text-blue-400`;
 		case "Purple/Light": return `text-purple-400`;
 		default: return `text-gray-400`;
 	}

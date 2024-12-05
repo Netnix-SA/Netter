@@ -49,6 +49,31 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
     },
 })
 
+.patch("/:id", async ({ params: { id }, body }) => {
+	const objective_id = new StringRecordId(id);
+
+	let patch: { title?: string, description?: string, end?: Date } = {};
+
+	if (body.title) {
+		patch["title"] = body.title;
+	}
+
+	if (body.description) {
+		patch["description"] = body.description;
+	}
+
+	if (body.end) {
+		patch["end"] = body.end;
+	}
+
+	await db.merge(objective_id, patch);
+}, {
+	body: t.Object({ title: t.Optional(t.String()), description: t.Optional(t.String()), end: t.Optional(t.Date()) }),
+	detail: {
+		description: "Updates an objective.",
+	},
+})
+
 .post("/:id/slated", async ({ params: { id }, body }) => {
 	const objective_id = new StringRecordId(id);
 
@@ -125,8 +150,6 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 		description: "Returns execution statistics for the objective. Like /features/:id/statistics, but for an objective.",
 	},
 });
-
-;
 
 export const map = ({ id, title, description, active, end }: Objective) => ({
     id: id.toString(),

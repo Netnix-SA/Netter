@@ -63,6 +63,16 @@
 						{/await}
 					{/await}
 				{/if}
+				{#if clss == "Feature"}
+					{#await client.api.features({ id }).get()}
+						<div class="w-8 h-3 rounded animate-pulse bg-neutral-700">
+						</div>
+					{:then { data }}
+						<span class="text-xs text-muted-foreground mr-2">
+							{data?.value}
+						</span>
+					{/await}
+				{/if}
 			{/await}
 		</ContextMenu.Trigger>
 		<ContextMenu.Content>

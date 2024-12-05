@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { flyAndScale, type SelectEntry } from "@/utils.ts";
+	import { cn, flyAndScale, type SelectEntry } from "@/utils.ts";
 
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Select from "$lib/components/ui/select";
@@ -20,6 +20,10 @@
 	});
 </script>
 
+{#snippet text()}
+{internal?.label ?? placeholder}
+{/snippet}
+
 {#if variant === "regular"}
 <Select.Root type="single" loop={true} value={internal?.value}>
 	<Select.Trigger>
@@ -27,7 +31,7 @@
 		<div class="gallery">
 			<Icon class="mr-2 size-4 shrink-0"/>
 			<span>
-				{internal?.label ?? placeholder}
+				{@render text()}
 			</span>
 		</div>
 	</Select.Trigger>
@@ -51,7 +55,7 @@
 			<Icon class={variant === "small" ? "size-3" : "size-4"}/>
 			{#if variant === "small"}
 				<span class="text-sm truncate">
-					{internal}
+					{@render text()}
 				</span>
 			{/if}
 		{:else}
@@ -63,6 +67,7 @@
 	<DropdownMenu.Content>
 		{#each values as entry}
 			<DropdownMenu.Item onclick={() => { internal = entry; }}>
+				<CheckIcon class={cn("size-4", value !== entry.value && "text-transparent" )}/>
 				{@const EntryIcon = entry.icon}
 				<EntryIcon class="size-4 mr-2"/> {entry.label}
 			</DropdownMenu.Item>
