@@ -76,7 +76,7 @@
 		<Separator/>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Value</span>
-			<Select label="Value" comparator={(a, b) => a === b} values={VALUES} bind:value={feature.value}/>
+			<Select values={VALUES} bind:value={feature.value}/>
 		</section>
 		<section class="column gap-2">
 			<div class="gallery">

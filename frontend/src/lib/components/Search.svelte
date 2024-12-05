@@ -5,18 +5,18 @@
     import { onMount, tick } from "svelte";
     import { Button } from "./ui/button";
     import { Check, ChevronsUpDown, SparkleIcon, StarsIcon } from "lucide-svelte";
-    import { CLASSES, cn } from "@/utils";
+    import { CLASSES, cn, type SelectEntry } from "@/utils";
 
-	let { placeholder = "Select an item", filter = undefined, value = $bindable(), onselect, }: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
+	let {
+		placeholder = "Select an item",
+		filter = undefined,
+		value = $bindable(),
+		onselect,
+	}: { placeholder?: string, filter?: { class?: string, exclude?: string[] }, value: string | undefined, onselect?: (p0: string) => void } = $props();
 
 	let open = $state(false);
 	let triggerRef = $state<HTMLButtonElement>(null!);
    
-	let selectedEntry: { label: string, value: string } | undefined = $state(undefined);
-   
-	// We want to refocus the trigger button when the user selects
-	// an item from the list so users can continue navigating the
-	// rest of the form with the keyboard.
 	function closeAndFocusTrigger() {
 		open = false;
 		tick().then(() => {
@@ -26,7 +26,9 @@
 
 	let search = $state("");
 	let results: { id: string, title: string }[] = $state([]);
-	let entries: { label: string, value: string }[] = $derived(results.map(r => ({ label: r.title, value: r.id, icon: CLASSES[r.class].icon })));
+	let entries: SelectEntry<string>[] = $derived(results.map(r => ({ label: r.title, value: r.id, icon: CLASSES[r.class].icon })));
+
+	let internal: SelectEntry<string> | undefined = $state(undefined);
 
 	async function handleInput(e: Event, { suggest }: { suggest?: string }) {
 		let query = { text: search };
@@ -41,17 +43,14 @@
 		handleInput(new Event("input"), { suggest: !search ? filter?.class : undefined });
 	});
 
-	$effect(() => {
-		value = selectedEntry?.value;
-		if (onselect) onselect(value);
-	});
+	$inspect(value, entries);
 </script>
    
 <Popover.Root bind:open>
 	<Popover.Trigger bind:ref={triggerRef}>
 		{#snippet child({ props })}
 			<Button {...props} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
-				{selectedEntry?.label || placeholder}
+				{entries.find(e => e.value == value)?.label ?? placeholder}
 				<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 			</Button>
 		{/snippet}
@@ -63,15 +62,17 @@
 			<CommandGroup>
 				{#each entries as entry(entry.value)}
 				{@const Icon = entry.icon}
-					<CommandItem value={entry.value} onSelect={() => { selectedEntry = entry; closeAndFocusTrigger(); }}>
-						<Icon class="ml-2 size-4"/>
-						<span>
-							{entry.label}
-						</span>
-						{#if true}
-							<StarsIcon class="ml-1 size-4"/>
-						{/if}
-						<Check class={cn("mr-2 h-4 w-4", selectedEntry?.value !== entry.value && "text-transparent" )}/>
+					<CommandItem value={entry.value} onSelect={() => { internal = entry; value = entry.value; onselect(entry.value); closeAndFocusTrigger(); }}>
+						<Check class={cn("size-4", value !== entry.value && "text-transparent" )}/>
+						<div class="gallery">
+							<Icon class="mr-2 size-4"/>
+							<span>
+								{entry.label}
+							</span>
+							{#if false}
+								<StarsIcon class="ml-1 size-4"/>
+							{/if}
+						</div>
 					</CommandItem>
 				{/each}
 			</CommandGroup>

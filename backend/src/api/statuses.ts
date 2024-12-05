@@ -1,9 +1,10 @@
 import { Elysia, t } from "elysia";
 import { tStatus, tStatusId, tStatusPost } from "./schemas";
 import type { Status } from "../db/types";
-import Surreal, { surql } from "surrealdb";
+import Surreal, { StringRecordId, surql } from "surrealdb";
 
 export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags: ["Statuses"] })
+
 .get("", async () => {
 	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status ORDER BY position.i ASC;`);
 	const statuses = results[0];
@@ -11,6 +12,15 @@ export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags:
 }, {
 	response: t.Array(tStatus),
 })
+
+.get("/:id", async ({ params }) => {
+	const status = await db.select<Status>(new StringRecordId(params.id));
+	return map(status);
+}, {
+	params: t.Object({ id: tStatusId }),
+	response: tStatus,
+})
+
 .post("", async ({ body }) => {
 	const status = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
 

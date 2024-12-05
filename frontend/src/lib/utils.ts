@@ -152,7 +152,7 @@ import { goto } from "$app/navigation";
 export type SelectEntry<T> = {
     label: string;
     value: T;
-    icon: Component<{}>;
+    icon?: Component<{}>;
 };
 
 export const STATES: SelectEntry<State>[] = [

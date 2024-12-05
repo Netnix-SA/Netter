@@ -28,6 +28,7 @@
     import { ListTree, OctagonX, Hammer, Link2 } from "lucide-svelte";
     import LabelSelect from "@/components/LabelSelect.svelte";
     import { blur } from "svelte/transition";
+    import { on } from "svelte/events";
 
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
@@ -97,13 +98,6 @@
 
 	const { data }: { data: PageData } = $props();
 
-	let title: string = $state(data.task.title);
-	let body: string = $state(data.task.body);
-	let status: { id: string, state: State } | null = $state(data.statuses.find(s => s.id === data.task.status.id) || null);
-	let priority: Priorities | null = $state(data.task.priority);
-	let effort: Efforts | null = $state(data.task.effort);
-	let value: Value | null = $state(data.task.value);
-
 	let update = $state({ value: 0, note: "", time_spent: 0 });
 
 	let close_as: string | undefined = $state(undefined);
@@ -114,15 +108,7 @@
 		close_payload = undefined;
 	});
 
-	let assignee: string | null = $state(
-		data.users.find((u) => u.id === data.task.assignee?.id)?.id || null,
-	);
-
-	$inspect(assignee);
-
-	onNavigate(async () => {
-		await updateTaskMutation({})({ id: data.task.id, title, body, priority, effort, value, assignee });
-	});
+	console.warn(data.labels);
 </script>
 
 <svelte:head>
@@ -178,7 +164,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
-				<input in:blur class="tactile-text text-5xl font-semibold p-0 border-0" bind:value={title}/>
+				<input in:blur class="tactile-text text-5xl font-semibold p-0 border-0" value={data.task.title} onblur={async (e) => await updateTaskMutation({})({ id: data.task.id, title: e.target.value })}/>
 				<!-- TODO: link to merge request -->
 			</div>
 			<Dialog.Root bind:open={show_resolve_menu}>
@@ -187,7 +173,7 @@
 					<Dialog.Header>
 						<Dialog.Title>Close {data.task.title}</Dialog.Title>
 						<Dialog.Description>
-							<Select label="Close as" comparator={(a, b) => a === b} values={RESOLUTION_METHODS} bind:value={close_as}/>
+							<Select label="Close as" values={RESOLUTION_METHODS} bind:value={close_as}/>
 						</Dialog.Description>
 					</Dialog.Header>
 					{#if close_as === "Duplicate"}
@@ -211,10 +197,9 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		</div>
-		<LabelSelect/>
+		<LabelSelect value={data.task.labels.map(l => l.id)} labels={data.labels}/>
 		<div class="h-64">
 			<MarkdownEditor
-				bind:value={body}
 				mode="tabs"
 				theme="github"
 				{carta}
@@ -230,27 +215,27 @@
 	<side class="flex flex-col w-96 gap-8 px-6 py-8 border-l bg-neutral-950">
 		<section class="column gap-2">
 			<span class="text-muted-foreground text-sm flex-1">Assignee</span>
-			<Search filter={{ class: "User" }} label="Assignee" bind:value={assignee}/>
+			<Search filter={{ class: "User" }} label="Assignee" value={data.task.assignee?.id} onselect={async (id) => await updateTaskMutation({})({ id: data.task.id, assignee: id })}/>
 		</section>
 		<section class="column gap-2">
 			<div class="gallery gap-2 w-full">
 				<div class="column gap-2 flex-1">
 					<span class="text-muted-foreground text-sm">Status</span>
-					<Select comparator={(a, b) => a.id === b.id} values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s, icon: STATES.find(state => state.value === s.state)?.icon ?? Star }) )} bind:value={status} />
+					<Select values={data.statuses.filter(s => s.state !== "Resolved").map(s => ({ label: s.name, value: s.id, icon: STATES.find(state => state.value === s.state)?.icon }) )} value={data.task.status?.id} onSelect={async (status) => await updateTaskMutation({})({ id: data.task.id, status })}/>
 				</div>
 				<div class="column gap-2 flex-1">
 					<span class="text-muted-foreground text-sm">Priority</span>
-					<Select comparator={(a, b) => a === b} values={PRIORITIES} bind:value={priority}/>
+					<Select values={PRIORITIES} value={data.task.priority} onSelect={async (priority) => await updateTaskMutation({})({ id: data.task.id, priority })}/>
 				</div>
 			</div>
 			<div class="gallery gap-2 w-full">
 				<div class="column gap-2 flex-1">
 					<span class="text-muted-foreground text-sm">Effort</span>
-					<Select comparator={(a, b) => a === b} values={EFFORTS} bind:value={effort}/>
+					<Select values={EFFORTS} value={data.task.effort} onSelect={async (effort) => await updateTaskMutation({})({ id: data.task.id, effort })}/>
 				</div>
 				<div class="column gap-2 flex-1">
 					<span class="text-muted-foreground text-sm">Value</span>
-					<Select comparator={(a, b) => a === b} values={VALUES} bind:value={value}/>
+					<Select values={VALUES} value={data.task.value} onSelect={async (value) => await updateTaskMutation({})({ id: data.task.id, value })}/>
 				</div>
 			</div>
 		</section>

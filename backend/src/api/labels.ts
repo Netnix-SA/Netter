@@ -23,9 +23,7 @@ export const labels = (db: Surreal) => new Elysia({ prefix: "/labels", tags: ["L
 })
 
 .get("", async () => {
-	const results = await db.query<[Label[]]>(surql`SELECT * FROM Label WHERE !owner;`);
-
-	const labels = results[0];
+	const [labels] = await db.query<[Label[]]>(surql`SELECT * FROM Label WHERE !owner;`);
 
 	return labels.map(map);
 }, {

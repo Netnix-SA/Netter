@@ -260,10 +260,16 @@
 	<Dialog.Content>
 		{#if task.value !== null}
 		<Dialog.Header>
-			<Dialog.Title class="gallery gap-2">
-				Create task
-				<span class="text-muted-foreground text-sm font-normal">{task.project}</span>
-			</Dialog.Title>
+			<div class="gallery gap-2 mr-6">
+				<Dialog.Title class="w-48">
+					Create task
+				</Dialog.Title>
+				{#await client.api.projects.get()}
+					<span class="animate-pulse text-muted-foreground text-sm font-normal">Loading...</span>
+				{:then { data: projects }}
+					<Select comparator={(a, b) => a == b} values={(projects ?? []).map(p => ({ label: p.name, value: p.id }))} bind:value={task.project}/>
+				{/await}
+			</div>
 		</Dialog.Header>
 		<span class="text-sm text-muted-foreground font-regular">Title</span>
 		<input type="text" placeholder="Title" class="text-2xl tactile-text" bind:value={task.value.title}/>

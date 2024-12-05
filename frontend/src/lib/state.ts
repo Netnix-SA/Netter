@@ -207,15 +207,14 @@ export const createProductComponentMutation = createMutation({
 });
 
 export const updateTaskMutation = createMutation({
-	mutationFn: async ({ id, title, body, priority, effort, value, assignee }: { id: string, title: string, body: string, priority?: "Low" | "Medium" | "High", effort: Efforts, value: Value, assignee?: string }) => {
-		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee });
+	mutationFn: async ({ id, title, body, priority, effort, value, assignee, status }: { id: string, title?: string, body?: string, priority?: "Low" | "Medium" | "High", effort?: Efforts, value?: Value, assignee?: string, status?: string }) => {
+		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee, status });
 		if (response.error) {
 			throw new Error();
 		}
 		return { id };
 	},
 	onSuccess: (data) => {
-		toast.success("Updated Task");
 		invalidate('tasks:get');
 		invalidate(data.id);
 	},

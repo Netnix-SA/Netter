@@ -1,19 +1,17 @@
 <script lang="ts">
-	import { STATES } from "@/utils.ts";
+	import { flyAndScale, STATES } from "@/utils.ts";
 	import type { PageData } from "./$types";
 	import { filterTask, groupBy } from "@/utils";
     import Label from "@/components/LabelChip.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Tabs from "$lib/components/ui/tabs";
-    import { Filter, Kanban, List, Plus, Share2 } from "lucide-svelte";
+    import { Filter, Kanban, List, Plus, Share2, XIcon } from "lucide-svelte";
 
 	let { data }: { data: PageData } = $props();
 
 	let filters: ((StateFilter | StatusFilter | TextFilter | LabelFilter) & { display: string })[] = $state([]);
 
 	let tasks = $derived(data.tasks);
-
-	let groups = $derived(data.statuses.map(s => [s, tasks.filter(t => filters.every(filter => filterTask(t, filter, data.statuses)))]));
 
 	import { client, commands } from "@/state";
     import { onMount } from "svelte";
@@ -51,6 +49,9 @@
     import Filters from "@/components/filters/Filters.svelte";
     import { task } from "@/global.svelte.ts";
     import Search from "@/components/Search.svelte";
+    import { blur } from "svelte/transition";
+    import { expoInOut, quartInOut, quintIn } from "svelte/easing";
+    import Separator from "@/components/ui/separator/separator.svelte";
 
 	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
 	const nodes: Writable<Node[]> = writable([]);
@@ -83,6 +84,8 @@
 	});
 
 	const snapGrid: [number, number] = [25, 25];
+
+	let selected_tasks = $state([]);
 </script>
 
 <svelte:head>
@@ -161,7 +164,7 @@
 		</div>
 	</div>
 	{#if view === "list"}
-		<TaskList groups={groups} labels={data.labels} users={data.users} statuses={data.statuses} bind:draft_task={task.value}/>
+		<TaskList {tasks} labels={data.labels} users={data.users} statuses={data.statuses} bind:draft_task={task.value} onselect={(id) => selected_tasks = [...selected_tasks, id]}/>
 	{:else if view === "kanban"}
 		<div id="arena" class="p-2 flex gap-4 flex-1">
 			{#each groups as [grouper, tasks]}
@@ -215,3 +218,19 @@
 	</SvelteFlow>
 	{/if}
 </div>
+
+{#if selected_tasks.length > 0}
+<div class="absolute left-auto bottom-8 w-96 h-10 header-background rounded-full gallery pl-4" transition:flyAndScale>
+	<div class="flex-1 text-xs">
+		<span class="tactile-text">
+			{selected_tasks.length} tasks selected
+		</span>
+		<button class="px-2 border-l">
+			Set as tackling
+		</button>
+	</div>
+	<button class="text-white frame w-10 h-full" onclick={() => selected_tasks = []}>
+		<XIcon class="size-4"/>
+	</button>
+</div>
+{/if}
