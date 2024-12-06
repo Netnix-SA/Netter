@@ -87,8 +87,6 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 .get("/:id/components", async ({ params: { id } }) => {
 	const [components] = await db.query<[Component[]]>(surql`${new StringRecordId(id)}->needs->Component.*;`);
 
-	console.log(components);
-
 	return components.map(mapComponent);
 }, {
 	response: t.Array(tComponent),

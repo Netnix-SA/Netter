@@ -407,10 +407,10 @@ export type ToDo = {
 	id: ToDoId,
 	title: string,
 	due: Date,
-	owner: UserId,
 	done: boolean,
 	related: StringRecordId | null,
 	tag: string | null,
+	created: Date,
 };
 
 // A milestone represent a point in a project where some target are expected to be achived.

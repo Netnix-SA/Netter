@@ -47,9 +47,7 @@
 		</div>
 		<ul class="flex-1">
 			{#each data.todos as todo}
-				<li class="border-b h-10" transition:blur>
-					<ToDoLine {todo}/>
-				</li>
+				<ToDoLine {todo}/>
 			{:else}
 				<div class="frame size-full">
 					<span class="text-sm italic text-muted-foreground/50">

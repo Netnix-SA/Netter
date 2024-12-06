@@ -9,7 +9,10 @@
 </header>
 <main class="flex-1 w-full">
 	<div class="flex-1 p-24 column gap-4">
-		<input type="text" class="text-4xl tactile-text font-bold" value={data.component.name}/>
+		<div class="column">
+			<span class="text-sm text-muted-foreground mb-2">{data.component.type}</span>
+			<input type="text" class="text-5xl tactile-text font-semibold border-0 p-0" value={data.component.name}/>
+		</div>
 		<textarea type="text" class="tactile-text" value={data.component.description}></textarea>
 	</div>
 </main>

@@ -23,9 +23,9 @@
 			{data.product.name}
 		</h1>
 		{#each CLASSES["Product"].links as { label, url }}
-		<div class="rounded item-background h-6 min-w-12 px-2 frame">
-			<a href={`${$page.url}/${label.toLowerCase()}`} class="text-xs text-center tactile-text">{label}</a>
-		</div>
+		<a href={`${$page.url}/${label.toLowerCase()}`} class="rounded item-background h-6 min-w-12 px-2 frame">
+			<span class="text-xs text-center tactile-text">{label}</span>
+		</a>
 		{/each}
 	</div>
 	<DropdownMenu.Root>

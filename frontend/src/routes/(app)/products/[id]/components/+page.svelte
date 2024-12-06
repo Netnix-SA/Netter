@@ -8,6 +8,7 @@
 	} from "$lib/components/ui/data-table/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
     import { createProductComponentMutation, createProductFeatureMutation } from "@/state";
+    import { goto } from "$app/navigation";
 	
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -64,9 +65,9 @@
 				</Table.Row>
 				{/each}
 			</Table.Header>
-			<Table.Body>
+			<Table.Body class="leading-3">
 				{#each table.getRowModel().rows as row (row.id)}
-				<Table.Row data-state={row.getIsSelected() && "selected"}>
+				<Table.Row>
 					{#each row.getVisibleCells() as cell (cell.id)}
 					<Table.Cell>
 						<FlexRender

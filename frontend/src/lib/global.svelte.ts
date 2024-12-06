@@ -71,3 +71,5 @@ function createTask(default_status: { id: string }) {
 }
 
 export const task = createTask();
+
+export const confetti = $state({ key: null });

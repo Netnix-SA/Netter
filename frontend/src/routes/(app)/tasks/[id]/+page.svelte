@@ -187,7 +187,7 @@
 				</DialogSelect>
 			</div>
 			{#await data.related}
-				Loading related tasks...
+				Loading related...
 			{:then related}
 				<div class="column h-24 overflow-scroll">
 					{#each related as relative}

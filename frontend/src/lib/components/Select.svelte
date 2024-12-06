@@ -14,10 +14,6 @@
 	}: { variant?: "regular" | "small" | "icon", placeholder?: string, values: SelectEntry<string>[], value: string | undefined, onSelect: (v: string | undefined) => void } = $props();
 
 	let internal: SelectEntry<string> | undefined = $state(values.find(v => v.value === value));
-
-	$effect(() => {
-		value = internal?.value;
-	});
 </script>
 
 {#snippet text()}
@@ -38,7 +34,7 @@
 	<Select.Content>
 		{#each values as entry}
 			{@const Icon = entry.icon}
-			<Select.Item value={entry.value} label={entry.label} onclick={() => { internal = entry; onSelect(entry.value); }}>
+			<Select.Item value={entry.value} label={entry.label} onclick={() => { internal = entry; value = entry.value; onSelect(entry.value); }}>
 				<Icon class="mr-2 size-4"/>
 				{entry.label}
 			</Select.Item>
@@ -66,7 +62,7 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
 		{#each values as entry}
-			<DropdownMenu.Item onclick={() => { internal = entry; }}>
+			<DropdownMenu.Item onclick={() => { internal = entry; value = entry.value; onSelect(entry.value); }}>
 				<CheckIcon class={cn("size-4", value !== entry.value && "text-transparent" )}/>
 				{@const EntryIcon = entry.icon}
 				<EntryIcon class="size-4 mr-2"/> {entry.label}

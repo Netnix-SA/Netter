@@ -376,7 +376,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		ws.publish("EVENT:Connection", { message: "Connected to Netter." });
 	},
 	message(ws, message) {
-
 		console.log(message);
 	},
 })

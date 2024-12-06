@@ -49,7 +49,12 @@
 	<Popover.Trigger bind:ref={triggerRef}>
 		{#snippet child({ props })}
 			<Button {...props} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
-				{entries.find(e => e.value == value)?.label ?? placeholder}
+				{@const entry = entries.find(e => e.value == value)}
+				{@const Icon = entry?.icon}
+				<div class="gallery flex-1">
+					<Icon class="size-4 mr-2"/>
+					{entry?.label ?? placeholder}
+				</div>
 				<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 			</Button>
 		{/snippet}

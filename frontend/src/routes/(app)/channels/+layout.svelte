@@ -22,7 +22,7 @@
 <div class="flex-1 flex flex-col w-full">
 	<main class="flex-1 flex">
 		<div id="channels" class="w-72 flex flex-col gap-2 border-r">
-			<ul class="">
+			<ul class="size-full">
 				{#each data.channels as channel(channel.id)}
 				<li class="gallery px-4 h-10 border-b" animate:flip in:blur>
 					<ContextMenu.Root>
@@ -36,6 +36,12 @@
 						</ContextMenu.Content>
 					</ContextMenu.Root>
 				</li>
+				{:else}
+				<div class="frame size-full">
+					<span class="text-sm italic text-muted-foreground/50">
+						No channels yet
+					</span>
+				</div>
 				{/each}
 			</ul>
 		</div>

@@ -412,6 +412,16 @@ export const CLASSES: { [key in Classes]: any } = {
 		}],
 		actions: [
 			{
+				label: "Features",
+				icon: DiamondPlus,
+				action: (queryClient: QueryClient, id: string) => goto(`/products/${id}/features`),
+			},
+			{
+				label: "Components",
+				icon: Blocks,
+				action: (queryClient: QueryClient, id: string) => goto(`/products/${id}/components`),
+			},
+			{
 				label: "Create related ToDo",
 				icon: SquareCheckBig,
 				action: (queryClient: QueryClient, id: string) => { todo.value = { related: { id, title: "" } } },
@@ -514,6 +524,7 @@ export const color_to_class = (u: "text" | "border" | "bg", color: Colors) => {
 		case "Red/Light": return `text-red-400`;
 		case "Blue/Light": return `text-blue-400`;
 		case "Purple/Light": return `text-purple-400`;
+		case "Yellow/Light": return `text-yellow-300`;
 		default: return `text-gray-400`;
 	}
 };

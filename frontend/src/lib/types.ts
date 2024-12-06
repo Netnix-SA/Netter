@@ -32,6 +32,7 @@ export type Colors =
 	| "Orange/Light" | "Orange/Dark"
 	| "Green/Light"  | "Green/Dark"
 	| "Red/Light"    | "Red/Dark"
+	| "Yellow/Light" | "Yellow/Dark"
 	| "Blue/Light"   | "Blue/Dark"
 	| "Purple/Light" | "Purple/Dark"
 	| "Gray/Light"   | "Gray/Dark"
@@ -372,4 +373,4 @@ export type SharePointIntegration = {
 	type: "SharePoint",
 };
 
-export type Classes = "Project" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component" | "Feature" | "Repository" | "Channel" | "View" | "Application" | "Component" | "Bug";
+export type Classes = "Project" | "ToDo" | "User" | "Team" | "Task" | "Product" | "Objective" | "Component" | "Feature" | "Repository" | "Channel" | "View" | "Application" | "Component" | "Bug";

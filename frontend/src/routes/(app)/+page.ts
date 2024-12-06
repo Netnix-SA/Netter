@@ -9,7 +9,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		throw error(404, "Could not load tasks!");
 	}
 
-	const { data: todos } = await client.api.users.me.todos.get({ query: { resolved: false } });
+	const { data: todos } = await client.api.users.me.todos.get({});
 
 	if (!todos) {
 		throw error(404, "Could not load todos!");

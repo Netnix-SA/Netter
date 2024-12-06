@@ -109,9 +109,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 })
 
 .get("/me/todos", async ({ query: { resolved }, user }) => {
-	const results = await db.query<[ToDo[]]>("SELECT * FROM ToDo WHERE owner == $owner AND done == $resolved;", { owner: new StringRecordId(user.sub), resolved });
-
-	const todos = results[0];
+	const [todos] = await db.query<[ToDo[]]>(`SELECT * FROM $owner->has->ToDo ${resolved ? "WHERE done == $resolved" : ""};`, { owner: new StringRecordId(user.sub), resolved });
 
 	return todos.map(mapToDo);
 }, {
@@ -122,7 +120,8 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 })
 
 .post("/me/todos", async ({ body, user }) => {
-	await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, owner: new StringRecordId(user.sub), due: null, done: false });
+	const todo = await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, due: null, done: false, created: new Date() });
+	await db.query("RELATE $user->has->$todo;", { user: new StringRecordId(user.sub), todo: todo.id });
 }, {
 	body: tToDoPost,
 	detail: {

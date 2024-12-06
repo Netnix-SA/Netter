@@ -17,8 +17,6 @@ export const components = (db: Surreal) => new Elysia({ prefix: "/components", t
 .get("/:id", async ({ params: { id } }) => {
 	const results = await db.query<[Component[]]>("SELECT * FROM Component WHERE id == $id;", { id: new StringRecordId(id) });
 
-	console.log(id);
-
 	const components = results[0];
 
 	const component = components[0];

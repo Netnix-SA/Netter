@@ -1,7 +1,7 @@
 import { treaty } from "@elysiajs/eden";
 import { writable } from "svelte/store";
 import type { App } from "../../../backend/src/api";
-import { task, todo } from "./global.svelte.ts";
+import { confetti, task, todo } from "./global.svelte.ts";
 import { toast } from "svelte-sonner";
 import { goto, invalidate } from "$app/navigation";
 import { createMutation } from "./query";
@@ -338,6 +338,26 @@ export const createToDoMutation = createMutation({
 		todo.value = null;
 	},
 	onError: onError("Failed to create ToDo"),
+});
+
+export const updateToDoMutation = createMutation({
+	mutationFn: async ({ id, title, done }: { id: string, title?: string, done?: boolean }) => {
+		const response = await client.api.todos({ id }).patch({ title, done });
+		if (done) {
+			console.log("Confetti");
+			confetti.key = Math.random();
+		}
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Updated ToDo");
+		invalidate('todos:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update ToDo"),
 });
 
 export const updateProductMutation = createMutation({
