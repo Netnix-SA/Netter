@@ -8,4 +8,4 @@
 - child features
 - events
 - add tackling task to feature from context menu
-- add needed component to feature
+- remind user of related todo when navigating to related item

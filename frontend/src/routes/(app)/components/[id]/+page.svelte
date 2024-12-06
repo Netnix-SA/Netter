@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { updateComponentMutation } from "@/state";
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();
@@ -11,7 +12,7 @@
 	<div class="flex-1 p-24 column gap-4">
 		<div class="column">
 			<span class="text-sm text-muted-foreground mb-2">{data.component.type}</span>
-			<input type="text" class="text-5xl tactile-text font-semibold border-0 p-0" value={data.component.name}/>
+			<input type="text" class="text-5xl tactile-text font-semibold border-0 p-0" value={data.component.name} onblur={async (e) => await updateComponentMutation({})({ id: data.component.id, name: e.target.value })}/>
 		</div>
 		<textarea type="text" class="tactile-text" value={data.component.description}></textarea>
 	</div>

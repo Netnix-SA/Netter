@@ -121,12 +121,18 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	response: t.Array(tComponent),
 })
 
-.post("/:id/needs", async ({ params: { id }, body }) => {
+.post("/:id/components", async ({ params: { id }, body }) => {
 	const feature_id = new StringRecordId(id);
 
 	await db.query(surql`RELATE ${feature_id}->needs->${new StringRecordId(body.id)};`);
 }, {
 	body: t.Object({ id: tComponentId }),
+})
+
+.delete("/:id/components/:cid", async ({ params: { id, cid } }) => {
+	await db.query(surql`DELETE needs WHERE in = ${new StringRecordId(id)} and out = ${new StringRecordId(cid)};`);
+}, {
+	params: t.Object({ id: tFeatureId, cid: tComponentId }),
 })
 
 .get("/:id/statistics", async ({ params: { id } }) => {

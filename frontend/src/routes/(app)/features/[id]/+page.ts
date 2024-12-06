@@ -23,6 +23,8 @@ export const load: PageLoad = async ({ params: { id }, depends }) => {
 
 	const { data: components } = await client.api.features({ id }).components.get();
 
+	depends("components:get");
+
 	if (components === null) {
 		throw error(404, "Could not load components!");
 	}

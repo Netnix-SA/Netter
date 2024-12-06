@@ -122,6 +122,10 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 .post("/me/todos", async ({ body, user }) => {
 	const todo = await db.create<Omit<ToDo, "id">>("ToDo", { title: body.title, due: null, done: false, created: new Date() });
 	await db.query("RELATE $user->has->$todo;", { user: new StringRecordId(user.sub), todo: todo.id });
+	
+	if (body.related) {
+		await db.query("RELATE $todo->related->$other;", { todo: todo.id, other: new StringRecordId(body.related) });
+	}
 }, {
 	body: tToDoPost,
 	detail: {

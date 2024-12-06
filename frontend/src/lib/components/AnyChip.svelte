@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CLASSES, cn, color_to_class } from "@/utils";
+	import { CLASSES, cn, color_to_class, flyAndScale } from "@/utils";
 	import { MessageCircleQuestion } from "lucide-svelte";
 
 	import * as ContextMenu from "$lib/components/ui/context-menu";
@@ -7,6 +7,7 @@
     import { client } from "@/state";
     import type { Classes } from "@/types";
     import type { Component } from "svelte";
+    import { flip } from "svelte/animate";
 
 	let { id, pinned = [], context }: { id: string, pinned: string[], context?: { name: string, actions: { label: string, icon: Component, action: any }[] } } = $props();
 
@@ -24,7 +25,7 @@
 			case "Application": return `/applications/${id}`;
 			case "Bug": return `/bugs/${id}`;
 			case "Objective": return `/objectives/${id}`;
-			case "Component": return `/component/${id}`;
+			case "Component": return `/components/${id}`;
 			default: return "/";
 		}
 	}
@@ -36,7 +37,7 @@
 	let link = $derived(clss !== undefined ? buildUrl(clss, id) : "/");
 </script>
 
-<a class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all" href={link}>
+<a class="gallery gap-2 h-10 rounded-md border px-2 bg-background hover:bg-accent hover:text-accent-foreground hover:shadow-2xl transition-all" href={link} transition:flyAndScale>
 	<ContextMenu.Root>
 		<ContextMenu.Trigger class="flex-1 gap-2 py-2 gallery">
 			{@const Icon = clss !== undefined ? CLASSES[clss].icon : MessageCircleQuestion}

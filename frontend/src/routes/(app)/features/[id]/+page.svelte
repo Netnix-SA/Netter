@@ -7,7 +7,7 @@
     import AnyChip from "@/components/AnyChip.svelte";
 	import { blur } from "svelte/transition";
     import { onNavigate } from "$app/navigation";
-    import { addTaskTackledMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
+    import { addNeededComponentMutation, addTaskTackledMutation, removeNeededComponentMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
     import { task } from "@/global.svelte.ts";
     import { Hammer } from "lucide-svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
@@ -79,13 +79,16 @@
 			<span class="text-sm text-muted-foreground">Value</span>
 			<Select values={VALUES} bind:value={feature.value}/>
 		</section>
-		<section class="column gap-2">
+		<section class="column gap-2 h-44">
 			<div class="gallery">
 				<span class="text-sm text-muted-foreground flex-1">Components</span>
+				<DialogSelect filter={{ class: "Component", exclude: data.components.map(f => f.id) }} onselect={async (id) => await addNeededComponentMutation({})({ id: data.feature.id, component_id: id })}>
+					<span class="text-muted-foreground/50 hover:text-primary transition-colors frame text-xs">Add</span>
+				</DialogSelect>
 			</div>
 			<div class="column flex-1 overflow-y-scroll gap-2">
-				{#each data.components as component}
-					<AnyChip id={component.id}/>
+				{#each data.components as component(component.id)}
+					<AnyChip id={component.id} context={{ name: "Needed by", actions: [{ label: "Remove needed component", icon: Hammer, action: (ctx, id) => removeNeededComponentMutation(ctx)({ id: data.feature.id, component_id: id }) }] }}/>
 				{:else}
 					<div class="frame h-24">
 						<span class="text-muted-foreground/50 text-sm italic">No related components</span>
@@ -109,7 +112,7 @@
 			</div>
 			<!-- <textarea class="flex-1 w-full px-2 border border-transparent hover:border-neutral-500 min-h-[8lh] rounded bg-transparent transition-all" readonly>{data.feature.description}</textarea> -->
 		</section>
-		<section class="column gap-2">
+		<section class="column gap-2 h-44">
 			<div class="gallery">
 				<span class="text-muted-foreground text-sm flex-1">
 					Tackled by

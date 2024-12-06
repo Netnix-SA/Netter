@@ -3,7 +3,7 @@ import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 
-import type { Account, BugId, ChannelId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
+import type { Account, BugId, ChannelId, ComponentId, FeatureId, LabelId, ProductId, ProjectId, TeamId, User, UserId } from "../db/types";
 
 import { users } from "./users";
 import { teams } from "./teams";
@@ -381,7 +381,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 })
 
 .get("", async ({ query: { text, class: clss, exclude, suggest } }) => {
-	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[]]>(
+	const results = await db.query<[{ id: UserId, title: string }[], { id: ProjectId, title: string }[], { id: TeamId, title: string }[], { id: LabelId, title: string }[], { id: BugId, title: string }[], { id: ChannelId, title: string }[], { id: ProductId, title: string }[], { id: FeatureId, title: string }[], { id: ComponentId, name: string }[]]>(
 		`SELECT id, full_name as title FROM User ${suggest == "User" ? "LIMIT 5" : "WHERE full_name @@ $text"};
 		SELECT id, name as title FROM Project WHERE name @@ $text;
 		SELECT id, name as title FROM Team WHERE name @@ $text;
@@ -389,7 +389,8 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text;
 		SELECT id, name as title FROM Channel WHERE name @@ $text;
 		SELECT id, name as title FROM Product WHERE name @@ $text;
-		SELECT id, name as title FROM Feature WHERE name @@ $text;`,
+		SELECT id, name as title FROM Feature WHERE name @@ $text;
+		SELECT id, name as title FROM Component WHERE name @@ $text;`,
 		{ text, suggest }
 	);
 

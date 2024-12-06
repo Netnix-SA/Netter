@@ -206,6 +206,21 @@ export const createProductComponentMutation = createMutation({
 	onError: onError("Failed to add component to product"),
 });
 
+export const updateComponentMutation = createMutation({
+	mutationFn: async ({ id, name, description, type }: { id: string, name?: string, description?: string, type?: string }) => {
+		const response = await client.api.components({ id }).patch({ name, description, type });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		invalidate('components:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to update component"),
+});
+
 export const updateTaskMutation = createMutation({
 	mutationFn: async ({ id, title, body, priority, effort, value, assignee, status, labels }: { id: string, title?: string, body?: string, priority?: "Low" | "Medium" | "High", effort?: Efforts, value?: Value, assignee?: string, status?: string, labels?: { id: string }[] }) => {
 		const response = await client.api.tasks({ id }).patch({ title, body, priority, effort, value, assignee, status, labels });
@@ -437,6 +452,38 @@ export const addTaskTackledMutation = createMutation({
 		invalidate(data.id);
 	},
 	onError: onError("Failed to add tackled to task"),
+});
+
+export const addNeededComponentMutation = createMutation({
+	mutationFn: async ({ id, component_id }: { id: string, component_id: string }) => {
+		const response = await client.api.features({ id }).components.post({ id: component_id });
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Added component to feature");
+		invalidate('components:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to add component to feature"),
+});
+
+export const removeNeededComponentMutation = createMutation({
+	mutationFn: async ({ id, component_id }: { id: string, component_id: string }) => {
+		const response = await client.api.features({ id }).components({ cid: component_id }).delete();
+		if (response.error) {
+			throw new Error();
+		}
+		return { id };
+	},
+	onSuccess: (data) => {
+		toast.success("Removed component from feature");
+		invalidate('components:get');
+		invalidate(data.id);
+	},
+	onError: onError("Failed to remove component from feature"),
 });
 
 export const removeChildTaskMutation = createMutation({
