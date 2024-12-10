@@ -28,6 +28,11 @@ DEFINE TABLE requires TYPE RELATION; -- Task requires Task
 DEFINE TABLE blocks TYPE RELATION; -- Task blocks Task
 DEFINE TABLE pins TYPE RELATION; -- User pins *
 DEFINE TABLE has TYPE RELATION; -- User has ToDos
+DEFINE TABLE features TYPE RELATION; -- Product features Feature
+DEFINE TABLE schedules TYPE RELATION; -- Project schedules Objective
+DEFINE TABLE belongs TYPE RELATION; -- Task belongs to Project
+DEFINE TABLE assigned TYPE RELATION; -- User assigned Task
+DEFINE TABLE regards TYPE RELATION; -- ToDo regards *
 
 DEFINE ANALYZER title_analyzer TOKENIZERS blank, class FILTERS lowercase, edgengram(1,16);
 DEFINE ANALYZER body_analyzer TOKENIZERS blank, class FILTERS lowercase, snowball(english);

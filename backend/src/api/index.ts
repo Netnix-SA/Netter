@@ -23,6 +23,7 @@ import { products } from "./products";
 import { statuses } from "./statuses";
 import { messages } from "./messages";
 import { objectives } from "./objectives";
+import { docgen } from "./docgen";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import type { Events } from "../events";
 import { tClasses } from "./schemas";
@@ -387,7 +388,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 		SELECT id, name as title FROM Team WHERE name @@ $text;
 		SELECT id, title FROM Task ${suggest == "Task" ? "LIMIT 5" : "WHERE title @@ $text"};
 		SELECT id, title FROM Bug WHERE title @@ $text || description @@ $text;
-		SELECT id, name as title FROM Channel WHERE name @@ $text;
+		SELECT id, name as title FROM Channel WHERE name @@ $text AND target IS NULL;
 		SELECT id, name as title FROM Product WHERE name @@ $text;
 		SELECT id, name as title FROM Feature WHERE name @@ $text;
 		SELECT id, name as title FROM Component WHERE name @@ $text;`,
@@ -474,6 +475,7 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 .use(repositories(db))
 .use(merge_requests(db))
 .use(extensions(db))
+.use(docgen(db))
 
 .use(swagger({ path: "/docs", version: "0.0.1", documentation: { info: { title: "Netter API", version: "0.0.1", description: "Documentation for the Netter REST API" } } }))
 ;

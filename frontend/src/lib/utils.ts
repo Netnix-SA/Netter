@@ -141,7 +141,7 @@ export function patch(node: HTMLInputElement, { value, action, time }: { value: 
 	};
 }
 
-import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, Copy, DiamondPlus, Flag, FlagIcon, Flame, Gift, GitBranch, GitPullRequestArrow, HammerIcon, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SquareCheck, SquareCheckBig, SquareX, Sunset, Timer, Trash, User, Users, View, Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-svelte";
+import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, Blocks, Bug, CalendarDays, CalendarFold, Circle, CircleArrowUp, CircleCheck, CircleHelp, CircleX, Clock3, ComponentIcon, ComputerIcon, Copy, DatabaseIcon, DiamondPlus, Flag, FlagIcon, Flame, Gift, GitBranch, GitPullRequestArrow, HammerIcon, Hourglass, Inbox, MessagesSquare, Notebook, OctagonAlert, Pin, SignalHigh, SignalLow, SignalMedium, SignalMediumIcon, SparkleIcon, SquareCheck, SquareCheckBig, SquareX, Sunset, TableIcon, Timer, Trash, User, Users, View, ViewIcon, WholeWordIcon, Wifi, WifiHigh, WifiIcon, WifiLow, WifiZero } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Efforts, Priorities, State, Value } from "./types";
 import { addTaskTackledMutation, createProductFeatureMutation, deleteFeatureMutation, deleteProductMutation, deleteProjectMutation, deleteTaskMutation, deleteToDoMutation, pinItemMutation } from "./state";
@@ -262,6 +262,41 @@ export const EFFORTS: SelectEntry<Efforts>[] = [
         value: "Week", label: "Week",
         icon: EFFORTS_ICONS["Week"],
     },
+];
+
+export const COMPONENTS: SelectEntry<"Application" | "Service" | "API" | "HTTP Route" | "UI Component" | "UI Page" | "Database Table" | "Database">[] = [
+    {
+        value: "Application", label: "Application",
+        icon: ComputerIcon,
+    },
+    {
+        value: "Service", label: "Service",
+        icon: SignalMediumIcon,
+    },
+    {
+        value: "API", label: "API",
+        icon: WifiIcon,
+    },
+    {
+        value: "HTTP Route", label: "HTTP Route",
+        icon: WholeWordIcon,
+    },
+    {
+        value: "UI Component", label: "UI Component",
+        icon: SparkleIcon,
+    },
+	{
+        value: "UI Page", label: "UI Page",
+        icon: ViewIcon,
+    },
+    {
+        value: "Database Table", label: "Database Table",
+        icon: TableIcon,
+    },
+    {
+        value: "Database", label: "Database",
+        icon: DatabaseIcon,
+	},
 ];
 
 export const RESOLUTION_METHODS = [
