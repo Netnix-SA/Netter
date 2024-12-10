@@ -16,7 +16,6 @@
     import { DotsHorizontal } from "svelte-radix";
 
     import { buttonVariants } from "@/components/ui/button";
-    import { onMount } from "svelte";
     import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, commands, removeBlockerTaskMutation, removeChildTaskMutation, removeRelativeTaskMutation, removeTackledMutation, updateTaskMutation } from "@/state";
     import ChannelView from "@/components/ChannelView.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";

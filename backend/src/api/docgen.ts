@@ -10,29 +10,33 @@ export const docgen = (db: Surreal) => new Elysia({ prefix: "/docgen", tags: ["D
 	const collection = {
 		"products": {
 			"Netter": {
-				"features": ["Create project", "Create task", "Assign task", "View project", "View task"],
+				"features": ["Create project", "Create task", "Assign task", "View projects", "View task"],
 			},
 		},
 		"features": {
 			"Create project": {
-				"purpose": "Create a new project",
+				"description": "As a user, I want to create a new project so that I can organize my tasks",
+				"constraints": ["User must be an admin"],
 				"dependencies": []
 			},
 			"Create task": {
-				"purpose": "Create a new task",
-				"dependencies": []
-			},
-			"Assign task": {
-				"purpose": "Assign a task to a user",
+				"description": "As a user, I want to create a new task so that I can track my work",
 				"constraints": ["User must be a member of the project"],
 				"dependencies": []
 			},
-			"View project": {
-				"purpose": "View a project",
+			"Assign task": {
+				"description": "As a user, I want to assign a task to a user so that they can work on it",
+				"constraints": ["User must be a member of the project"],
+				"dependencies": []
+			},
+			"View projects": {
+				"description": "As a user, I want to view a list of project so that I can see what I'm working on",
+				"constraints": ["User must be a member of the project"],
 				"dependencies": []
 			},
 			"View task": {
-				"purpose": "View a task",
+				"description": "As a user, I want to view a task so that I can see what I need to do",
+				"constraints": ["User must be a member of the project"],
 				"dependencies": []
 			},
 		},
@@ -99,8 +103,8 @@ export const docgen = (db: Surreal) => new Elysia({ prefix: "/docgen", tags: ["D
 .get("/gherkin", async () => {
 	const feature = {
 		"name": "Assign task",
-		"purpose": "Assign a task to a user",
-		"constraints": ["User must be a member of the project"],
+		"description": "Assign a task to a user",
+		"constraints": ["User must be a member of the project", "User must be logged in"],
 		"dependencies": []
 	};
 
@@ -112,7 +116,7 @@ export const docgen = (db: Surreal) => new Elysia({ prefix: "/docgen", tags: ["D
 				Your job is to receive a product feature description and generate a Gherkin document that describes the behavior of the feature in plain English and exercise the edge cases and constraints described in the feature.
 				The document should include clear steps that will allow a developer to implement the feature and test it.
 				DON'T RETURN ANYTHING ELSE THAN THE GHERKIN DOCUMENT.
-				DON'T CREATE SCENARIOS THAT DON'T REFER TO FUNCTIONALITY EXPLICITELY ALLOWED OR DENIED IN THE FEATURE DESCRIPTION AND CONSTRAINTS.`,
+				ONLY INCLUDE BEHAVIOUR THAT IS EXPLICITELY MENTIONED IN THE DESCRIPTION OR CONSTRAINTS.`,
 			},
 			{
 				role: "user",

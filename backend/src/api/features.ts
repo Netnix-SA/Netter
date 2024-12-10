@@ -5,7 +5,7 @@ import { map as mapBug } from "./bugs";
 import { map as mapTask } from "./tasks";
 import { map as mapComponent } from "./components";
 import { Surreal, StringRecordId, surql } from "surrealdb";
-import { effort_to_time } from "../utils";
+import { effort_to_time, generate_gherkin } from "../utils";
 
 export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags: ["Features"] })
 
@@ -91,6 +91,20 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	return map(feature);
 }, {
 	response: tFeature,
+})
+
+.get("/:id/gherkin", async ({ params: { id } }) => {
+	const feature = await db.select<Feature>(new StringRecordId(id));
+
+	if (!feature) {
+		throw new NotFoundError("No Feature with that ID exists.");
+	}
+
+	const gherkin = await generate_gherkin(feature);
+
+	return gherkin;
+}, {
+	response: t.String(),
 })
 
 .get("/:id/bugs", async ({ params: { id } }) => {

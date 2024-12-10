@@ -3,25 +3,22 @@
 	import type { PageData } from "./$types";
     import type { Value } from "@/types";
     import Select from "@/components/Select.svelte";
-    import { VALUES } from "@/utils.ts";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+    import { CLASSES, VALUES } from "@/utils.ts";
     import AnyChip from "@/components/AnyChip.svelte";
 	import { blur } from "svelte/transition";
     import { onNavigate } from "$app/navigation";
-    import { addNeededComponentMutation, addTaskTackledMutation, removeNeededComponentMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
+    import { addNeededComponentMutation, addTaskTackledMutation, client, removeNeededComponentMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
     import { task } from "@/global.svelte.ts";
-    import { Hammer } from "lucide-svelte";
+    import { Hammer, TurtleIcon, } from "lucide-svelte";
+	import { DotsHorizontal } from "svelte-radix";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import NumberFlow from "@number-flow/svelte";
+    import { toast } from "svelte-sonner";
 
 	let { data }: { data: PageData } = $props();
 
 	let feature = $state(data.feature);
-
-	onNavigate(async () => {
-		updateFeatureMutation({})(feature);
-	});
-
-	$inspect(feature);
 </script>
 
 <svelte:head>
@@ -34,6 +31,25 @@
 			{data.feature.name}
 		</h1>
 	</div>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="rounded border frame size-6">
+			<DotsHorizontal class="size-4"/>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			<DropdownMenu.Item onclick={async () => { await navigator.clipboard.writeText((await client.api.features({ id: data.feature.id }).gherkin.get()).data ?? "NO CONTENT"); toast("Copied Gherkin to clipboard!"); }}>
+				<TurtleIcon class="size-4 mr-2"/> Gherkin
+			</DropdownMenu.Item>
+			<DropdownMenu.Separator/>
+			{#each CLASSES["Feature"].actions as { label, icon: Icon, action }}
+			{#if label === "Delete"}
+				<DropdownMenu.Separator/>
+			{/if}
+			<DropdownMenu.Item onclick={async () => await action({}, data.feature.id)} class={`${label === "Delete" ? "text-red-400" : ""}`}>
+				<Icon class="size-4 mr-2"/> {label}
+			</DropdownMenu.Item>
+			{/each}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </header>
 <div class="flex-1 w-full flex">
 	<div class="column flex-1 gap-4 px-16 py-24">
