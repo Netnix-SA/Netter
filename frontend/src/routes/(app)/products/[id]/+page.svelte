@@ -6,7 +6,9 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { DotsHorizontal } from "svelte-radix";
     import { CLASSES } from "@/utils.ts";
-    import { updateProductMutation } from "@/state";
+    import { client, updateProductMutation } from "@/state";
+    import { toast } from "svelte-sonner";
+    import { BookOpenTextIcon } from "lucide-svelte";
 
     let { data }: { data: PageData } = $props();
 
@@ -33,6 +35,10 @@
 			<DotsHorizontal class="size-4"/>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
+			<DropdownMenu.Item onclick={() => toast.promise(client.api.products({ id: data.product.id }).brief.get().then(e => e.data ?? "NO CONTENT").then(e => navigator.clipboard.writeText(e)), { loading: "Generating product brief...", success: "Copied product brief to clipboard!", error: "Failed to generate product brief." }) }>
+				<BookOpenTextIcon class="size-4 mr-2"/> Brief
+			</DropdownMenu.Item>
+			<DropdownMenu.Separator/>
 			{#each CLASSES["Product"].actions as { label, icon: Icon, action }}
 			{#if label === "Delete"}
 				<DropdownMenu.Separator/>

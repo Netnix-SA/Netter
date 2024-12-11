@@ -566,7 +566,6 @@ export const color_to_class = (u: "text" | "border" | "bg", color: Colors) => {
 
 import { crossfade } from 'svelte/transition';
 import { quintOut } from 'svelte/easing';
-import { ArrowRight } from "svelte-radix";
 
 export const [send, receive] = crossfade({
 	duration: (d) => Math.sqrt(d * 200),

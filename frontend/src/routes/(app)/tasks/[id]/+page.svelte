@@ -3,11 +3,11 @@
 
 	import { Carta, MarkdownEditor } from "carta-md";
 	import DOMPurify from "isomorphic-dompurify";
-
 	import "carta-md/default.css";
+	import "$lib/assets/github-carta.css";
+
 	import { CLASSES, EFFORTS, PRIORITIES, RESOLUTION_METHODS, STATES, VALUES } from "@/utils.ts";
 
-	import "$lib/assets/github-carta.css";
 	import Select from "@/components/Select.svelte";
 
     import Button from "@/components/ui/button/button.svelte";
@@ -30,6 +30,7 @@
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		rendererDebounce: 10,
+		theme: "nord",
 	});
 
 	let add_update: boolean = $state(false);
@@ -135,13 +136,7 @@
 			</Dialog.Root>
 		</div>
 		<LabelSelect value={data.task.labels.map(l => l.id)} labels={data.labels} onSelect={async (id) => await updateTaskMutation({})({ id: data.task.id, labels: [...data.task.labels, { id }] })} onRemove={async (id) => await updateTaskMutation({})({ id: data.task.id, labels: data.task.labels.filter(l => l.id !== id) })}/>
-		<div class="h-64">
-			<MarkdownEditor
-				mode="tabs"
-				theme="github"
-				{carta}
-			/>
-		</div>
+		<MarkdownEditor mode="tabs" theme="github" {carta}/>
 		<div id="comments" class="column gap-1">
 			<span class="text-muted-foreground text-sm">Comments</span>
 			<div class="h-72 rounded-lg border column overflow-hidden">

@@ -56,3 +56,44 @@ export const generate_gherkin = async (feature: any) => {
 
 	return doc;
 };
+
+export const generate_product_brief = async (collection: any) => {
+	const groq = {
+		messages: [
+			{
+				role: "system",
+				content: `You are an expert functional analyst.
+				Your job is to receive a collection of products, their features and components and generate a Markdown document that documents
+				the purpose of these products, what their features are, what they do and what components these products and features depend on.
+				The document should be structured in a way that is easy to read for non-technical users who are not familiar with the products.
+				DON'T RETURN ANYTHING ELSE THAN THE MARKDOWN DOCUMENT.
+				DON'T INCLUDE ANY FUNCTIONALITY THAT IS NOT DESCRIBED IN THE COLLECTION.`,
+			},
+			{
+				role: "user",
+				content: JSON.stringify(collection),
+			},
+		],
+		model: "llama3-8b-8192",	
+		temperature: 0.5,
+		max_tokens: 2048,
+		top_p: 1,
+		stop: null,
+		stream: false,
+	};
+
+	const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+		},
+		body: JSON.stringify(groq),
+	});
+
+	const json = await response.json();
+
+	const doc = json.choices[0].message.content;
+
+	return doc;
+};

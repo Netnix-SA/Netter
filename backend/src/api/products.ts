@@ -4,6 +4,7 @@ import { type Application, type Component, type Feature, type Product } from "..
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
 import { map as mapComponent } from "./components";
+import { generate_product_brief } from "../utils";
 
 export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
@@ -58,6 +59,32 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	return map(product);
 }, {
 	response: tProduct,
+})
+
+.get("/:id/brief", async ({ params: { id } }) => {
+	const product = await db.select<Product>(new StringRecordId(id));
+
+	if (!product) {
+		throw new NotFoundError("No Product with that ID exists.");
+	}
+
+	const [features] = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)};`);
+
+	const p = map(product);
+
+	p.features = features.map(mapFeature);
+
+	const [components] = await db.query<[Component[]]>(surql`${new StringRecordId(id)}->needs->Component.*;`);
+
+	p.components = components.map(mapComponent);
+
+	const brief = await generate_product_brief({
+		products: [p],
+	});
+
+	return brief;
+}, {
+	response: t.String(),
 })
 
 .patch("/:id", async ({ params: { id }, body }) => {

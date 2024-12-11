@@ -25,14 +25,11 @@
     	});
 	}
 
-	let search = $state("");
 	let results: { id: string, title: string, class: Classes }[] = $state([]);
 	let entries: SelectEntry<string>[] = $derived(results.map(r => ({ label: r.title, value: r.id, icon: CLASSES[r.class].icon })));
 
-	let internal: SelectEntry<string> | undefined = $state(undefined);
-
-	async function handleInput(e: Event, { suggest }: { suggest?: string }) {
-		let query = { text: search };
+	async function handleInput(e: string, { suggest }: { suggest?: string }) {
+		let query = { text: e };
 		if (filter?.class) query.class = filter.class;
 		if (filter?.exclude) query.exclude = filter.exclude;
 		if (suggest) query.suggest = suggest;
@@ -40,8 +37,8 @@
 		results = data || [];
 	}
 
-	$effect(() => { // Run query on mount and when filter changes
-		handleInput(new Event("input"), { suggest: !search ? filter?.class : undefined });
+	onMount(async () => {
+		await handleInput("", { suggest: !search ? filter?.class : undefined });
 	});
 </script>
    
@@ -61,7 +58,7 @@
 	</Popover.Trigger>
 	<Popover.Content class="p-0">
 		<Command shouldFilter={false}>
-			<CommandInput placeholder="Start typing to search." oninput={async (e) => { search = e.currentTarget.value; }}/>
+			<CommandInput placeholder="Start typing to search." oninput={async (e) => { await handleInput(e.currentTarget.value, {}); }}/>
 			<CommandEmpty>No results found.</CommandEmpty>
 			<CommandGroup>
 				{#each entries as entry(entry.value)}

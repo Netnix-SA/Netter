@@ -36,7 +36,7 @@
 			<DotsHorizontal class="size-4"/>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
-			<DropdownMenu.Item onclick={async () => { await navigator.clipboard.writeText((await client.api.features({ id: data.feature.id }).gherkin.get()).data ?? "NO CONTENT"); toast("Copied Gherkin to clipboard!"); }}>
+			<DropdownMenu.Item onclick={() => toast.promise(client.api.features({ id: data.feature.id }).gherkin.get().then(e => e.data ?? "NO CONTENT").then(e => navigator.clipboard.writeText(e)), { loading: "Generating feature Gherkin...", success: "Copied Gherkin to clipboard!", error: "Failed to generate feature Gherkin." }) }>
 				<TurtleIcon class="size-4 mr-2"/> Gherkin
 			</DropdownMenu.Item>
 			<DropdownMenu.Separator/>

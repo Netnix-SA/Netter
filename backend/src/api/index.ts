@@ -448,15 +448,6 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	response: t.Object({ id: t.String(), title: t.String() }),
 })
 
-// .resolve({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
-// 	const token = await jwt.verify(auth.value);
-
-// 	if (!token) {
-// 		throw new Error("Invalid token.");
-// 	}
-
-// 	return { id: token.sub };
-// })
 .use(users(db))
 .use(teams(db))
 .use(channels(db, event_queue))
