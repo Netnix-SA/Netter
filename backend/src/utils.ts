@@ -97,3 +97,17 @@ export const generate_product_brief = async (collection: any) => {
 
 	return doc;
 };
+
+export const build_query = ({ select, where, order }: { select: string, where?: string[], order?: `${string} ${'DESC'|'ASC'}` }) => {
+	let query = select;
+
+	if (where && where.length > 0) {
+		query += ` WHERE ${where.join(" AND ")}`;
+	}
+
+	if (order) {
+		query += order;
+	}
+
+	return query;
+};

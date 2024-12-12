@@ -29,7 +29,6 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 		end: null,
 		client: null,
 		status: first_status.id,
-		objectives: [],
 		updates: [],
 	});
 
@@ -163,19 +162,8 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	response: t.Array(tStatus),
 })
 
-// TODO: get components
-// .get("/:id/applications", async ({ params: { id } }) => {
-// 	const results = await db.query<[Application[]]>(surql`SELECT * FROM Application WHERE id IN (SELECT applications FROM Project WHERE id == ${new StringRecordId(id)})[0].applications;`);
-
-// 	const applications = results[0];
-
-// 	return applications.map(mapApplication);
-// }, {
-// 	response: t.Array(tApplication),
-// })
-
 .get("/:id/objectives", async ({ params: { id } }) => {
-	const [objectives] = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}.objectives.id.*;`);
+	const [objectives] = await db.query<[Objective[]]>(surql`${new StringRecordId(id)}->schedules->Objective.*;`);
 
 	return objectives.map(mapObjective);
 }, {
@@ -186,9 +174,8 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 	const [objective] = await db.create<Omit<Objective, "id">>("Objective", { title: body.title, description: body.description, active: true, end: body.end });
 
 	const project_id = new StringRecordId(id);
-	const project = await db.select<Project>(project_id);
 
-	await db.merge(project_id, { objectives: [...project.objectives, { id: objective.id }] });
+	await db.query(surql`RELATE ${project_id}->schedules->${objective.id}`);
 
 	return { id: objective.id.toString() };
 }, {
@@ -269,7 +256,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, status, members, lead, client, end, milestones, updates, objectives }: Project) => {
+export const map = ({ id, name, description, status, members, lead, client, end, milestones, updates, }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -285,6 +272,5 @@ export const map = ({ id, name, description, status, members, lead, client, end,
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
 		updates,
-		objectives: objectives.map(objective => ({ id: objective.id.toString() })),
 	};
 };

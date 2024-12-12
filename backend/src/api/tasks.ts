@@ -344,19 +344,22 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 
 	let task = {};
 
-	if (body.title) { task = { ...task, title: body.title }; }
+	if (body.title) { task.title = body.title };
 
-	if (body.body) { task = { ...task, body: body.body }; }
+	if (body.body) { task.body = body.body };
 
-	if (body.value) { task = { ...task, value: body.value }; }
-	if (body.effort) { task = { ...task, effort: body.effort }; }
-	if (body.priority) { task = { ...task, priority: body.priority }; }
+	if (body.value) { task.value = body.value };
+	if (body.effort) { task.effort = body.effort };
+	if (body.priority) { task.priority = body.priority };
 
-	if (body.assignee) { task = { ...task, assignee: new StringRecordId(body.assignee) }; }
+	if (body.assignee) {
+		await db.query(surql`DELETE FROM assigned WHERE out = ${task_id}`); // Delete potential current assignee
+		await db.query(surql`RELATE ${new StringRecordId(body.assignee)}->assigned->${task_id}`);
+	};
 
-	if (body.status) { task = { ...task, status: { id: new StringRecordId(body.status) } }; }
+	if (body.status) { task.status = { id: new StringRecordId(body.status) } };
 
-	if (body.labels) { task = { ...task, labels: body.labels.map(({ id }) => new StringRecordId(id)) }; }
+	if (body.labels) { task.labels = body.labels.map(({ id }) => new StringRecordId(id)) };
 
 	await db.merge<Task>(task_id, task);
 }, {
@@ -405,11 +408,13 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 });
 
 export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId | undefined, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const [task] = await db.create<Omit<Task, "id">>("Task", { title, body, belongs_to, priority, effort, value, objective: null, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
+	const [task] = await db.create<Omit<Task, "id">>("Task", { title, body, priority, effort, value, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
 
 	if (!task) {
 		throw new Error("Could not create task");
 	}
+
+	await db.query(surql`RELATE ${task.id}->belongs->${belongs_to}`);
 
 	const [channel] = await db.create<Omit<Channel, "id">>("Channel", { target: task.id as RecordId<string>, name: title, subscribers: [] });
 

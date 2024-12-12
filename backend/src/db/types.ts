@@ -311,8 +311,6 @@ export type Project = {
 		body: string,
 	}[],
 
-	objectives: { id: ObjectiveId }[],
-
 	client: Company | null,
 
 	end: Date | null,

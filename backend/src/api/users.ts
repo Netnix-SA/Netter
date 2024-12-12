@@ -124,7 +124,7 @@ export const users = (db: Surreal) => new Elysia({ prefix: "/users", tags: ["Use
 	await db.query("RELATE $user->has->$todo;", { user: new StringRecordId(user.sub), todo: todo.id });
 	
 	if (body.related) {
-		await db.query("RELATE $todo->related->$other;", { todo: todo.id, other: new StringRecordId(body.related) });
+		await db.query("RELATE $todo->regards->$other;", { todo: todo.id, other: new StringRecordId(body.related) });
 	}
 }, {
 	body: tToDoPost,

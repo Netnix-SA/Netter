@@ -4,7 +4,7 @@ import { type Application, type Component, type Feature, type Product } from "..
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapFeature } from "./features";
 import { map as mapComponent } from "./components";
-import { generate_product_brief } from "../utils";
+import { build_query, generate_product_brief } from "../utils";
 
 export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
@@ -12,7 +12,6 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	const product = await db.create<Omit<Product, "id">>("Product", {
 		name, description,
 		created: new Date(),
-		applications: [],
 	});
 
 	return { id: product.id.toString() };
@@ -42,7 +41,7 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 })
 
 .get("", async () => {
-	const [products] = await db.query<[Product[]]>(surql`SELECT * FROM Product ORDER BY created DESC;`);
+	const products = await all(db);
 
 	return products.map(map);
 }, {
@@ -92,8 +91,8 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 
 	let product = {};
 
-	if (body.name !== undefined) { product = { ...product, name: body.name }; }
-	if (body.description !== undefined) { product = { ...product, description: body.description }; }
+	if (body.name) product.name = body.name;
+	if (body.description) product.description = body.description;
 
 	await db.merge<Product>(product_id, product);
 },{
@@ -101,13 +100,13 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 })
 
 .get("/:id/features", async ({ params: { id } }) => {
-	const [features] = await db.query<[Feature[]]>(surql`SELECT * FROM Feature where product == ${new StringRecordId(id)};`);
+	const [features] = await db.query<[Feature[]]>(surql`SELECT *, (IF value == "High" { 0 } ELSE IF value == "Medium" { 1 } ELSE { 2 }) as v FROM ${new StringRecordId(id)}->features->Feature ORDER BY v, name;`);
 
 	return features.map(mapFeature);
 }, {
 	response: t.Array(tFeature),
 	detail: {
-		description: "Retrieves all features for a product. Features are sorted by name."
+		description: "Retrieves all features for a product. Features are sorted by descending value."
 	}
 })
 
@@ -147,6 +146,14 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	body: tFeaturePost,
 	response: t.Object({ id: tFeatureId }),
 });
+
+export const all = async (db: Surreal) => {
+	const q = build_query({ select: "SELECT * FROM Product", order: "created DESC" });
+
+	const [products] = await db.query<[Product[]]>(q);
+
+	return products;
+};
 
 export const map = ({ id, name, description }: Product) => {
 	return {
