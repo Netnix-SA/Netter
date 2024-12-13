@@ -1,6 +1,6 @@
 import { Elysia, NotFoundError, t } from "elysia";
 import type { Feature, Objective, Task } from "../db/types";
-import { tFeature, tFeatureId, tFeatureId, tObjective, tObjectiveId, tTask } from "./schemas";
+import { tFeature, tFeatureId, tObjective, tObjectiveId, tTask } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapTask } from "./tasks";
 import { map as mapFeature } from "./features";
@@ -37,7 +37,7 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 })
 
 .get("/:id/tasks", async ({ params: { id } }) => {
-    const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}<-slated<-Feature<-tackles<-Task, ${new StringRecordId(id)}<-slated<-Feature->needs->Component<-tackles<-Task);`);
+    const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}<-slated<-Feature<-tackles<-Task, ${new StringRecordId(id)}<-slated<-Feature->needs->Component<-tackles<-Task);`);
 
     const tasks = results[0];
 
@@ -52,7 +52,7 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 .patch("/:id", async ({ params: { id }, body }) => {
 	const objective_id = new StringRecordId(id);
 
-	let patch: { title?: string, description?: string, end?: Date } = {};
+	let patch: { title?: string, description?: string, start?: Date, end?: Date } = {};
 
 	if (body.title) {
 		patch["title"] = body.title;
@@ -62,13 +62,22 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 		patch["description"] = body.description;
 	}
 
+	if (body.start) {
+		patch["start"] = body.start;
+	}
+
 	if (body.end) {
 		patch["end"] = body.end;
 	}
 
 	await db.merge(objective_id, patch);
 }, {
-	body: t.Object({ title: t.Optional(t.String()), description: t.Optional(t.String()), end: t.Optional(t.Date()) }),
+	body: t.Object({
+		title: t.Optional(t.String()),
+		description: t.Optional(t.String()),
+		start: t.Optional(t.Date()),
+		end: t.Optional(t.Date())
+	}),
 	detail: {
 		description: "Updates an objective.",
 	},
@@ -151,9 +160,9 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 	},
 });
 
-export const map = ({ id, title, description, active, end }: Objective) => ({
+export const map = ({ id, title, description, active, start, end }: Objective) => ({
     id: id.toString(),
     title, description,
     active,
-	end,
+	start, end,
 });

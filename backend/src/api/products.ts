@@ -125,7 +125,11 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	const product_id = new StringRecordId(id);
 	const product = await db.select<Product>(product_id);
 
-	const [component] = await db.create<Omit<Component, "id">>("Component", { name: body.name, description: body.description, type: body.type });
+	const [component] = await db.create<Omit<Component, "id">>("Component", {
+		name: body.name,
+		description: body.description,
+		type: body.type
+	});
 
 	await db.query(surql`RELATE ${product_id}->needs->${component.id};`);
 
@@ -139,7 +143,15 @@ export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags:
 	const product_id = new StringRecordId(id);
 	const product = await db.select<Product>(product_id);
 
-	const [feature] = await db.create<Omit<Feature, "id">>("Feature", { name: body.name, description: body.description, constraints: body.constraints, notes: body.notes, product: product_id, value: body.value });
+	const [feature] = await db.create<Omit<Feature, "id">>("Feature", {
+		name: body.name,
+		description: body.description,
+		constraints: body.constraints,
+		notes: body.notes,
+		value: body.value
+	});
+
+	await db.query(surql`RELATE ${product_id}->features->${feature.id};`);
 
 	return { id: feature.id.toString() };
 }, {

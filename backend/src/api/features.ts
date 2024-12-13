@@ -118,7 +118,7 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 })
 
 .get("/:id/tasks", async ({ params: { id } }) => {
-	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>("SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task WHERE id IN (SELECT in as id FROM tackles WHERE out = $id).id;", { id: new StringRecordId(id) });
 
 	return tasks.map(mapTask);
 }, {

@@ -4,16 +4,30 @@ import { treaty } from '@elysiajs/eden';
 import { server } from "../src/api";
 import { create_db, create_status, create_task, create_user } from "./utils";
 import { MemoryEvents } from "../src/events";
+import { user } from "../src/session";
 
 test("Create user successfully", async () => {
 	const db = await create_db(); const eq = new MemoryEvents();
 	const client = treaty(server(db, eq), { fetch: { credentials: "include" } });
 
-	const response = await client.api.users.post({ email: "fvilla@netnix.net", full_name: "Facundo Villa" });
+	const [user] = await db.create("User", {
+		handle: 'fvilla',
+		email: 'fvilla@netnix.net',
+		full_name: 'Facundo Villa',
+		color: 'Green/Light',
+	});
 
-	expect(response.status).toBe(200);
+	await db.create("Account", {
+		email: "fvilla@netnix.net",
+		passkeys: [],
+		user: {
+			id: user.id,
+		},
+	});
 
 	const re = await client.api.auth.token.post({ test: "fvilla@netnix.net" });
+
+	expect(re.status).toBe(200);
 
 	const users = await client.api.users.get();
 

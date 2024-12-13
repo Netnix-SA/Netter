@@ -1,4 +1,4 @@
-import { Transaction, type Channel, type Efforts, type Feature, type Priorities, type ProjectId, type State, type Status, type StatusId, type Task, type UserId, type Value } from "../db/types";
+import type { Transaction, Channel, Efforts, Feature, Priorities, ProjectId, State, Status, StatusId, Task, UserId, Value } from "../db/types";
 import { map as mapChannel } from "./channels";
 import { map as mapFeature } from "./features";
 import { Elysia, NotFoundError, t } from "elysia";
@@ -6,6 +6,7 @@ import { tChannel, tEfforts, tFeature, tFeatureId, tPriorities, tStatusId, tTask
 import Surreal, { RecordId, StringRecordId, surql, Table } from "surrealdb";
 import type { Events } from "../events";
 import { user } from "../session";
+import { build_query } from "../utils";
 
 export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/tasks", tags: ["Tasks"] })
 
@@ -60,7 +61,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 			id: tStatusId,
 			close_as: t.Literal("Duplicate"),
 			original: tTaskId,		
-		})
+		}),
 	]),
 	detail: {
 		description: "Closes a task as resolved."
@@ -70,7 +71,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 .get("/:id", async ({ params: { id } }) => {
 	const [task] = await query(db, { id, assignee: undefined, state: undefined, belongs_to: undefined });
 
-	if(!task) {
+	if (!task) {
 		throw new NotFoundError("No task under that id found!");
 	}
 
@@ -303,7 +304,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	}
 })
 
-.post("", async ({ body }) => {
+.post("", async ({ body, user }) => {
 	const results = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state = "Backlog";`);
 	const statuses = results[0];
 
@@ -316,7 +317,14 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 	const task = await create(db, body.title, body.body, undefined, body.priority, body.effort, body.value, body.assignee as unknown as UserId | null, first_status.id);
 
 	await event_queue.publish("task.create", map(task));
-	await db.create<Omit<Transaction, "id">>("Transaction", { class: "Task", oid: task.id, action: "CREATE", timestamp: new Date(), user: "", path: null });
+	await db.create<Omit<Transaction, "id">>("Transaction", {
+		class: "Task",
+		oid: task.id,
+		action: "CREATE",
+		timestamp: new Date(),
+		user: new StringRecordId(user.sub),
+		path: null
+	});
 
 	return {
 		id: task.id.toString(),
@@ -422,35 +430,32 @@ export const create = async (db: Surreal, title: string, body: string, belongs_t
 };
 
 export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
-	let query = `SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task`;
-
-	let pieces = [];
-
-	if (id) {
-		pieces.push(`id == ${new StringRecordId(id)}`);
-	}
+	let select = "SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task";
+	let where = [];
 
 	if (assignee) {
-		pieces.push(`assignee == ${new StringRecordId(assignee)}`);
-	}
-
-	if (state) {
-		pieces.push(`status == ${new StringRecordId(state)}`);
+		select = `SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${assignee}->assigned->Task`;
 	}
 
 	if (belongs_to) {
-		pieces.push(`belongs_to == ${belongs_to}`);
+		select = `SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${belongs_to}->schedules->Objective<-slated<-Feature<-tackles<-Task`;
 	}
 
-	if (pieces.length > 0) {
-		query += ' WHERE ' + pieces.join(' AND ');
+	if (id) {
+		where.push(`id == ${new StringRecordId(id)}`);
 	}
 
-	query += ' ORDER BY status.position.i';
+	if (state) {
+		where.push(`status == ${new StringRecordId(state)}`);
+	}
 
-	query += ';';
+	const q = build_query({
+		select,
+		where,
+		order: "status.position.i DESC",
+	});
 
-	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>(query);
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>(q);
 
 	return tasks.map(map);
 };

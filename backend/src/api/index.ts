@@ -321,9 +321,8 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 
 	auth.set({
 		value,
-		httpOnly: true,
-		sameSite: "strict",
 		maxAge: 60 * 60 * 24 * 7,
+		priority: 'high',
 	});
 
 	return { token: value };
@@ -331,6 +330,15 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	detail: {
 		description: "Authenticate a user using a passkey or a provider. If a passkey is provided, the user will be authenticated using WebAuthn. If a provider is provided, the user will be authenticated using OAuth.",
 	},
+	cookie: t.Cookie({
+		auth: t.Optional(t.String()),
+	}, {
+		httpOnly: true,
+		sameSite: "strict",
+		secrets: "Fischl von Luftschloss Narfidort",
+		secure: true,
+		sign: ['auth'],
+	}),
 	body: t.Object({
 		passkey: t.Optional(t.Object({
 			challenge: t.String(),

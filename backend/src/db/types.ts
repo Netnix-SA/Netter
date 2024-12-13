@@ -150,6 +150,7 @@ export type Objective = {
 	title: string,
 	description: string,
 	active: boolean,
+	start: Date | null,
 	end: Date | null,
 };
 

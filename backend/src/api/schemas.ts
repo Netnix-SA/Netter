@@ -50,6 +50,7 @@ export const tProjectUpdatePost = t.Object({
 export const tObjectivePost = t.Object({
 	title: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ maxLength: 8192 }),
+	start: t.Nullable(t.Date()),
 	end: t.Nullable(t.Date()),
 });
 

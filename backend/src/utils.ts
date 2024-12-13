@@ -106,7 +106,7 @@ export const build_query = ({ select, where, order }: { select: string, where?: 
 	}
 
 	if (order) {
-		query += order;
+		query += ` ORDER BY ${order}`;
 	}
 
 	return query;

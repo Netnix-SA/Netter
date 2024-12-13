@@ -481,29 +481,10 @@ INSERT INTO belongs {
 
 -- assigned
 
-INSERT INTO assigned {
-	id: assigned:0x7j7j7j7j7j7j7j7j7j7,
-	in: User:yt2hrlb0mynjar8q5la5,
-	out: Task:q9jzreujqojouhmtpkrz
-};
-
-INSERT INTO assigned {
-	id: assigned:1x7j7j7j7j7j7j7j7j7,
-	in: User:yt2hrlb0mynjar8q5la5,
-	out: Task:vkceetbwxeuv9sm8lkiz
-};
-
-INSERT INTO assigned {
-	id: assigned:2x7j7j7j7j7j7j7j7j7,
-	in: User:yt2hrlb0mynjar8q5la5,
-	out: Task:zin87ejq9qg368mwmyzl
-};
-
-INSERT INTO assigned {
-	id: assigned:3x7j7j7j7j7j7j7j7j7,
-	in: User:yt2hrlb0mynjar8q5la5,
-	out: Task:zm8mg83oyojv5arfc4q5
-};
+RELATE User:yt2hrlb0mynjar8q5la5->assigned->Task:q9jzreujqojouhmtpkrz;
+RELATE User:yt2hrlb0mynjar8q5la5->assigned->Task:vkceetbwxeuv9sm8lkiz;
+RELATE User:2up0vsu0bny5xs1ucpnf->assigned->Task:zin87ejq9qg368mwmyzl;
+RELATE User:hjp9wykexxujbfg2dcjx->assigned->Task:zm8mg83oyojv5arfc4q5;
 
 -- regards
 
