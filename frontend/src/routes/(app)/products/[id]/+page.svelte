@@ -59,21 +59,6 @@
 		</div>
 		<div class="w-96 column gap-4 border-l bg-neutral-950 px-6 py-8">
 			<div class="column">
-				<span class="text-sm text-muted-foreground">Applications</span>
-				{#await data.applications}
-					Loading applications...
-				{:then applications}
-					{#each applications as application}
-						<div class="flex flex-col gap-1 mt-2 px-2">
-							<div class="gallery gap-2">
-								<a href={`/applications/${application.id}`} class="tactile-text font-semibold text-xl">{application.name}</a>
-							</div>
-							<p class="text-muted-foreground text-xs line-clamp-2 whitespace-pre-wrap">{application.description}</p>
-						</div>
-					{/each}
-				{/await}
-			</div>
-			<div class="column">
 				<span class="text-sm text-muted-foreground font-regular">Projects</span>
 				{#each [{ title: "All is well", body: "Project is going great and on time. Thank you everyone!" }] as update}
 					<div class="flex flex-col gap-1 mt-2">

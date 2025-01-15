@@ -38,7 +38,7 @@
 	}
 
 	onMount(async () => {
-		await handleInput("", { suggest: !search ? filter?.class : undefined });
+		await handleInput("", { suggest: filter?.class });
 	});
 </script>
    

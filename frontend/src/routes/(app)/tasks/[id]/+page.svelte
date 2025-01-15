@@ -17,7 +17,7 @@
 
     import { buttonVariants } from "@/components/ui/button";
     import { addTaskBlockerMutation, addTaskChildMutation, addTaskRelativeMutation, addTaskTackledMutation, commands, removeBlockerTaskMutation, removeChildTaskMutation, removeRelativeTaskMutation, removeTackledMutation, updateTaskMutation } from "@/state";
-    import ChannelView from "@/components/ChannelView.svelte";
+    import ChannelView from "@/components/channels/Channel.svelte";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import Input from "@/components/ui/input/input.svelte";
     import Circle from "@/components/Circle.svelte";

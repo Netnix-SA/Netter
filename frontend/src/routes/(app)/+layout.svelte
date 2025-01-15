@@ -24,6 +24,7 @@
     import { blur } from "svelte/transition";
     import { getSvate, type Svate } from "@facundo-villa/svate";
     import { error } from "@sveltejs/kit";
+    import List from "@/components/List.svelte";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -144,6 +145,17 @@
 			depends,
 		};
 	});
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
 <BitsTooltip.Provider>
@@ -189,19 +201,22 @@
 					{/each}
 				</section>
 				<div class="flex-1">
-					<section class="column gap-2 flex-1 max-h-64">
+					<section class="column gap-2 flex-1 h-64">
 						<span class="pr-2 text-muted-foreground text-sm">
 							Pinned
 						</span>
-						<div class="column flex-1 gap-2 overflow-scroll">
-							{#await pins.value then pins}
-								{#each pins as { id }(id)}
-									<div animate:flip transition:blur>
+						{#await pins.value then pins}
+							<List data={pins}>
+								{#snippet item({ id })}
+									<div transition:blur>
 										<AnyChip {id} pinned={data.pins}/>
 									</div>
-								{/each}
-							{/await}
-						</div>
+								{/snippet}
+								{#snippet empty()}
+									<span class="text-muted-foreground/50 text-sm italic">No pinned items</span>
+								{/snippet}
+							</List>
+						{/await}
 					</section>
 				</div>
 				<a href="/settings" class="w-full px-2 py-2 rounded text-muted-foreground hover:text-primary transition-colors">
