@@ -1,5 +1,5 @@
 import { Elysia, NotFoundError, t } from "elysia";
-import type { Feature, Objective, Task } from "../db/types";
+import type { Feature, Objective, Status, Task } from "../db/types";
 import { tFeature, tFeatureId, tObjective, tObjectiveId, tTask } from "./schemas";
 import Surreal, { StringRecordId, surql } from "surrealdb";
 import { map as mapTask } from "./tasks";
@@ -112,7 +112,8 @@ export const objectives = (db: Surreal) => new Elysia({ prefix: "/objectives", d
 .get("/:id/statistics", async ({ params: { id } }) => {
 	const objective_id = new StringRecordId(id);
 
-	const resolved_status_id = new StringRecordId("Status:4u4jpjj6np6z82qozui2");
+	const [[resolved_status]] = await db.query<[Status[]]>(surql`SELECT * FROM Status WHERE state == "Resolved";`);
+	const resolved_status_id = resolved_status.id;
 
 	const [features, tasks] = await db.query<[(Feature & { done: boolean })[], (Task & { progress: number | undefined })[]]>(surql`SELECT *, (array::every($parent<-tackles<-Task.status.id, |$v| $v == ${resolved_status_id})) AS done FROM ${objective_id}<-slated<-Feature; SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM ${objective_id}<-slated<-Feature<-tackles<-Task;`);
 

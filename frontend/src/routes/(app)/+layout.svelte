@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, type Snippet } from "svelte";
 
-	import { Settings, Star, SquareCheckBig } from "lucide-svelte";
+	import { Settings, Star, SquareCheckBig, RefreshCwIcon } from "lucide-svelte";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import * as Dialog from "$lib/components/ui/dialog";
@@ -22,6 +22,8 @@
     import LabelSelect from "@/components/LabelSelect.svelte";
     import { flip } from "svelte/animate";
     import { blur } from "svelte/transition";
+    import { getSvate, type Svate } from "@facundo-villa/svate";
+    import { error } from "@sveltejs/kit";
 
 	let { data, children }: { data: LayoutData, children: Snippet<[]> } = $props();
 
@@ -122,6 +124,26 @@
 			task.value.status = task.value.status ?? data.statuses[0];
 		}
 	});
+
+	const svate: Svate = getSvate();
+
+	const pins = svate.query(async () => {
+		const { data: pins } = await client.api.users.me.pins.get();
+
+		if (pins === null) {
+			error(404, "Could not load pins!");
+		}
+
+		const depends = [
+			pins.map(p => p.id),
+			["pins"],
+		];
+
+		return {
+			value: pins,
+			depends,
+		};
+	});
 </script>
 
 <BitsTooltip.Provider>
@@ -141,7 +163,7 @@
 							<DropdownMenu.Item>Profile</DropdownMenu.Item>
 							<DropdownMenu.Item>Billing</DropdownMenu.Item>
 							<DropdownMenu.Item>Team</DropdownMenu.Item>
-							<DropdownMenu.Item>Subscription</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={async () => await svate.invalidate()}><RefreshCwIcon class="size-4"/> Refresh</DropdownMenu.Item>
 						  </DropdownMenu.Group>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
@@ -172,11 +194,13 @@
 							Pinned
 						</span>
 						<div class="column flex-1 gap-2 overflow-scroll">
-							{#each data.pins as pinned(pinned)}
-								<div animate:flip transition:blur>
-									<AnyChip id={pinned} pinned={data.pins}/>
-								</div>
-							{/each}
+							{#await pins.value then pins}
+								{#each pins as { id }(id)}
+									<div animate:flip transition:blur>
+										<AnyChip {id} pinned={data.pins}/>
+									</div>
+								{/each}
+							{/await}
 						</div>
 					</section>
 				</div>

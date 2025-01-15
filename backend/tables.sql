@@ -19,7 +19,7 @@ DEFINE TABLE File;
 DEFINE TABLE Event;
 
 DEFINE TABLE impacts TYPE RELATION; -- Bug impacts Feature
-DEFINE TABLE needs TYPE RELATION; -- Feature needs Component
+DEFINE TABLE needs TYPE RELATION; -- Feature | Component needs Component
 DEFINE TABLE mentions TYPE RELATION; -- Message mentions *
 DEFINE TABLE slated TYPE RELATION; -- Feature slated for Objective
 DEFINE TABLE tackles TYPE RELATION; -- Task tackles Feature | Bug

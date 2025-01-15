@@ -211,7 +211,6 @@ export const tProject = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),
 	description: t.String({ minLength: 0, maxLength: 8192 }),
 	lead: t.Nullable(t.Object({ id: tUserId })),
-	members: t.Array(t.Object({ id: tUserId })),
 	client: t.Optional(tCompany),
 	end: t.Nullable(t.Date()),
 	milestones: t.Array(tMilestone),
@@ -277,7 +276,7 @@ export const tFeature = t.Object({
 	value: tValues,
 });
 
-export const tComponentTypes = t.Union([t.Literal("Application"), t.Literal("Service"), t.Literal("API"), t.Literal("HTTP Route"), t.Literal("UI Component"), t.Literal("UI Page")]);
+export const tComponentTypes = t.Union([t.Literal("Application"), t.Literal("Service"), t.Literal("API"), t.Literal("HTTP Route"), t.Literal("UI Component"), t.Literal("UI Page"), t.Literal("Database Table"), t.Literal("Database")]);
 
 export const tComponentPost = t.Object({
 	name: t.String({ minLength: 3, maxLength: 64 }),

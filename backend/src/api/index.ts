@@ -335,9 +335,9 @@ export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix:
 	}, {
 		httpOnly: true,
 		sameSite: "strict",
-		secrets: "Fischl von Luftschloss Narfidort",
+		// secrets: "Fischl von Luftschloss Narfidort",
 		secure: true,
-		sign: ['auth'],
+		// sign: ['auth'],
 	}),
 	body: t.Object({
 		passkey: t.Optional(t.Object({

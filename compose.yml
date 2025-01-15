@@ -12,6 +12,7 @@ services:
       - DB_PASSWORD=root
       - DB_NAMESPACE=development
       - DB_NAME=dev
+      - LLM_MODEL=llama-3.3-70b-versatile
     expose:
       - 80
     ports:
@@ -19,7 +20,6 @@ services:
     command: bun run --hot index.ts
     depends_on:
       - db
-    restart: always
   frontend:
     image: oven/bun:1.1.38
     working_dir: /app

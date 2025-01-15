@@ -22,7 +22,12 @@ export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags:
 })
 
 .post("", async ({ body }) => {
-	const status = await db.create<Omit<Status, "id">>("Status", { name: body.name, state: body.state, color: "Green/Light", icon: ':' });
+	const status = await db.create<Omit<Status, "id">>("Status", {
+		name: body.name,
+		state: body.state,
+		color: "Green/Light",
+		icon: ':'
+	});
 
 	return { id: status.id.toString() };
 }, {
@@ -30,9 +35,9 @@ export const statuses = (db: Surreal) => new Elysia({ prefix: "/statuses", tags:
 	response: t.Object({ id: tStatusId }),
 });
 
-const map = ({ id, name, state }: Status) => {
+export const map = ({ id, name, state, color, icon }: Status) => {
     return {
         id: id.toString(),
-        name, state,
+        name, state, color, icon,
     };
 };

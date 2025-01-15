@@ -8,6 +8,7 @@
     import { client } from '@/state';
     import { toast } from 'svelte-sonner';
 	import { bufferToBase64URLString, base64URLStringToBuffer } from '@simplewebauthn/browser';
+	import { env } from '$env/dynamic/public';
 
 	let email = $state("fvilla@netnix.net");
 
@@ -98,7 +99,7 @@
 	async function handlePasskeyLogin() {
 		if(!PublicKeyCredential || !(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) || !(await PublicKeyCredential.isConditionalMediationAvailable())) {
 			toast.error("Cannot perform a passkey based login since this browser does not seem to support them!");
-			// return;
+			return;
 		}
 
 		let passkeys_req = await client.api.auth.passkeys.get({ query: { email } });
@@ -152,13 +153,26 @@
 		await goto(`/auth`);
 	}
 
-	onMount(async () => {
-		await handlePasskeyLogin();
-	});
+	async function handleTestLogin() {
+		toast("Performing test login...");
 
-	async function handleGitHubLogin() {
-		await goto(`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`);
+		const { data, error } = await client.api.auth.token.post({
+			test: email,
+		});
+
+		toast.error(error?.value.message);
+
+		if (!data) {
+			toast.error("Could not perform login!");
+			return;
+		}
+
+		goto(`/auth`);
 	}
+
+	onMount(async () => {
+		// await handlePasskeyLogin();
+	});
 </script>
 
 <main class="absolute h-screen w-screen frame z-10">
@@ -167,7 +181,7 @@
 			Netter
 		</h1>
 	</div>
-	<form action="/login" method="post" target="_blank" class="flex flex-col rounded-3xl border h-96 w-96 px-8 py-12 bg-primary-foreground">
+	<form class="flex flex-col rounded-3xl border h-96 w-96 px-8 py-12 bg-primary-foreground">
 		<span class="text-sm text-muted-foreground">Email</span>
 		<div class="flex-1 column mt-2">
 			<input name="email" type="email" class="border px-2 py-1" bind:value={email}/>
@@ -177,6 +191,11 @@
 				<KeyRoundIcon class="size-4"/>
 				Login with Passkey
 			</Button>
+			{#if env.NODE_ENV !== "prod" || env.NODE_ENV !== "production"}
+			<Button id="login" variant="default" onclick={handleTestLogin} class="gap-2 min-w-48">
+				Test Login
+			</Button>
+			{/if}
 			<Button variant="default" href={`https://github.com/login/oauth/authorize?client_id=${"Iv23liZcfAnKGoZTUyJs"}&redirect_uri=${`${$page.url.origin}/auth/github`}&scope=user`} class="gap-2 min-w-48">
 				<GithubIcon class="size-4"/>
 				Login with GitHub

@@ -103,9 +103,7 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 })
 
 .get("/:id/related", async ({ params: { id } }) => {
-	const results = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}->related->Task, ${new StringRecordId(id)}<-related<-Task || []);`);
-
-	const tasks = results[0];
+	const [tasks] = await db.query<[(Task & { progress: number | undefined })[]]>(surql`SELECT *, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM array::union(${new StringRecordId(id)}->related->Task, ${new StringRecordId(id)}<-related<-Task || []);`);
 
 	if (tasks === undefined) {
 		throw new NotFoundError("No task under that id found!");
@@ -416,7 +414,11 @@ export const tasks = (db: Surreal, event_queue: Events) => new Elysia({ prefix: 
 });
 
 export const create = async (db: Surreal, title: string, body: string, belongs_to: ProjectId | undefined, priority: Priorities | null, effort: Efforts | null, value: Value | null, assignee: UserId | null, status: StatusId | null) => {
-	const [task] = await db.create<Omit<Task, "id">>("Task", { title, body, priority, effort, value, created: new Date(), labels: [], updates: [], assignee, status: { id: status } });
+	const [task] = await db.create<Omit<Task, "id">>("Task", {
+		title, body, priority, effort, value,
+		created: new Date(), labels: [], updates: [],
+		status: { id: status }
+	});
 
 	if (!task) {
 		throw new Error("Could not create task");
@@ -429,7 +431,7 @@ export const create = async (db: Surreal, title: string, body: string, belongs_t
 	return task;
 };
 
-export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state: State | undefined, belongs_to: ProjectId | undefined }) => {
+export const query = async (db: Surreal, { id, assignee, state, belongs_to }: { id?: string, assignee?: string, state?: State | undefined, belongs_to: ProjectId | undefined }) => {
 	let select = "SELECT *, (id<-assigned<-User.id)[0] ?? NULL as assignee, (SELECT * FROM $parent.updates ORDER BY date DESC)[0].value as progress FROM Task";
 	let where = [];
 

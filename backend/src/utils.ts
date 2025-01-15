@@ -24,16 +24,15 @@ export const generate_gherkin = async (feature: any) => {
 				content: `You are an expert functional analyst.
 				Your job is to receive a product feature description and generate a Gherkin document that describes the behavior of the feature in plain English and exercise the edge cases and constraints described in the feature.
 				The document should include clear steps that will allow a developer to implement the feature and test it.
-				DON'T RETURN ANYTHING ELSE THAN THE GHERKIN DOCUMENT.
-				DO NOT CREATE SCENARIOS THAT REFER TO FUNCTIONALITY NOT MENTIONED IN THE FEATURE DESCRIPTION.
-				DO NOT CREATE SCENARIOS THAT REFER TO FUNCTIONALITY NOT DISALLOWED BY THE FEATURE CONSTRAINTS.`,
+				RETURN ONLY THE GHERKIN DOCUMENT.
+				CREATE ONLY SCENARIOS THAT REFER TO FUNCTIONALITY MENTIONED IN THE FEATURE DESCRIPTION, CONSTRAINTS AND NOTES.`,
 			},
 			{
 				role: "user",
 				content: JSON.stringify(feature),
 			},
 		],
-		model: "llama3-8b-8192",	
+		model: process.env.LLM_MODEL,
 		temperature: 0.5,
 		max_tokens: 2048,
 		top_p: 1,
@@ -66,15 +65,15 @@ export const generate_product_brief = async (collection: any) => {
 				Your job is to receive a collection of products, their features and components and generate a Markdown document that documents
 				the purpose of these products, what their features are, what they do and what components these products and features depend on.
 				The document should be structured in a way that is easy to read for non-technical users who are not familiar with the products.
-				DON'T RETURN ANYTHING ELSE THAN THE MARKDOWN DOCUMENT.
-				DON'T INCLUDE ANY FUNCTIONALITY THAT IS NOT DESCRIBED IN THE COLLECTION.`,
+				RETURN ONlY THE MARKDOWN DOCUMENT.
+				INCLUDE ONLY FUNCTIONALITY THAT IS DESCRIBED IN THE COLLECTION.`,
 			},
 			{
 				role: "user",
 				content: JSON.stringify(collection),
 			},
 		],
-		model: "llama3-8b-8192",	
+		model: process.env.LLM_MODEL,	
 		temperature: 0.5,
 		max_tokens: 2048,
 		top_p: 1,

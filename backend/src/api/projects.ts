@@ -5,6 +5,7 @@ import Surreal, { RecordId, StringRecordId, surql } from "surrealdb";
 import { map as mapTask, query as queryTasks, create as createTask, } from "./tasks";
 import { map as mapLabel } from "./labels";
 import { map as mapObjective } from "./objectives";
+import { map as mapStatus } from "./statuses";
 import type { Events } from "../events";
 
 export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/projects", tags: ["Projects"] })
@@ -25,7 +26,7 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 		created: new Date(),
 
 		lead: body.lead ? new StringRecordId(body.lead) as unknown as UserId : null,
-		members: [], milestones: [],
+		milestones: [],
 		end: null,
 		client: null,
 		status: first_status.id,
@@ -48,11 +49,11 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 
 	let project = {};
 
-	if (body.name) { project = { ...project, name: body.name }; }
-	if (body.description) { project = { ...project, description: body.description }; }
-	if (body.lead) { project = { ...project, lead: new StringRecordId(body.lead) as unknown as UserId }; }
-	if (body.end) { project = { ...project, end: body.end }; }
-	if (body.status) { project = { ...project, status: new StringRecordId(body.status.id) as unknown as StatusId }; }
+	if (body.name) { project.name = body.name };
+	if (body.description) { project.description = body.description };
+	if (body.lead) { project.lead = new StringRecordId(body.lead) as unknown as UserId };
+	if (body.end) { project.end = body.end };
+	if (body.status) { project.status = new StringRecordId(body.status.id) as unknown as StatusId };
 
 	await db.merge(project_id, project);
 }, {
@@ -154,10 +155,7 @@ export const projects = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 
 	const statuses = results[0];
 
-	return statuses.map(({ id, name, state, color, icon }) => ({
-		id: id.toString(),
-		state, name, color, icon,
-	}));
+	return statuses.map(mapStatus);
 }, {
 	response: t.Array(tStatus),
 })
@@ -269,7 +267,7 @@ export const query = async (db: Surreal, { id }: { id?: ProjectId }) => {
 	return projects.map(map);
 };
 
-export const map = ({ id, name, description, status, members, lead, client, end, milestones, updates, }: Project) => {
+export const map = ({ id, name, description, status, lead, client, end, milestones, updates, }: Project) => {
 	return {
 		id: id.toString(),
 		name,
@@ -281,7 +279,6 @@ export const map = ({ id, name, description, status, members, lead, client, end,
 			id: status.toString(),
 		},
 		client: client?.toString(),
-		members: members.map(member => ({ id: member.id.toString() })),
 		milestones: milestones.map(m => ({ title: m.title, description: m.description, })),
 		end,
 		updates,

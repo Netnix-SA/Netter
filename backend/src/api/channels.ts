@@ -23,7 +23,7 @@ export const channels = (db: Surreal, event_queue: Events) => new Elysia({ prefi
 })
 
 .post("", async ({ body: { name, } }) => {
-	const channel = await db.create<Omit<Channel, "id">>("Channel", {
+	const [channel] = await db.create<Omit<Channel, "id">>("Channel", {
 		name,
 		subscribers: [],
 		target: [], // Default channels have no target (e.g. users)

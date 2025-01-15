@@ -11,5 +11,6 @@
 </svelte:head>
 
 <div id="chat" class="flex-1 h-full flex flex-col">
+	{data.channel.name}
 	<ChannelView channel={data.channel} messages={data.messages} users={data.users}/>
 </div>

@@ -9,7 +9,7 @@ import { build_query, generate_product_brief } from "../utils";
 export const products = (db: Surreal) => new Elysia({ prefix: "/products", tags: ["Products"] })
 
 .post("", async ({ body: { name, description } }) => {
-	const product = await db.create<Omit<Product, "id">>("Product", {
+	const [product] = await db.create<Omit<Product, "id">>("Product", {
 		name, description,
 		created: new Date(),
 	});

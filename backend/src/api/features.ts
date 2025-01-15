@@ -31,18 +31,36 @@ export const features = (db: Surreal) => new Elysia({ prefix: "/features", tags:
 	const feature_id = new StringRecordId(id);
 	let feature = {};
 	
-	if (body.name) feature = { ...feature, name: body.name };
-	if (body.description) feature = { ...feature, description: body.description };
-	if (body.constraints) feature = { ...feature, constraints: body.constraints };
-	if (body.notes) feature = { ...feature, notes: body.notes };
-	if (body.value) feature = { ...feature, value: body.value };
+	if (body.name) feature.name = body.name;
+	if (body.description) feature.description = body.description;
+	if (body.constraints) feature.constraints = body.constraints;
+	if (body.notes) feature.notes = body.notes;
+	if (body.value) feature.value = body.value;
 
 	await db.merge<Feature>(feature_id, feature);
 }, {
-	body: t.Object({ name: t.Optional(t.String()), description: t.Optional(t.String()), constraints: t.Optional(t.String()), notes: t.Optional(t.String()), value: t.Optional(tValues) }),
+	body: t.Object({
+		name: t.Optional(t.String()),
+		description: t.Optional(t.String()),
+		constraints: t.Optional(t.String()),
+		notes: t.Optional(t.String()),
+		value: t.Optional(tValues)
+	}),
 	detail: {
 		description: "Updates a feature"
 	}
+})
+
+.post("/:id/children/:fid", async ({ params: { id, fid }, body }) => {
+	const parent_feature_id = new StringRecordId(id);
+	const child_feature_id = new StringRecordId(fid);
+
+	await db.query(surql`RELATE ${parent_feature_id}->needs->${child_feature_id}`);
+}, {
+	params: t.Object({
+		id: tFeatureId,
+		fid: tFeatureId,
+	}),
 })
 
 .post("/:id/files", async ({ params: { id }, body }) => {

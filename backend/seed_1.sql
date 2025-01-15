@@ -1,14 +1,7 @@
 INSERT INTO Account {
 	id: Account:sj9wrdj7q7z1da1apbuf,
 	email: 'fvilla@netnix.net',
-	passkeys: [
-		{
-			counter: 0,
-			id: '10512c10-989c-11ef-af0d-f31450aad3a2',
-			public_key: 'pQECAyYgASFYIISq3q_omgNwBmotp9Ap8WCyLmhCHFPSgHpwM0E7lnJoIlggkTqbfyq-L83Tl11QpzwmZEb-GQsW8oKMbFDEy802rMU',
-			transports: []
-		}
-	],
+	passkeys: [],
 	user: {
 		id: User:yt2hrlb0mynjar8q5la5
 	}
@@ -23,6 +16,7 @@ INSERT INTO User {
 };
 
 INSERT INTO User {
+	id: User:yt2hrlb0mynjar8q5la6,
 	handle: 'lvilla',
 	email: 'lvilla@netnix.net',
 	full_name: 'Leonardo Villa',
@@ -30,6 +24,7 @@ INSERT INTO User {
 };
 
 INSERT INTO User {
+	id: User:yt2hrlb0mynjar8q5la7,
 	handle: 'lsalerno',
 	email: 'lsalerno@netnix.net',
 	full_name: 'Lucca Salerno',
@@ -37,11 +32,14 @@ INSERT INTO User {
 };
 
 INSERT INTO User {
+	id: User:yt2hrlb0mynjar8q5la8,
 	handle: 'marceci',
 	email: 'marceci@netnix.net',
 	full_name: 'Maximo Arceci',
 	color: 'Purple/Light',
 };
+
+-- Status
 
 INSERT INTO Status {
 	name: 'Backlog',
@@ -65,7 +63,7 @@ INSERT INTO Status {
 
 INSERT INTO Status {
 	name: 'Done',
-	state: 'Done',
+	state: 'Resolved',
 	color: 'Blue/Light',
 	icon: '🎉',
 	position: {
@@ -77,42 +75,61 @@ INSERT INTO Status {
 
 INSERT INTO Component {
 	id: Component:6ks39quoxtsqkbzg2m3j,
-	description: 'Feature description',
-	name: 'Main Booster Engine',
-	type: 'Service'
+	name: 'Surreal DB',
+	description: 'Surreal DB is the main database for the application.',
+	type: 'Database'
 };
 
 INSERT INTO Component {
-	description: 'Feature description',
 	id: Component:fzkmaqoura9t1k0928js,
-	name: 'Cofee Machine',
-	type: 'Application'
+	name: 'Backend',
+	description: 'The backend serves an HTTP REST API to the frontend. This connects with the Surreal DB.',
+	type: 'Service'
+};
+
+INSERT INTO needs { -- The backend needs the database
+	id: needs:4nzcpoyi7knqff3598t6,
+	in: Component:fzkmaqoura9t1k0928js,
+	out: Component:6ks39quoxtsqkbzg2m3j
+};
+
+INSERT INTO Component {
+	id: Component:fzkmaqoura9t1k0928ts,
+	name: 'Frontend',
+	description: 'The frontend serves an HTML frontend to the internet.',
+	type: 'Service'
+};
+
+INSERT INTO needs { -- The frontend needs the backend
+	id: needs:4nzcpoyi7knqff35988q,
+	in: Component:fzkmaqoura9t1k0928ts,
+	out: Component:fzkmaqoura9t1k0928js
 };
 
 -- Feature
 
 INSERT INTO Feature {
-	constraints: '',
-	description: 'Replace old capacitor based reactors with flux based ones',
 	id: Feature:d0d5h8myzdva617np7kg,
-	name: 'Flux reactors',
-	notes: 'Ask Jerbail where the teflon tape is',
-	value: 'Medium'
+	constraints: '',
+	description: 'I want to have a product brief generated automatically to easily have deliverable boilerplate solved. The brief should include product features, technical components and their relations.',
+	name: 'Generate product brief',
+	notes: '',
+	value: 'High'
 };
 
 INSERT INTO Feature {
+	id: Feature:udm3scbcxu6nlkuhqx5t,
 	constraints: '',
 	description: 'Feature description',
-	id: Feature:udm3scbcxu6nlkuhqx5t,
 	name: 'Cofee machine',
 	notes: '',
 	value: 'High'
 };
 
 INSERT INTO Feature {
+	id: Feature:ye01e5mwpxti5cyvg6xh,
 	constraints: '',
 	description: 'Develop and install the main engine, critical for giga-sonic travel.',
-	id: Feature:ye01e5mwpxti5cyvg6xh,
 	name: 'Main Propulsor Engine',
 	notes: '',
 	value: 'High'
@@ -156,8 +173,9 @@ INSERT INTO Label {
 
 INSERT INTO Project {
 	id: Project:wahu8u1kvo8wtz12qfoe,
-	created: d'2024-11-25T19:31:05.789Z',
+	name: 'TR-800 construction',
 	description: 'We hope to rebuild our TR-800 ship in time to save the Sander quadrant from the empire.',
+	created: d'2024-11-25T19:31:05.789Z',
 	end: NULL,
 	members: [],
 	milestones: [
@@ -166,7 +184,6 @@ INSERT INTO Project {
 			title: 'New milestone'
 		},
 	],
-	name: 'TR-800 construction',
 	status: Status:3ystm8dscgq83hp2l0r2,
 	updates: []
 };
@@ -312,39 +329,23 @@ INSERT INTO ToDo {
 -- Transaction
 
 INSERT INTO Transaction {
+	id: Transaction:cq0r4hg7ca83u9neaye4,
+	oid: Project:wahu8u1kvo8wtz12qfoe,
+	action: 'CREATE',
+	class: 'Project',
+	user: User:yt2hrlb0mynjar8q5la5,
+	path: NONE,
+	timestamp: d'2024-12-05T16:12:49.211Z',
+};
+
+INSERT INTO Transaction {
 	action: 'CREATE',
 	class: 'Task',
 	id: Transaction:cq0r4hg7ca83u9neaye4,
 	oid: Task:vkceetbwxeuv9sm8lkiz,
-	path: NULL,
+	path: NONE,
 	timestamp: d'2024-12-05T16:12:49.211Z',
 	user: User:yt2hrlb0mynjar8q5la5,
-};
-
--- needs
-
-INSERT INTO needs {
-	id: needs:4nzcpoyi7knqff3598d0,
-	in: Feature:ye01e5mwpxti5cyvg6xh,
-	out: Component:6ks39quoxtsqkbzg2m3j
-};
-
-INSERT INTO needs {
-	id: needs:7d8e60ebhxv07u5p9lq5,
-	in: Feature:udm3scbcxu6nlkuhqx5t,
-	out: Component:fzkmaqoura9t1k0928js
-};
-
-INSERT INTO needs {
-	id: needs:gxe7b9uo7vxds7lpfbgp,
-	in: Product:icju45t4n31neo8ejl3s,
-	out: Component:6ks39quoxtsqkbzg2m3j
-};
-
-INSERT INTO needs {
-	id: needs:yx854jd6mt1fm05ckt9o,
-	in: Product:icju45t4n31neo8ejl3s,
-	out: Component:fzkmaqoura9t1k0928js
 };
 
 -- pins

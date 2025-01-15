@@ -6,14 +6,20 @@ console.log("Starting Netter API server!");
 
 const db = new Surreal();
 
-await db.connect(import.meta.env.DB_URL ?? "NO_DATABASE_PROVIDED", {
-	auth: {
-		username: import.meta.env.DB_USER ?? "NO_USER_PROVIDED",
-		password: import.meta.env.DB_PASSWORD ?? "NO_PASSWORD_PROVIDED",
-	},
-	namespace: import.meta.env.DB_NAMESPACE ?? "NO_NAMESPACE_PROVIDED",
-	database: import.meta.env.DB_NAME ?? "NO_DATABASE_PROVIDED",
-});
+for (let i = 0; i < 5; i++) {
+	const res = await db.connect(import.meta.env.DB_URL ?? "NO_DATABASE_PROVIDED", {
+		auth: {
+			username: import.meta.env.DB_USER ?? "NO_USER_PROVIDED",
+			password: import.meta.env.DB_PASSWORD ?? "NO_PASSWORD_PROVIDED",
+		},
+		namespace: import.meta.env.DB_NAMESPACE ?? "NO_NAMESPACE_PROVIDED",
+		database: import.meta.env.DB_NAME ?? "NO_DATABASE_PROVIDED",
+	});
+
+	if (res) {
+		break;
+	}
+}
 
 const event_queue = new LocalEvents();
 

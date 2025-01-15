@@ -113,7 +113,7 @@ export const deleteToDoMutation = createMutation({
 });
 
 export const updateFeatureMutation = createMutation({
-	mutationFn: async ({ id, name, description, constraints, notes, value }: { id: string, name: string, description: string, constraints: string, notes: string, value: Value }) => {
+	mutationFn: async ({ id, name, description, constraints, notes, value }: { id: string, name?: string, description?: string, constraints?: string, notes?: string, value?: Value }) => {
 		const response = await client.api.features({ id }).patch({ name, description, constraints, notes, value });
 		if (response.error) {
 			throw new Error();

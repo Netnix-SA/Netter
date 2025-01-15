@@ -304,8 +304,6 @@ export type Project = {
 
 	lead: UserId | null,
 
-	members: { id: UserId }[],
-
 	milestones: Milestone[],
 	updates: {
 		title: string,
@@ -341,10 +339,6 @@ export type Product = {
 	description: string,
 
 	created: Date,
-
-	applications: {
-		id: ApplicationId,
-	}[],
 };
 
 export type Feature = {
