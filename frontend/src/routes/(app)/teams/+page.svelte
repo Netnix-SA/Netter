@@ -15,7 +15,7 @@
 				<div id="header" class="w-full flex items-center h-10">
 					<span class="flex-1 font-bold">{team}</span>
 					<div class="rounded bg-orange-300 flex items-center justify-center aspect-square h-full">
-						<span class="drop-shadow">
+						<span class="drop-shadow-sm">
 							🐛
 						</span>
 					</div>

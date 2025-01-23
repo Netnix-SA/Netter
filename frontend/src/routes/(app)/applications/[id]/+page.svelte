@@ -10,12 +10,12 @@
 <div class="w-full flex-1 frame gap-8 px-12 py-12">
 	<div class="flex flex-col gap-8">
 		<div id="header" class="">
-			<input class="appearance-none tactile-text text-4xl font-medium outline-none" bind:value={data.application.name}/>
+			<input class="appearance-none tactile-text text-4xl font-medium outline-hidden" bind:value={data.application.name}/>
 		</div>
 		<Separator/>
 		<div id="description" class="flex-1 flex flex-col gap-1">
 			<span class="text-muted-foreground">Description</span>
-			<textarea class="appearance-none tactile-text w-full h-[8lh] outline-none" bind:value={data.application.description}/>
+			<textarea class="appearance-none tactile-text w-full h-[8lh] outline-hidden" bind:value={data.application.description}/>
 		</div>
 	</div>
 	<Separator orientation="vertical"/>

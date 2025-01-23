@@ -118,12 +118,12 @@
 						<Search placeholder="Select the original task" filter={{ class: "Task", exclude: [data.task.id] }} bind:value={close_payload}/>
 					{:else if close_as === "Resolved"}
 						<div class="flex gap-2">
-							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Resolution" bind:value={close_payload}>
+							<textarea class="appearance-none outline-hidden rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Resolution" bind:value={close_payload}>
 							</textarea>
 						</div>
 					{:else if close_as === "Canceled"}
 						<div class="flex gap-2">
-							<textarea class="appearance-none outline-none rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Reason for canceling" bind:value={close_payload}>
+							<textarea class="appearance-none outline-hidden rounded-lg bg-card px-2 py-1 border h-[8lh] w-full" placeholder="Reason for canceling" bind:value={close_payload}>
 							</textarea>
 						</div>
 					{/if}

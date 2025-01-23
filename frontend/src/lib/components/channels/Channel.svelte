@@ -73,7 +73,7 @@
 {#snippet mention(title: string, dodo: (v: string) => void, active: boolean)}
 {@const results = client.api.get({ query: { text: title.replace("@", "") } })}
 <div class="relative">
-	<div class:hidden={!active} class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow" transition:flyAndScale>
+	<div class:hidden={!active} class="absolute bottom-6 min-w-64 bg-primary-foreground rounded-md min-h-32 column border z-10 shadow-sm" transition:flyAndScale>
 		{#await results}
 			Loading...
 		{:then re}
