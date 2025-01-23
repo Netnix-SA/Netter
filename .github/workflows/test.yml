@@ -8,7 +8,7 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
-    # container: oven/bun:1.1.28
+    # container: oven/bun:1.2
     # services:
     #   db:
     #     image: surrealdb/surrealdb:v2.0.0

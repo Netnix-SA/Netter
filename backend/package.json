@@ -15,8 +15,8 @@
     "@elysiajs/swagger": "^1.2.0",
     "@simplewebauthn/server": "^11.0.0",
     "@simplewebauthn/types": "^11.0.0",
-    "elysia": "^1.2.6",
-    "octokit": "^4.0.2",
+    "elysia": "^1.2.10",
+    "octokit": "^4.1.0",
     "surrealdb": "v1.1.0"
   }
 }
