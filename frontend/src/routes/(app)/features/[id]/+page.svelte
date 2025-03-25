@@ -56,16 +56,16 @@
 		<input in:blur type="text" class="tactile-text text-5xl font-semibold border-0" value={feature.name} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, name: e.currentTarget.value })}/>
 		<section class="column gap-2">
 			<span class="text-sm text-muted-foreground">Description</span>
-			<textarea class="flex-1 w-full min-h-[8lh]" value={feature.description} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, description: e.currentTarget.value })}/>
+			<textarea class="flex-1 w-full min-h-[8lh] transparent-text-area rounded-lg" value={feature.description} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, description: e.currentTarget.value })}/>
 		</section>
 		<div class="gallery gap-4">
 			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Constraints</span>
-				<textarea class="flex-1 w-full min-h-[8lh]" value={feature.constraints} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, constraints: e.currentTarget.value })}/>
+				<textarea class="flex-1 w-full min-h-[8lh] transparent-text-area rounded-lg" value={feature.constraints} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, constraints: e.currentTarget.value })}/>
 			</section>
 			<section class="column flex-1 gap-2">
 				<span class="text-sm text-muted-foreground">Notes</span>
-				<textarea class="flex-1 w-full min-h-[8lh]" value={feature.notes} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, notes: e.currentTarget.value })}/>
+				<textarea class="flex-1 w-full min-h-[8lh] transparent-text-area rounded-lg" value={feature.notes} onblur={async (e) => await updateFeatureMutation({})({ id: data.feature.id, notes: e.currentTarget.value })}/>
 			</section>
 		</div>
 		<section>

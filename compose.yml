@@ -20,22 +20,22 @@ services:
     expose:
       - 80
     ports:
-      - 80:80
+      - 8080:80
     command: bun run --hot index.ts
     depends_on:
       - db
   frontend:
-    image: oven/bun:1.2
+    image: oven/bun:1.2.5
     working_dir: /app
     depends_on:
       - backend
     volumes:
       - ./frontend:/app
     ports:
-      - 5173:80
+      - 80:80
     env_file:
       - .env
-    command: bun run dev -- --host --port 80
+    command: bun run dev -- --host 0.0.0.0 --port 80
   db:
     image: surrealdb/surrealdb:v2.0.0
     user: root

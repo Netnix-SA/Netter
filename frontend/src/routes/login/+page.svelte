@@ -10,6 +10,9 @@
 	import { bufferToBase64URLString, base64URLStringToBuffer } from '@simplewebauthn/browser';
 	import { env } from '$env/dynamic/public';
 
+	import bgImage from '$lib/assets/1.jpg';
+  import { blur } from 'svelte/transition';
+
 	let email = $state("fvilla@netnix.net");
 
 	async function handleLogin() {
@@ -169,14 +172,10 @@
 
 		goto(`/auth`);
 	}
-
-	onMount(async () => {
-		// await handlePasskeyLogin();
-	});
 </script>
 
-<main class="absolute h-screen w-screen frame z-10">
-	<div class="px-64">
+<main class="frame z-10">
+	<div class="px-64 absolute z-10">
 		<h1 class="text-9xl font-bold italic mix-blend-overlay">
 			Netter
 		</h1>
@@ -204,75 +203,4 @@
 	</form>
 </main>
 
-<div class="hero absolute top-0 left-0 w-screen h-screen z-0">
-</div>
-
-<style>
-/*houdini*/
-@property --blink-opacity {
-	syntax: "<number>";
-	inherits: false;
-	initial-value: 1;
-}
-
-@keyframes blink-animation {
-	0%, 100% {
-		opacity: var(--blink-opacity, 1);
-	}
-	50% {
-		opacity: 0;
-	}
-}
-:root {
-	--stripe-color: #fff;
-	--bg: var(--stripe-color);
-	--maincolor: var(--bg);
-}
-
-@keyframes smoothBg {
-	from {
-		background-position: 50% 50%, 50% 50%;
-	}
-	to {
-		background-position: 350% 50%, 350% 50%;
-	}
-}
-
-.hero {
-	--stripes: repeating-linear-gradient(
-		100deg,
-		var(--stripe-color) 0%,
-		var(--stripe-color) 7%,
-		transparent 10%,
-		transparent 12%,
-		var(--stripe-color) 16%
-	);
-
-	--rainbow: repeating-linear-gradient(
-		100deg,
-		#60a5fa 10%,
-		#e879f9 15%,
-		#60a5fa 20%,
-		#5eead4 25%,
-		#60a5fa 30%
-	);
-
-	background-image: var(--stripes), var(--rainbow);
-	background-size: 300%, 200%;
-	background-position: 50% 50%, 50% 50%;
-
-  	filter: blur(16px) invert(100%);
-
-  	mask-image: radial-gradient(ellipse at 100% 0%, black 50%, transparent 75%);
-	&::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		background-image: var(--stripes), var(--rainbow);
-		background-size: 200%, 100%;
-		animation: smoothBg 60s linear infinite;
-		background-attachment: fixed;
-		mix-blend-mode: difference;
-	}
-}
-</style>
+<img src={bgImage} class="absolute rotate-45 scale-50" in:blur/>
