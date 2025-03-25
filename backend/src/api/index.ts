@@ -30,11 +30,24 @@ import { tClasses } from "./schemas";
 
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { user } from "../session";
+import { SSHGit } from "../git";
 
 const ES256 = -7;
 const RS256 = -257;
 
 export const server = (db: Surreal, event_queue: Events) => new Elysia({ prefix: "/api" })
+
+.get("/pepe", async () => {
+	console.log("Getting repositories...");
+
+	const repos = new SSHGit("ssh://git@git");
+
+	console.log("Repositories: ", repos);
+
+	console.log(await repos.getRepositories());
+
+	return await repos.getRepositories();
+})
 
 .use(cors())
 

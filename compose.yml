@@ -1,9 +1,13 @@
 services:
   backend:
-    image: oven/bun:1.2
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
     working_dir: /app
     volumes:
       - ./backend:/app
+      - ./backend/key:/home/bun/.ssh/key
+      - ./backend/key.pub:/home/bun/.ssh/key.pub
     env_file:
       - .env
     environment:
@@ -42,6 +46,15 @@ services:
     command: start --user root --pass root --bind 0.0.0.0:80 rocksdb://data/database.db
     volumes:
       - db:/data
+  git:
+    build: ./git
+    restart: always
+    volumes:
+      - ./git/key.pub:/home/root/.ssh/authorized_keys
+      - .git:/var/git/netter
+    expose:
+      - 22
 
 volumes:
   db:
+  git:

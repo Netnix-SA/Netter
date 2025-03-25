@@ -1,0 +1,5 @@
+FROM oven/bun:1.2 AS base
+
+WORKDIR /app
+
+RUN apt update && apt install ssh git -y
