@@ -35,6 +35,8 @@ services:
       - 80:80
     env_file:
       - .env
+    environment:
+      - LLM_MODEL=gemma2-9b-it
     command: bun run dev -- --host 0.0.0.0 --port 80
   db:
     image: surrealdb/surrealdb:v2.0.0

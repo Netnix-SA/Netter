@@ -2,6 +2,7 @@
 	import Separator from "@/components/ui/separator/separator.svelte";
 	import type { PageData } from "./$types";
     import type { Value } from "@/types";
+	import SvelteMarkdown from 'svelte-markdown';
     import Select from "@/components/Select.svelte";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
     import { CLASSES, VALUES } from "@/utils.ts";
@@ -10,7 +11,7 @@
     import { onNavigate } from "$app/navigation";
     import { addNeededComponentMutation, addTaskTackledMutation, client, removeNeededComponentMutation, removeTackledMutation, updateFeatureMutation } from "@/state";
     import { task } from "@/global.svelte.ts";
-    import { Hammer, TurtleIcon, } from "lucide-svelte";
+    import { CheckIcon, Hammer, TurtleIcon, } from "lucide-svelte";
 	import { DotsHorizontal } from "svelte-radix";
     import DialogSelect from "@/components/DialogSelect.svelte";
     import NumberFlow from "@number-flow/svelte";
@@ -71,6 +72,21 @@
 		<section>
 			<span class="text-sm text-muted-foreground">Files</span>
 		</section>
+	</div>
+	<div class="column w-96 border-l px-6 py-8 bg-neutral-950">
+		<span class="text-sm text-muted-foreground mb-2">Suggestions</span>
+		{#await fetch('/api', { body: `${feature.description}\n${feature.constraints}\n${feature.notes}`, method: 'POST' }).then(res => res.text())}
+			Analyzing...
+		{:then source}
+			{#if source != ""}
+				<SvelteMarkdown {source}/>
+			{:else}
+				<div class="gallery">
+					<CheckIcon class="size-4"/>
+					<span class="text-sm text-muted-foreground">No suggestions!</span>
+				</div>
+			{/if}
+		{/await}
 	</div>
 	<side class="column w-96 gap-8 border-l bg-neutral-950 px-6 py-8">
 		<section class="column gap-2">

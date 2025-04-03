@@ -43,6 +43,7 @@
     "mode-watcher": "^0.5.1",
     "octokit": "^4.1.2",
     "svelte-confetti": "^2.3.1",
+    "svelte-markdown": "^0.4.1",
     "svelte-radix": "^1.1.1",
     "svelte-sonner": "^0.3.28",
     "tailwind-merge": "^2.6.0",
