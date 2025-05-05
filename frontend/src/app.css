@@ -146,11 +146,11 @@
 	}
 
 	input {
-		@apply px-2 py-1 h-10;
+		@apply h-10;
 	}
 
 	textarea {
-		@apply px-2 py-1;
+		/* @apply; */
 	}
 
 	.green-light {
@@ -237,5 +237,6 @@
 		@apply bg-transparent text-foreground;
 		@apply border border-transparent;
 		@apply hover:border-foreground/10 focus:border-foreground/40 transition-all;
+		@apply px-2 py-1;
 	}
 }

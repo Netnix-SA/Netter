@@ -73,13 +73,15 @@
 			<span class="text-sm text-muted-foreground">Files</span>
 		</section>
 	</div>
-	<div class="column w-96 border-l px-6 py-8 bg-neutral-950">
+	<div class="column w-96 border-l px-6 py-8 bg-neutral-950" id="suggestions">
 		<span class="text-sm text-muted-foreground mb-2">Suggestions</span>
-		{#await fetch('/api', { body: `${feature.description}\n${feature.constraints}\n${feature.notes}`, method: 'POST' }).then(res => res.text())}
+		{#await fetch('/api', { body: `# Title\n${feature.name}\n# Description\n${feature.description}\n# Constraints\n${feature.constraints}\n# Notes\n${feature.notes}`, method: 'POST' }).then(res => res.text())}
 			Analyzing...
 		{:then source}
 			{#if source != ""}
+			<div class="text-xs">
 				<SvelteMarkdown {source}/>
+			</div>
 			{:else}
 				<div class="gallery">
 					<CheckIcon class="size-4"/>
@@ -172,3 +174,9 @@
 		</section>
 	</side>
 </div>
+
+<style lang="postcss">
+	#suggestions > li {
+		margin-bottom: 16px;
+	}
+</style>

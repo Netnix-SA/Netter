@@ -1,7 +1,4 @@
 <script lang="ts">
-    import type { PageData } from "./$types";
-    import type { Snippet } from "svelte";
-
 	import * as ContextMenu from "$lib/components/ui/context-menu";
 
     import { client, createProductFeatureMutation, } from "@/state";
@@ -38,7 +35,7 @@
 			<!-- {data.product.name} {'/'} Features -->
 		</h1>
 	</div>
-	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={async () => await createProductFeatureMutation({})({ id: data.product.id })}>
+	<button class="size-6 frame border border-dashed hover:border-solid text-md transition-all bg-background hover:bg-accent rounded-md" onclick={async () => await createProductFeatureMutation({})({ id: page.params.id })}>
 		+
 	</button>
 </header>
